@@ -1,0 +1,45 @@
+[package]
+name = "burocratin"
+version = "0.1.0"
+authors = ["Jorge Perez Burgos <vaijira@gmail.com>"]
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies.web-sys]
+version = "0.3"
+features = [
+  "Blob",
+  "File",
+  "FileReader",
+  "FileReaderSync",
+  "Url",
+]
+
+[dependencies]
+anyhow = "1.0"
+utf16-ext = "0.1"
+byteorder = "1.2"
+chrono = { version = "0.4", features = ["serde"] }
+console_error_panic_hook = "0.1"
+geo-types = { version = "0.6",  features = ["serde"] }
+js-sys = "0.3"
+load-dotenv = "0.1"
+log = "0.4"
+nom = "6.0"
+num-format = "0.4"
+once_cell = "1.5"
+pdf = "0.7"
+reqwasm = "0.1"
+rust_decimal = "1.7"
+serde = { version = "1.0", features = ["derive"] }
+substring = "1.4"
+yew = "0.17"
+yew_assets= {version = "0.1", features = ["full"]}
+yew-router = "0.14.0"
+yew_styles = { version="0.9", features=["full"] }
+yewtil = "0.3"
+wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4"
+wasm-logger = "0.2"
