@@ -43,6 +43,7 @@ pub struct AccountNote {
 }
 
 impl AccountNote {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         date: NaiveDate,
         company: CompanyInfo,

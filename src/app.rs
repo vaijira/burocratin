@@ -101,8 +101,9 @@ impl App {
             <Container wrap=Wrap::Wrap direction=Direction::Row>
                 <Item layouts=vec!(ItemLayout::ItM(6), ItemLayout::ItXs(12))>
                     <FormGroup orientation=Orientation::Horizontal>
-                        <FormLabel text="Upload file: "/>
+                        <FormLabel text="Informe Degiro: "/>
                         <FormFile
+                            alt="informe de Degiro"
                             accept=vec!["application/pdf".to_string()]
                             underline=false
                             onchange_signal = self.link.callback(|data: ChangeData | {

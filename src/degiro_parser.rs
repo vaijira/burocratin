@@ -61,9 +61,8 @@ impl DegiroParser {
             map_res(
                 recognize(many1(terminated(one_of("0123456789"), many0(is_a(",."))))),
                 |out: &str| {
-                    
-                    Decimal::from_str(&str::replace(&str::replace(&out, ".", ""),",", "."))
-            },
+                    Decimal::from_str(&str::replace(&str::replace(&out, ".", ""), ",", "."))
+                },
             ),
         )(input)
     }
@@ -78,7 +77,9 @@ impl DegiroParser {
                     char(','),
                     recognize(many1(terminated(one_of("0123456789"), many0(char('.'))))),
                 ))),
-                |out: &str| Decimal::from_str(&str::replace(&str::replace(&out, ".", ""),",", ".")),
+                |out: &str| {
+                    Decimal::from_str(&str::replace(&str::replace(&out, ".", ""), ",", "."))
+                },
             ),
         )(input)
     }
@@ -116,11 +117,8 @@ impl DegiroParser {
     }
 
     fn isin(input: &str) -> Res<&str, String> {
-        context(
-            "isin",
-            many_m_n(12, 12, none_of("\n")),
-        )(input)
-        .map(|(next_input, res)| (next_input, res.iter().collect()))
+        context("isin", many_m_n(12, 12, none_of("\t \n")))(input)
+            .map(|(next_input, res)| (next_input, res.iter().collect()))
     }
 
     fn company_info(input: &str) -> Res<&str, CompanyInfo> {
@@ -245,7 +243,10 @@ impl DegiroParser {
     pub fn parse_pdf_content(&self) -> Result<AccountNotes> {
         let mut result = vec![];
 
-        let indexes: Vec<_> = self.content.match_indices(DEGIRO_NOTES_HEADER_BEGIN).collect();
+        let indexes: Vec<_> = self
+            .content
+            .match_indices(DEGIRO_NOTES_HEADER_BEGIN)
+            .collect();
 
         for i in 0..indexes.len() {
             let header_begin = indexes.get(i).unwrap().0 + DEGIRO_NOTES_HEADER_BEGIN.len();
@@ -576,7 +577,7 @@ C
         let account_notes = parser.parse_pdf_content().unwrap();
         let notes = vec![
             AccountNote::new(
-                NaiveDate::from_ymd(2020,09,15),
+                NaiveDate::from_ymd(2020, 09, 15),
                 CompanyInfo {
                     name: String::from("CTT SYSTEMS"),
                     isin: String::from("SE0000418923"),
@@ -588,9 +589,10 @@ C
                 Decimal::new(618_24, 2),
                 Decimal::new(4_31, 2),
                 Decimal::new(0_0960, 4),
-                Decimal::new(0_00, 2)),
+                Decimal::new(0_00, 2),
+            ),
             AccountNote::new(
-                NaiveDate::from_ymd(2020,09,15),
+                NaiveDate::from_ymd(2020, 09, 15),
                 CompanyInfo {
                     name: String::from("CTT SYSTEMS"),
                     isin: String::from("SE0000418923"),
@@ -602,7 +604,8 @@ C
                 Decimal::new(160_99, 2),
                 Decimal::new(0_08, 2),
                 Decimal::new(0_0960, 4),
-                Decimal::new(0_00, 2)),
+                Decimal::new(0_00, 2),
+            ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 09, 24),
                 CompanyInfo {
@@ -616,7 +619,8 @@ C
                 Decimal::new(1589_12, 2),
                 Decimal::new(4_79, 2),
                 Decimal::new(0_0942, 4),
-                Decimal::new(0_00, 2)),
+                Decimal::new(0_00, 2),
+            ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 06, 11),
                 CompanyInfo {
@@ -630,7 +634,8 @@ C
                 Decimal::new(2156_10, 2),
                 Decimal::new(2_97, 2),
                 Decimal::new(0_8851, 4),
-                Decimal::new(0_00, 2)),
+                Decimal::new(0_00, 2),
+            ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 06, 11),
                 CompanyInfo {
@@ -644,9 +649,10 @@ C
                 Decimal::new(924_04, 2),
                 Decimal::new(1_06, 2),
                 Decimal::new(0_8851, 4),
-                Decimal::new(0_00, 2)),
-            AccountNote::new (
-                NaiveDate::from_ymd(2020,01,13),
+                Decimal::new(0_00, 2),
+            ),
+            AccountNote::new(
+                NaiveDate::from_ymd(2020, 01, 13),
                 CompanyInfo {
                     name: String::from("EVI INDUSTRIES INC"),
                     isin: String::from("US26929N1028"),
@@ -658,12 +664,13 @@ C
                 Decimal::new(2274_89, 2),
                 Decimal::new(0_86, 2),
                 Decimal::new(0_8981, 4),
-                Decimal::new(0_00, 2)),
+                Decimal::new(0_00, 2),
+            ),
             AccountNote::new(
-                NaiveDate::from_ymd(2020,01,13),
+                NaiveDate::from_ymd(2020, 01, 13),
                 CompanyInfo {
                     name: String::from("EVI INDUSTRIES INC"),
-                    isin: String::from("US26929N1028")
+                    isin: String::from("US26929N1028"),
                 },
                 BrokerOperation::Buy,
                 Decimal::new(40, 0),
@@ -672,7 +679,8 @@ C
                 Decimal::new(911_39, 2),
                 Decimal::new(0_14, 2),
                 Decimal::new(0_8981, 4),
-                Decimal::new(0_00, 2)),
+                Decimal::new(0_00, 2),
+            ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 02, 12),
                 CompanyInfo {
@@ -686,7 +694,8 @@ C
                 Decimal::new(2239_69, 2),
                 Decimal::new(0_87, 2),
                 Decimal::new(0_9196, 4),
-                Decimal::new(0_00, 2)),
+                Decimal::new(0_00, 2),
+            ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 02, 12),
                 CompanyInfo {
@@ -700,7 +709,8 @@ C
                 Decimal::new(853_18, 2),
                 Decimal::new(0_14, 2),
                 Decimal::new(0_9196, 4),
-                Decimal::new(0_00, 2)),
+                Decimal::new(0_00, 2),
+            ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 03, 05),
                 CompanyInfo {
@@ -714,7 +724,8 @@ C
                 Decimal::new(747_60, 2),
                 Decimal::new(0_64, 2),
                 Decimal::new(0_8900, 4),
-                Decimal::new(0_00, 2)),
+                Decimal::new(0_00, 2),
+            ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 03, 05),
                 CompanyInfo {
@@ -728,7 +739,8 @@ C
                 Decimal::new(747_60, 2),
                 Decimal::new(0_14, 2),
                 Decimal::new(0_8900, 4),
-                Decimal::new(0_00, 2)),
+                Decimal::new(0_00, 2),
+            ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 08, 11),
                 CompanyInfo {
@@ -742,7 +754,8 @@ C
                 Decimal::new(2040_00, 2),
                 Decimal::new(5_02, 2),
                 Decimal::new(1_0000, 4),
-                Decimal::new(0_00, 2)),
+                Decimal::new(0_00, 2),
+            ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 03, 06),
                 CompanyInfo {
@@ -756,7 +769,8 @@ C
                 Decimal::new(1500_80, 2),
                 Decimal::new(4_75, 2),
                 Decimal::new(1_0000, 4),
-                Decimal::new(0_00, 2)),
+                Decimal::new(0_00, 2),
+            ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 06, 11),
                 CompanyInfo {
@@ -770,7 +784,8 @@ C
                 Decimal::new(2165_80, 2),
                 Decimal::new(5_08, 2),
                 Decimal::new(1_0000, 4),
-                Decimal::new(665_0000, 4)),
+                Decimal::new(665_0000, 4),
+            ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 07, 07),
                 CompanyInfo {
@@ -784,7 +799,8 @@ C
                 Decimal::new(1958_00, 2),
                 Decimal::new(4_97, 2),
                 Decimal::new(0_0111, 4),
-                Decimal::new(0_00, 2)),
+                Decimal::new(0_00, 2),
+            ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 05, 20),
                 CompanyInfo {
@@ -798,7 +814,8 @@ C
                 Decimal::new(1771_63, 2),
                 Decimal::new(4_89, 2),
                 Decimal::new(0_0112, 4),
-                Decimal::new(0_00, 2)),
+                Decimal::new(0_00, 2),
+            ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 05, 20),
                 CompanyInfo {
@@ -812,12 +829,13 @@ C
                 Decimal::new(2165_89, 2),
                 Decimal::new(1_09, 2),
                 Decimal::new(0_0112, 4),
-                Decimal::new(0_00, 2)),
+                Decimal::new(0_00, 2),
+            ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 05, 20),
                 CompanyInfo {
                     name: String::from("GEORGIA CAPITAL"),
-                    isin: String::from("GB00BF4HYV08")
+                    isin: String::from("GB00BF4HYV08"),
                 },
                 BrokerOperation::Buy,
                 Decimal::new(10, 0),
@@ -826,12 +844,13 @@ C
                 Decimal::new(49_91, 2),
                 Decimal::new(0_03, 2),
                 Decimal::new(0_0112, 4),
-                Decimal::new(0_00, 2)),
+                Decimal::new(0_00, 2),
+            ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 05, 20),
                 CompanyInfo {
                     name: String::from("GEORGIA CAPITAL"),
-                    isin: String::from("GB00BF4HYV08")
+                    isin: String::from("GB00BF4HYV08"),
                 },
                 BrokerOperation::Buy,
                 Decimal::new(1, 0),
@@ -840,12 +859,13 @@ C
                 Decimal::new(4_99, 2),
                 Decimal::new(0_00, 2),
                 Decimal::new(0_0112, 4),
-                Decimal::new(0_00, 2)),
+                Decimal::new(0_00, 2),
+            ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 05, 19),
                 CompanyInfo {
                     name: String::from("GRAVITY CO. LTD. - AM"),
-                    isin: String::from("US38911N2062")
+                    isin: String::from("US38911N2062"),
                 },
                 BrokerOperation::Sell,
                 Decimal::new(100, 0),
@@ -854,12 +874,13 @@ C
                 Decimal::new(3848_76, 2),
                 Decimal::new(0_87, 2),
                 Decimal::new(0_9155, 4),
-                Decimal::new(832_6120, 4)),
+                Decimal::new(832_6120, 4),
+            ),
             AccountNote::new(
-                NaiveDate::from_ymd(2020, 05, 19), 
+                NaiveDate::from_ymd(2020, 05, 19),
                 CompanyInfo {
                     name: String::from("GRAVITY CO. LTD. - AM"),
-                    isin: String::from("US38911N2062")
+                    isin: String::from("US38911N2062"),
                 },
                 BrokerOperation::Sell,
                 Decimal::new(2, 0),
@@ -868,12 +889,13 @@ C
                 Decimal::new(76_92, 2),
                 Decimal::new(0_01, 2),
                 Decimal::new(0_9155, 4),
-                Decimal::new(16_5973, 4)),
+                Decimal::new(16_5973, 4),
+            ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 02, 18),
                 CompanyInfo {
                     name: String::from("INTER RAO LIETUVA AB"),
-                    isin: String::from("LT0000128621")
+                    isin: String::from("LT0000128621"),
                 },
                 BrokerOperation::Buy,
                 Decimal::new(695, 0),
@@ -882,12 +904,13 @@ C
                 Decimal::new(3354_47, 2),
                 Decimal::new(10_37, 2),
                 Decimal::new(0_2343, 4),
-                Decimal::new(0_00, 2)),
+                Decimal::new(0_00, 2),
+            ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 02, 18),
                 CompanyInfo {
                     name: String::from("INTER RAO LIETUVA AB"),
-                    isin: String::from("LT0000128621")
+                    isin: String::from("LT0000128621"),
                 },
                 BrokerOperation::Buy,
                 Decimal::new(49, 0),
@@ -896,12 +919,13 @@ C
                 Decimal::new(237_65, 2),
                 Decimal::new(0_38, 2),
                 Decimal::new(0_2343, 4),
-                Decimal::new(0_00, 2)),
+                Decimal::new(0_00, 2),
+            ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 02, 18),
                 CompanyInfo {
                     name: String::from("INTER RAO LIETUVA AB"),
-                    isin: String::from("LT0000128621")
+                    isin: String::from("LT0000128621"),
                 },
                 BrokerOperation::Buy,
                 Decimal::new(256, 0),
@@ -910,12 +934,13 @@ C
                 Decimal::new(1241_60, 2),
                 Decimal::new(1_99, 2),
                 Decimal::new(0_2343, 4),
-                Decimal::new(0_00, 2)),
+                Decimal::new(0_00, 2),
+            ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 01, 17),
                 CompanyInfo {
                     name: String::from("KEYWORDS STUDIO"),
-                    isin: String::from("GB00BBQ38507")
+                    isin: String::from("GB00BBQ38507"),
                 },
                 BrokerOperation::Buy,
                 Decimal::new(25, 0),
@@ -924,12 +949,13 @@ C
                 Decimal::new(452_86, 2),
                 Decimal::new(4_26, 2),
                 Decimal::new(0_0117, 4),
-                Decimal::new(0_00, 2)),
+                Decimal::new(0_00, 2),
+            ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 01, 17),
                 CompanyInfo {
                     name: String::from("KEYWORDS STUDIO"),
-                    isin: String::from("GB00BBQ38507")
+                    isin: String::from("GB00BBQ38507"),
                 },
                 BrokerOperation::Buy,
                 Decimal::new(105, 0),
@@ -938,12 +964,13 @@ C
                 Decimal::new(1901_99, 2),
                 Decimal::new(1_11, 2),
                 Decimal::new(0_0117, 4),
-                Decimal::new(0_00, 2)),
+                Decimal::new(0_00, 2),
+            ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 01, 17),
                 CompanyInfo {
                     name: String::from("MONDO TV"),
-                    isin: String::from("IT0001447785")
+                    isin: String::from("IT0001447785"),
                 },
                 BrokerOperation::Sell,
                 Decimal::new(1105, 0),
@@ -952,7 +979,8 @@ C
                 Decimal::new(2492_88, 2),
                 Decimal::new(5_45, 2),
                 Decimal::new(1_0000, 4),
-                Decimal::new(393_3800, 4)),
+                Decimal::new(393_3800, 4),
+            ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 04, 01),
                 CompanyInfo {
@@ -966,12 +994,13 @@ C
                 Decimal::new(380_72, 2),
                 Decimal::new(4_19, 2),
                 Decimal::new(0_0872, 4),
-                Decimal::new(0_00, 2)),
+                Decimal::new(0_00, 2),
+            ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 04, 01),
                 CompanyInfo {
                     name: String::from("Okeanis Eco Tankers Corp"),
-                    isin: String::from("MHY641771016")
+                    isin: String::from("MHY641771016"),
                 },
                 BrokerOperation::Buy,
                 Decimal::new(25, 0),
@@ -980,12 +1009,13 @@ C
                 Decimal::new(161_32, 2),
                 Decimal::new(0_08, 2),
                 Decimal::new(0_0872, 4),
-                Decimal::new(0_00, 2)),
+                Decimal::new(0_00, 2),
+            ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 04, 01),
                 CompanyInfo {
                     name: String::from("Okeanis Eco Tankers Corp"),
-                    isin: String::from("MHY641771016")
+                    isin: String::from("MHY641771016"),
                 },
                 BrokerOperation::Buy,
                 Decimal::new(346, 0),
@@ -994,12 +1024,13 @@ C
                 Decimal::new(2232_67, 2),
                 Decimal::new(1_11, 2),
                 Decimal::new(0_0872, 4),
-                Decimal::new(0_00, 2)),
+                Decimal::new(0_00, 2),
+            ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 07, 06),
                 CompanyInfo {
                     name: String::from("ROCKROSE ENERGY"),
-                    isin: String::from("GB00BYNFCH09")
+                    isin: String::from("GB00BYNFCH09"),
                 },
                 BrokerOperation::Sell,
                 Decimal::new(216, 0),
@@ -1008,12 +1039,13 @@ C
                 Decimal::new(4366_26, 2),
                 Decimal::new(6_19, 2),
                 Decimal::new(0_0110, 4),
-                Decimal::new(-80_3072, 4)),
+                Decimal::new(-80_3072, 4),
+            ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 01, 13),
                 CompanyInfo {
                     name: String::from("SHAKE SHACK INC. CLAS"),
-                    isin: String::from("US8190471016")
+                    isin: String::from("US8190471016"),
                 },
                 BrokerOperation::Buy,
                 Decimal::new(34, 0),
@@ -1022,7 +1054,8 @@ C
                 Decimal::new(1851_36, 2),
                 Decimal::new(0_62, 2),
                 Decimal::new(0_8981, 4),
-                Decimal::new(0_00, 2)),
+                Decimal::new(0_00, 2),
+            ),
         ];
         assert_eq!(notes, account_notes);
     }
