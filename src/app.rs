@@ -1,7 +1,7 @@
 use std::vec;
 
-use crate::pdf_parser::read_pdf;
 use crate::{account_notes::AccountNotes, degiro_parser::DegiroParser};
+use crate::{account_notes::BalanceNotes, pdf_parser::read_pdf};
 
 use yew::prelude::*;
 use yew::services::reader::{File, FileData, ReaderService, ReaderTask};
@@ -18,6 +18,7 @@ use yew_styles::layouts::{
 pub struct App {
     reader: ReaderService,
     tasks: Vec<ReaderTask>,
+    degiro_balance_notes: BalanceNotes,
     degiro_account_notes: AccountNotes,
     link: ComponentLink<Self>,
 }
@@ -37,6 +38,7 @@ impl Component for App {
         Self {
             reader: ReaderService::new(),
             tasks: vec![],
+            degiro_balance_notes: vec![],
             degiro_account_notes: vec![],
             link,
         }
@@ -54,12 +56,15 @@ impl Component for App {
                 let pdf_data = read_pdf(file.content);
                 if let Ok(data) = pdf_data {
                     let parser = DegiroParser::new(data);
-                    self.degiro_account_notes = match parser.parse_pdf_content() {
-                        Ok(notes) => notes,
-                        Err(err) => {
-                            log::error!("Error loading degiro account notes: {}", err);
-                            vec![]
-                        }
+                    let pdf_content = parser.parse_pdf_content();
+                    if let Ok((balance_notes, account_notes)) = pdf_content {
+                        self.degiro_balance_notes = balance_notes;
+                        self.degiro_account_notes = account_notes;
+                    } else {
+                        log::error!(
+                            "Error loading degiro account notes: {}",
+                            pdf_content.err().unwrap()
+                        );
                     }
                 } else {
                     log::error!("Unable to read pdf content");
@@ -90,6 +95,7 @@ impl Component for App {
           <>
             {self.get_form_file()}
             {self.get_account_notes()}
+            {self.get_balance_notes()}
           </>
         }
     }
@@ -138,6 +144,37 @@ impl App {
         html! {
             <table>
             <caption>{"Movimientos broker Degiro"}</caption>
+            <thead>
+              <tr>
+                <th>{"Acción"}</th>
+                <th>{"ISIN"}</th>
+                <th>{"Valor (€)"}</th>
+              </tr>
+            </thead>
+            <tbody>
+            {notes}
+            </tbody>
+            </table>
+        }
+    }
+
+    fn get_balance_notes(&self) -> Html {
+        let notes = self
+            .degiro_balance_notes
+            .iter()
+            .map(|note| {
+                html! {
+                <tr>
+                  <td>{&note.company.name}</td>
+                  <td>{&note.company.isin}</td>
+                  <td>{&note.value_in_euro}</td>
+                </tr>}
+            })
+            .collect::<Html>();
+
+        html! {
+            <table>
+            <caption>{"Balance broker Degiro"}</caption>
             <thead>
               <tr>
                 <th>{"Acción"}</th>

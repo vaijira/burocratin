@@ -1,4 +1,6 @@
-use crate::account_notes::{AccountNote, AccountNotes, BrokerOperation, CompanyInfo};
+use crate::account_notes::{
+    AccountNote, AccountNotes, BalanceNote, BalanceNotes, BrokerOperation, CompanyInfo,
+};
 
 use anyhow::{bail, Result};
 use chrono::NaiveDate;
@@ -28,6 +30,9 @@ type Res<T, U> = IResult<T, U, VerboseError<T>>;
 pub struct DegiroParser {
     content: String,
 }
+
+const DEGIRO_BALANCE_HEADER_BEGIN: &str = "\nCASH & CASH FUND (EUR)\n";
+const DEGIRO_BALANCE_HEADER_END: &str = "Amsterdam, ";
 
 const DEGIRO_NOTES_HEADER_END: &str = "Informe anual de flatex";
 
@@ -217,6 +222,39 @@ impl DegiroParser {
         })
     }
 
+    fn balance_note(input: &str) -> Res<&str, BalanceNote> {
+        context(
+            "balance note",
+            tuple((
+                DegiroParser::company_info,
+                take_until("\n"),
+                char('\n'),
+                DegiroParser::decimal_value,
+                char('\n'),
+                DegiroParser::decimal_value,
+                char('\n'),
+                DegiroParser::decimal_value,
+                char('\n'),
+                take(3usize),
+            )),
+        )(input)
+        .map(|(next_input, res)| {
+            let (company, market, _, quantity, _, price, _, value_in_euro, _, currency) = res;
+
+            (
+                next_input,
+                BalanceNote::new(
+                    company,
+                    market.to_string(),
+                    quantity,
+                    currency.to_string(),
+                    price,
+                    value_in_euro,
+                ),
+            )
+        })
+    }
+
     fn account_notes(input: &str) -> Res<&str, AccountNotes> {
         context(
             "account notes",
@@ -224,8 +262,19 @@ impl DegiroParser {
         )(input)
     }
 
+    fn balance_notes(input: &str) -> Res<&str, BalanceNotes> {
+        context(
+            "balance notes",
+            tuple((
+                take_until("\n"),
+                many0(preceded(char('\n'), DegiroParser::balance_note)),
+            )),
+        )(input)
+        .map(|(next_input, res)| (next_input, res.1))
+    }
+
     fn parse_account_notes(&self, notes: &str) -> Result<AccountNotes> {
-        log::debug!("-{}-", notes);
+        log::debug!("account notes:-{}-", notes);
         let notes = match DegiroParser::account_notes(notes) {
             Ok((_, notes)) => notes,
             Err(err) => {
@@ -236,11 +285,19 @@ impl DegiroParser {
         Ok(notes)
     }
 
-    pub fn new(content: String) -> DegiroParser {
-        DegiroParser { content }
+    fn parse_balance_notes(&self, notes: &str) -> Result<BalanceNotes> {
+        log::debug!("balance notes:-{}-", notes);
+        let notes = match DegiroParser::balance_notes(notes) {
+            Ok((_, notes)) => notes,
+            Err(err) => {
+                bail!("Unable to parse balance notes: {}", err);
+            }
+        };
+
+        Ok(notes)
     }
 
-    pub fn parse_pdf_content(&self) -> Result<AccountNotes> {
+    fn parse_pdf_account_notes(&self) -> Result<AccountNotes> {
         let mut result = vec![];
 
         let indexes: Vec<_> = self
@@ -262,6 +319,41 @@ impl DegiroParser {
         }
 
         Ok(result)
+    }
+
+    fn parse_pdf_balance_notes(&self) -> Result<BalanceNotes> {
+        let mut result = vec![];
+
+        let indexes: Vec<_> = self
+            .content
+            .match_indices(DEGIRO_BALANCE_HEADER_BEGIN)
+            .collect();
+
+        for i in 0..indexes.len() {
+            let header_begin = indexes.get(i).unwrap().0 + DEGIRO_BALANCE_HEADER_BEGIN.len();
+            let header_end = if i < indexes.len() - 1 {
+                indexes.get(i + 1).unwrap().0
+            } else {
+                match self.content.find(DEGIRO_BALANCE_HEADER_END) {
+                    Some(end) => end - 1,
+                    None => self.content.len(),
+                }
+            };
+            result.extend(self.parse_balance_notes(&self.content[header_begin..header_end])?);
+        }
+
+        Ok(result)
+    }
+
+    pub fn new(content: String) -> DegiroParser {
+        DegiroParser { content }
+    }
+
+    pub fn parse_pdf_content(&self) -> Result<(BalanceNotes, AccountNotes)> {
+        let account_notes = self.parse_pdf_account_notes()?;
+        let balance_notes = self.parse_pdf_balance_notes()?;
+
+        Ok((balance_notes, account_notes))
     }
 }
 
@@ -390,6 +482,35 @@ mod tests {
     }
 
     #[test]
+    fn balance_note_test() {
+        const BURFORD_NOTE: &str = r#"BURFORD CAP LD
+GG00B4L84979
+LSE
+463
+712,0000
+3.889,94
+GBX"#;
+
+        assert_eq!(
+            DegiroParser::balance_note(BURFORD_NOTE),
+            Ok((
+                "",
+                BalanceNote::new(
+                    CompanyInfo {
+                        name: String::from("BURFORD CAP LD"),
+                        isin: String::from("GG00B4L84979")
+                    },
+                    String::from("LSE"),
+                    Decimal::new(463, 0),
+                    String::from("GBX"),
+                    Decimal::new(712_0000, 4),
+                    Decimal::new(3889_94, 2),
+                )
+            ))
+        );
+    }
+
+    #[test]
     fn account_note_test() {
         const BURFORD_NOTE: &str = r#"31/10/2018
 BURFORD CAP LD
@@ -460,8 +581,79 @@ C
     #[test]
     fn degiro_2018_parse_content_test() {
         let parser = DegiroParser::new(INPUT_2018.to_string());
-        let account_notes = parser.parse_pdf_content().unwrap();
-        let notes = vec![
+        let (balance_notes, account_notes) = parser.parse_pdf_content().unwrap();
+        let bal_notes = vec![
+            BalanceNote::new(
+                CompanyInfo {
+                    name: String::from("BURFORD CAP LD"),
+                    isin: String::from("GG00B4L84979"),
+                },
+                String::from("LSE"),
+                Decimal::new(122, 0),
+                String::from("GBX"),
+                Decimal::new(1_656_0000, 4),
+                Decimal::new(2_247_00, 2),
+            ),
+            BalanceNote::new(
+                CompanyInfo {
+                    name: String::from("FACEBOOK INC. - CLASS"),
+                    isin: String::from("US30303M1027"),
+                },
+                String::from("NDQ"),
+                Decimal::new(21, 0),
+                String::from("USD"),
+                Decimal::new(131_0900, 4),
+                Decimal::new(2_401_07, 2),
+            ),
+            BalanceNote::new(
+                CompanyInfo {
+                    name: String::from("JD.COM INC. - AMERICA"),
+                    isin: String::from("US47215P1066"),
+                },
+                String::from("NDQ"),
+                Decimal::new(140, 0),
+                String::from("USD"),
+                Decimal::new(20_9300, 4),
+                Decimal::new(2555_72, 2),
+            ),
+            BalanceNote::new(
+                CompanyInfo {
+                    name: String::from("MONDO TV"),
+                    isin: String::from("IT0001447785"),
+                },
+                String::from("MIL"),
+                Decimal::new(1105, 0),
+                String::from("EUR"),
+                Decimal::new(1_1940, 4),
+                Decimal::new(1319_37, 2),
+            ),
+            BalanceNote::new(
+                CompanyInfo {
+                    name: String::from("TAPTICA INT LTD"),
+                    isin: String::from("IL0011320343"),
+                },
+                String::from("LSE"),
+                Decimal::new(565, 0),
+                String::from("GBX"),
+                Decimal::new(160_0000, 4),
+                Decimal::new(1005_43, 2),
+            ),
+            BalanceNote::new(
+                CompanyInfo {
+                    name: String::from("XPO LOGISTICS INC."),
+                    isin: String::from("US9837931008"),
+                },
+                String::from("NSY"),
+                Decimal::new(41, 0),
+                String::from("USD"),
+                Decimal::new(57_0400, 4),
+                Decimal::new(2039_76, 2),
+            ),
+        ];
+
+        assert_eq!(bal_notes, balance_notes);
+
+        let acc_notes = vec![
             AccountNote::new(
                 NaiveDate::from_ymd(2018, 10, 31),
                 CompanyInfo {
@@ -568,14 +760,195 @@ C
                 Decimal::new(0, 2),
             ),
         ];
-        assert_eq!(notes, account_notes);
+        assert_eq!(acc_notes, account_notes);
     }
 
     #[test]
     fn degiro_2020_parse_content_test() {
         let parser = DegiroParser::new(INPUT_2020.to_string());
-        let account_notes = parser.parse_pdf_content().unwrap();
-        let notes = vec![
+        let (balance_notes, account_notes) = parser.parse_pdf_content().unwrap();
+
+        let bal_notes = vec![
+            BalanceNote::new(
+                CompanyInfo {
+                    name: String::from("ANGI HOMESERVICES INC- A"),
+                    isin: String::from("US00183L1026"),
+                },
+                String::from("NDQ"),
+                Decimal::new(300, 0),
+                String::from("USD"),
+                Decimal::new(13_1950, 4),
+                Decimal::new(3240_43, 2),
+            ),
+            BalanceNote::new(
+                CompanyInfo {
+                    name: String::from("BURFORD CAP LD"),
+                    isin: String::from("GG00BMGYLN96"),
+                },
+                String::from("LSE"),
+                Decimal::new(463, 0),
+                String::from("GBX"),
+                Decimal::new(711_0000, 4),
+                Decimal::new(3686_96, 2),
+            ),
+            BalanceNote::new(
+                CompanyInfo {
+                    name: String::from("CTT SYSTEMS"),
+                    isin: String::from("SE0000418923"),
+                },
+                String::from("OMX"),
+                Decimal::new(205, 0),
+                String::from("SEK"),
+                Decimal::new(152_2000, 4),
+                Decimal::new(3104_50, 2),
+            ),
+            BalanceNote::new(
+                CompanyInfo {
+                    name: String::from("CVD EQUIPMENT CORPORAT"),
+                    isin: String::from("US1266011030"),
+                },
+                String::from("NDQ"),
+                Decimal::new(1000, 0),
+                String::from("USD"),
+                Decimal::new(3_6300, 4),
+                Decimal::new(2971_52, 2),
+            ),
+            BalanceNote::new(
+                CompanyInfo {
+                    name: String::from("EVI INDUSTRIES INC"),
+                    isin: String::from("US26929N1028"),
+                },
+                String::from("ASE"),
+                Decimal::new(618, 0),
+                String::from("USD"),
+                Decimal::new(30_3600, 4),
+                Decimal::new(15358_97, 2),
+            ),
+            BalanceNote::new(
+                CompanyInfo {
+                    name: String::from("FACEBOOK INC. - CLASS"),
+                    isin: String::from("US30303M1027"),
+                },
+                String::from("NDQ"),
+                Decimal::new(21, 0),
+                String::from("USD"),
+                Decimal::new(273_1600, 4),
+                Decimal::new(4695_78, 2),
+            ),
+            BalanceNote::new(
+                CompanyInfo {
+                    name: String::from("FINANCIERE ODET"),
+                    isin: String::from("FR0000062234"),
+                },
+                String::from("EPA"),
+                Decimal::new(3, 0),
+                String::from("EUR"),
+                Decimal::new(786_0000, 4),
+                Decimal::new(2358_00, 2),
+            ),
+            BalanceNote::new(
+                CompanyInfo {
+                    name: String::from("GENUS"),
+                    isin: String::from("GB0002074580"),
+                },
+                String::from("LSE"),
+                Decimal::new(50, 0),
+                String::from("GBX"),
+                Decimal::new(4196_0000, 4),
+                Decimal::new(2349_76, 2),
+            ),
+            BalanceNote::new(
+                CompanyInfo {
+                    name: String::from("GEORGIA CAPITAL"),
+                    isin: String::from("GB00BF4HYV08"),
+                },
+                String::from("LSE"),
+                Decimal::new(800, 0),
+                String::from("GBX"),
+                Decimal::new(540_0000, 4),
+                Decimal::new(4838_40, 2),
+            ),
+            BalanceNote::new(
+                CompanyInfo {
+                    name: String::from("INTER RAO LIETUVA AB"),
+                    isin: String::from("LT0000128621"),
+                },
+                String::from("WSE"),
+                Decimal::new(1000, 0),
+                String::from("PLN"),
+                Decimal::new(18_8000, 4),
+                Decimal::new(4122_84, 2),
+            ),
+            BalanceNote::new(
+                CompanyInfo {
+                    name: String::from("JD.COM INC. - AMERICA"),
+                    isin: String::from("US47215P1066"),
+                },
+                String::from("NDQ"),
+                Decimal::new(140, 0),
+                String::from("USD"),
+                Decimal::new(87_9000, 4),
+                Decimal::new(10073_69, 2),
+            ),
+            BalanceNote::new(
+                CompanyInfo {
+                    name: String::from("JUDGES SCIENTFC"),
+                    isin: String::from("GB0032398678"),
+                },
+                String::from("LSE"),
+                Decimal::new(145, 0),
+                String::from("GBX"),
+                Decimal::new(6380_0000, 4),
+                Decimal::new(10361_12, 2),
+            ),
+            BalanceNote::new(
+                CompanyInfo {
+                    name: String::from("KEYWORDS STUDIO"),
+                    isin: String::from("GB00BBQ38507"),
+                },
+                String::from("LSE"),
+                Decimal::new(130, 0),
+                String::from("GBX"),
+                Decimal::new(2860_0000, 4),
+                Decimal::new(4164_16, 2),
+            ),
+            BalanceNote::new(
+                CompanyInfo {
+                    name: String::from("Okeanis Eco Tankers Corp"),
+                    isin: String::from("MHY641771016"),
+                },
+                String::from("OSL"),
+                Decimal::new(430, 0),
+                String::from("NOK"),
+                Decimal::new(54_6000, 4),
+                Decimal::new(2239_80, 2),
+            ),
+            BalanceNote::new(
+                CompanyInfo {
+                    name: String::from("SHAKE SHACK INC. CLAS"),
+                    isin: String::from("US8190471016"),
+                },
+                String::from("NSY"),
+                Decimal::new(34, 0),
+                String::from("USD"),
+                Decimal::new(84_7900, 4),
+                Decimal::new(2359_91, 2),
+            ),
+            BalanceNote::new(
+                CompanyInfo {
+                    name: String::from("XPO LOGISTICS INC."),
+                    isin: String::from("US9837931008"),
+                },
+                String::from("NSY"),
+                Decimal::new(69, 0),
+                String::from("USD"),
+                Decimal::new(119_1950, 4),
+                Decimal::new(6732_54, 2),
+            ),
+        ];
+        assert_eq!(bal_notes, balance_notes);
+
+        let acc_notes = vec![
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 09, 15),
                 CompanyInfo {
@@ -1057,7 +1430,7 @@ C
                 Decimal::new(0_00, 2),
             ),
         ];
-        assert_eq!(notes, account_notes);
+        assert_eq!(acc_notes, account_notes);
     }
 
     const INPUT_2018: &str = r#"
@@ -1290,43 +1663,43 @@ BURFORD CAP LD
 GG00B4L84979
 LSE
 122
-1,656.0000
-2,247.00
+1.656,0000
+2.247,00
 GBX
 FACEBOOK INC. - CLASS
 US30303M1027
 NDQ
 21
-131.0900
-2,401.07
+131,0900
+2.401,07
 USD
 JD.COM INC. - AMERICA
 US47215P1066
 NDQ
 140
-20.9300
-2,555.72
+20,9300
+2.555,72
 USD
 MONDO TV
 IT0001447785
 MIL
 1105
-1.1940
-1,319.37
+1,1940
+1.319,37
 EUR
 TAPTICA INT LTD
 IL0011320343
 LSE
 565
-160.0000
-1,005.43
+160,0000
+1.005,43
 GBX
 XPO LOGISTICS INC.
 US9837931008
 NSY
 41
-57.0400
-2,039.76
+57,0400
+2.039,76
 USD
 Amsterdam, 28/01/2019
 Este certificado está expedido en la fecha y hora exacta indicadas. Ni Degiro ni Stichting Degiro asumen

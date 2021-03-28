@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 use std::convert::From;
 
 pub type AccountNotes = Vec<AccountNote>;
+pub type BalanceNotes = Vec<BalanceNote>;
 
 #[derive(Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub enum BrokerOperation {
@@ -67,6 +68,36 @@ impl AccountNote {
             commision,
             exchange_rate,
             earnings,
+        }
+    }
+}
+
+#[derive(Debug, Eq, PartialEq, Deserialize, Serialize)]
+pub struct BalanceNote {
+    pub company: CompanyInfo,
+    pub market: String,
+    pub quantity: Decimal,
+    pub currency: String,
+    pub price: Decimal,
+    pub value_in_euro: Decimal,
+}
+
+impl BalanceNote {
+    pub fn new(
+        company: CompanyInfo,
+        market: String,
+        quantity: Decimal,
+        currency: String,
+        price: Decimal,
+        value_in_euro: Decimal,
+    ) -> BalanceNote {
+        BalanceNote {
+            company,
+            market,
+            quantity,
+            currency,
+            price,
+            value_in_euro,
         }
     }
 }
