@@ -94,8 +94,8 @@ impl Component for App {
         html! {
           <>
             {self.get_form_file()}
-            {self.get_account_notes()}
             {self.get_balance_notes()}
+            {self.get_account_notes()}
           </>
         }
     }
@@ -107,9 +107,10 @@ impl App {
             <Container wrap=Wrap::Wrap direction=Direction::Row>
                 <Item layouts=vec!(ItemLayout::ItM(6), ItemLayout::ItXs(12))>
                     <FormGroup orientation=Orientation::Horizontal>
-                        <FormLabel text="Informe Degiro: "/>
+                        <img src="img/degiro.svg" alt="logo broker Degiro" width="70" height="70" />
+                        <FormLabel text="Informe anual broker Degiro:" />
                         <FormFile
-                            alt="informe de Degiro"
+                            alt="Fichero informe broker Degiro"
                             accept=vec!["application/pdf".to_string()]
                             underline=false
                             onchange_signal = self.link.callback(|data: ChangeData | {
@@ -123,6 +124,25 @@ impl App {
                         />
                     </FormGroup>
                 </Item>
+                <Item layouts=vec!(ItemLayout::ItM(6), ItemLayout::ItXs(12))>
+                <FormGroup orientation=Orientation::Horizontal>
+                    <img src="img/interactive_brokers.svg" alt="logo interactive brokers" width="70" height="70" />
+                    <FormLabel text="Informe anual Interactive Brokers:" />
+                    <FormFile
+                        alt="Fichero informe Interactive Brokers"
+                        accept=vec!["application/xhtml+xml".to_string(), "text/html".to_string()]
+                        underline=false
+                        onchange_signal = self.link.callback(|data: ChangeData | {
+                            if let ChangeData::Files(files) = data {
+                                let file = files.get(0).unwrap();
+                                Msg::UploadFile(file)
+                            } else {
+                                Msg::ErrorUploadPdf
+                            }
+                        })
+                    />
+                </FormGroup>
+            </Item>
             </Container>
         }
     }
@@ -134,6 +154,7 @@ impl App {
             .map(|note| {
                 html! {
                 <tr>
+                  <td>{"Degiro"}</td>
                   <td>{&note.company.name}</td>
                   <td>{&note.company.isin}</td>
                   <td>{&note.value_in_euro}</td>
@@ -146,6 +167,7 @@ impl App {
             <caption>{"Movimientos broker Degiro"}</caption>
             <thead>
               <tr>
+                <th>{"Broker"}</th>
                 <th>{"Acción"}</th>
                 <th>{"ISIN"}</th>
                 <th>{"Valor (€)"}</th>
@@ -165,6 +187,7 @@ impl App {
             .map(|note| {
                 html! {
                 <tr>
+                  <td>{"Degiro"}</td>
                   <td>{&note.company.name}</td>
                   <td>{&note.company.isin}</td>
                   <td>{&note.value_in_euro}</td>
@@ -177,6 +200,7 @@ impl App {
             <caption>{"Balance broker Degiro"}</caption>
             <thead>
               <tr>
+                <th>{"Broker"}</th>
                 <th>{"Acción"}</th>
                 <th>{"ISIN"}</th>
                 <th>{"Valor (€)"}</th>
