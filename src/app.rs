@@ -1,8 +1,11 @@
 use std::vec;
 
-use crate::{account_notes::AccountNotes, degiro_parser::DegiroParser};
+use crate::{account_notes::AccountNotes, d6_filler::create_d6_form, degiro_parser::DegiroParser};
 use crate::{account_notes::BalanceNotes, pdf_parser::read_pdf};
 
+use js_sys::{Array, Uint8Array};
+use wasm_bindgen::JsValue;
+use web_sys::{Blob, BlobPropertyBag, Url};
 use yew::prelude::*;
 use yew::services::reader::{File, FileData, ReaderService, ReaderTask};
 use yew_styles::forms::{
@@ -20,10 +23,12 @@ pub struct App {
     tasks: Vec<ReaderTask>,
     degiro_balance_notes: BalanceNotes,
     degiro_account_notes: AccountNotes,
+    d6_form_path: String,
     link: ComponentLink<Self>,
 }
 
 pub enum Msg {
+    GenerateD6,
     UploadFile(File),
     UploadedFile(FileData),
     ErrorUploadPdf,
@@ -40,12 +45,42 @@ impl Component for App {
             tasks: vec![],
             degiro_balance_notes: vec![],
             degiro_account_notes: vec![],
+            d6_form_path: "".to_string(),
             link,
         }
     }
 
     fn update(&mut self, message: Self::Message) -> ShouldRender {
         match message {
+            Msg::GenerateD6 => {
+                match create_d6_form(&self.degiro_balance_notes, "NL") {
+                    Ok(d6_form) => {
+                        let mut blob_properties = BlobPropertyBag::new();
+                        blob_properties.type_("application/octet-stream");
+                        let d6_array = Array::new_with_length(1);
+                        d6_array.set(0, JsValue::from(Uint8Array::from(&d6_form[..])));
+                        //let text = str::from_utf8(&d6_form[..]).unwrap();
+                        let blob = Blob::new_with_u8_array_sequence_and_options(
+                            &JsValue::from(d6_array),
+                            &blob_properties,
+                        );
+                        match blob {
+                            Ok(blob_data) => {
+                                if !self.d6_form_path.is_empty() {
+                                    if let Err(err) = Url::revoke_object_url(&self.d6_form_path) {
+                                        log::error!("Error deleting old D6 form: {:?}", err);
+                                    }
+                                }
+                                self.d6_form_path =
+                                    Url::create_object_url_with_blob(&blob_data).unwrap();
+                            }
+                            Err(err) => log::error!("Untable to generate d6 form: {:?}", err),
+                        }
+                    }
+                    Err(err) => log::error!("Unable to generate D6: {}", err),
+                }
+                true
+            }
             Msg::UploadedFile(file) => {
                 log::debug!(
                     "file: {} len: {}, content: {:X?}",
@@ -70,6 +105,7 @@ impl Component for App {
                     log::error!("Unable to read pdf content");
                 }
                 self.tasks.clear();
+                self.link.send_message(Msg::GenerateD6);
                 true
             }
             Msg::UploadFile(file) => {
@@ -96,6 +132,7 @@ impl Component for App {
             {self.get_form_file()}
             {self.get_balance_notes()}
             {self.get_account_notes()}
+            {self.get_d6_button()}
           </>
         }
     }
@@ -210,6 +247,16 @@ impl App {
             {notes}
             </tbody>
             </table>
+        }
+    }
+
+    fn get_d6_button(&self) -> Html {
+        if !self.d6_form_path.is_empty() {
+            html! {
+              <a href={self.d6_form_path.clone()} alt="Informe D6 generado" download="d6.aforixm">{"Descargar informe D6"}</a>
+            }
+        } else {
+            html! {}
         }
     }
 }

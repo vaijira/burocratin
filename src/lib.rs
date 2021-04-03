@@ -14,6 +14,7 @@ use yew::prelude::*;
 
 mod account_notes;
 mod app;
+mod d6_filler;
 mod degiro_parser;
 mod pdf_parser;
 
