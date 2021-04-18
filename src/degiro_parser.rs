@@ -358,6 +358,7 @@ impl DegiroParser {
 }
 
 #[cfg(test)]
+#[allow(clippy::mistyped_literal_suffixes)]
 mod tests {
     use super::*;
     use nom::{
