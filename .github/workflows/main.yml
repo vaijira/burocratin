@@ -102,7 +102,10 @@ jobs:
           cargo-${{ runner.os }}-
     - uses: jetli/trunk-action@v0.1.0
       with:
-        version: 'v0.11.0'
+        version: 'latest'
+    - uses: jetli/wasm-bindgen-action@v0.1.0
+      with:
+        version: 'latest'
     - name: Build app
       run: trunk -v build --release
     - name: Deploy to Netlify
