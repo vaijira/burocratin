@@ -15,7 +15,7 @@ use yew_styles::forms::{
 };
 use yew_styles::layouts::{
     container::{Container, Direction, Wrap},
-    item::{Item, ItemLayout},
+    item::{AlignSelf, Item, ItemLayout},
 };
 
 pub struct App {
@@ -129,16 +129,36 @@ impl Component for App {
         log::debug!("Render App");
         html! {
           <>
+            {self.greetings()}
+            <hr/>
             {self.get_form_file()}
-            {self.get_balance_notes()}
-            {self.get_account_notes()}
-            {self.get_d6_button()}
+            <hr/>
+            <Container wrap=Wrap::Wrap direction=Direction::Row>
+              <Item layouts=vec!(ItemLayout::ItM(6), ItemLayout::ItXs(12))>
+                {self.get_balance_notes()}
+              </Item>
+              <Item layouts=vec!(ItemLayout::ItM(6), ItemLayout::ItXs(12))>
+                {self.get_account_notes()}
+              </Item>
+            </Container>
+            <hr/>
+            <Container wrap=Wrap::Wrap direction=Direction::Row>
+              <Item layouts=vec!(ItemLayout::ItM(6), ItemLayout::ItXs(12)) align_self=AlignSelf::Center>
+                <center>{self.get_d6_button()}</center>
+              </Item>
+            </Container>
           </>
         }
     }
 }
 
 impl App {
+    fn greetings(&self) -> Html {
+        html! {
+            <h1>{"Burocratin te ayuda a rellenar los formularios D6 y 720 a partir de los informes de tu brokers."}</h1>
+        }
+    }
+
     fn get_form_file(&self) -> Html {
         html! {
             <Container wrap=Wrap::Wrap direction=Direction::Row>
@@ -201,7 +221,7 @@ impl App {
 
         html! {
             <table>
-            <caption>{"Movimientos broker Degiro"}</caption>
+            <caption>{"Movimientos brokers"}</caption>
             <thead>
               <tr>
                 <th>{"Broker"}</th>
@@ -234,7 +254,7 @@ impl App {
 
         html! {
             <table>
-            <caption>{"Balance broker Degiro"}</caption>
+            <caption>{"Balance brokers"}</caption>
             <thead>
               <tr>
                 <th>{"Broker"}</th>
@@ -253,10 +273,12 @@ impl App {
     fn get_d6_button(&self) -> Html {
         if !self.d6_form_path.is_empty() {
             html! {
-              <a href={self.d6_form_path.clone()} alt="Informe D6 generado" download="d6.aforixm">{"Descargar informe D6"}</a>
+              <a href={self.d6_form_path.clone()} alt="Informe D6 generado" download="d6.aforixm"><button type={"button"}>{"Descargar informe D6"}</button></a>
             }
         } else {
-            html! {}
+            html! {
+                <button disabled=true type={"button"}>{"Descargar informe D6"}</button>
+            }
         }
     }
 }
