@@ -106,7 +106,6 @@ jobs:
     - uses: jetli/wasm-bindgen-action@v0.1.0
       with:
         version: 'latest'
-    - uses: bahmutov/npm-install@v1
     - name: install yew-styles css
       run: npm install yew-styles --prefix tmp
     - name: Build app
