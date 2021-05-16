@@ -1,0 +1,19 @@
+[tasks.yew-styles-sass]
+condition = { files_not_exist = [ "tmp/node_modules/yew-styles/main.sass" ] }
+command = "npm"
+args = [
+  "install",
+  "yew-styles",
+  "--prefix",
+  "tmp",
+]
+
+[tasks.trunk]
+command = "trunk"
+args = [
+  "-v",
+  "build",
+  "--release",
+]
+dependencies = [ "yew-styles-sass" ]
+
