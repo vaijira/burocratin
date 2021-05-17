@@ -159,7 +159,9 @@ impl App {
             <h2>{"Burocratin te ayuda a rellenar los formularios D6 y 720 a partir de los informes de tu brokers."}</h2>
             <p>
               {"Burocratin utiliza la tecnología "} <a href="https://en.wikipedia.org/wiki/WebAssembly" alt="WebAssembly">{"WebAssembly"}</a>
-              {" con lo cual una vez la página realiza la carga inicial toda acción es local y ningún dato viaja por la red. "}
+              {" con lo cual una vez la página realiza la carga inicial toda acción es local y ningún dato viaja por la red."}
+            </p>
+            <p>
               <a href="mailto:contacto@burocratin.com" alt="contacto">{"Escríbeme"}</a>{" para cualquier duda o sugerencia."}
             </p>
           </>
