@@ -1,5 +1,6 @@
 use std::vec;
 
+use crate::reports::aeat720::Aeat720Report;
 use crate::{account_notes::AccountNotes, d6_filler::create_d6_form, degiro_parser::DegiroParser};
 use crate::{account_notes::BalanceNotes, pdf_parser::read_pdf};
 
@@ -19,16 +20,17 @@ use yew_styles::layouts::{
 };
 
 pub struct App {
-    reader: ReaderService,
     tasks: Vec<ReaderTask>,
     degiro_balance_notes: BalanceNotes,
     degiro_account_notes: AccountNotes,
     d6_form_path: String,
+    aeat720_form_path: String,
     link: ComponentLink<Self>,
 }
 
 pub enum Msg {
     GenerateD6,
+    GenerateAeat720,
     UploadFile(File),
     UploadedFile(FileData),
     ErrorUploadPdf,
@@ -41,11 +43,11 @@ impl Component for App {
     fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
         log::debug!("App created");
         Self {
-            reader: ReaderService::new(),
             tasks: vec![],
             degiro_balance_notes: vec![],
             degiro_account_notes: vec![],
             d6_form_path: "".to_string(),
+            aeat720_form_path: "".to_string(),
             link,
         }
     }
@@ -74,10 +76,54 @@ impl Component for App {
                                 self.d6_form_path =
                                     Url::create_object_url_with_blob(&blob_data).unwrap();
                             }
-                            Err(err) => log::error!("Untable to generate d6 form: {:?}", err),
+                            Err(err) => log::error!("Unable to generate d6 form: {:?}", err),
                         }
                     }
                     Err(err) => log::error!("Unable to generate D6: {}", err),
+                }
+                true
+            }
+            Msg::GenerateAeat720 => {
+                let aeat720report = match Aeat720Report::new(
+                    &self.degiro_balance_notes,
+                    &self.degiro_account_notes,
+                    2020,
+                    "0",
+                    "",
+                ) {
+                    Ok(report) => report,
+                    Err(err) => {
+                        log::error!("Unable to generate Aeat720 report: {}", err);
+                        return true;
+                    }
+                };
+                match aeat720report.generate() {
+                    Ok(aeat720_form) => {
+                        let mut blob_properties = BlobPropertyBag::new();
+                        blob_properties.type_("application/octet-stream");
+                        let aeat720_array = Array::new_with_length(1);
+                        aeat720_array.set(0, JsValue::from(Uint8Array::from(&aeat720_form[..])));
+
+                        let blob = Blob::new_with_u8_array_sequence_and_options(
+                            &JsValue::from(aeat720_array),
+                            &blob_properties,
+                        );
+                        match blob {
+                            Ok(blob_data) => {
+                                if !self.aeat720_form_path.is_empty() {
+                                    if let Err(err) =
+                                        Url::revoke_object_url(&self.aeat720_form_path)
+                                    {
+                                        log::error!("Error deleting old aeat 720 form: {:?}", err);
+                                    }
+                                }
+                                self.aeat720_form_path =
+                                    Url::create_object_url_with_blob(&blob_data).unwrap();
+                            }
+                            Err(err) => log::error!("Unable to generate aeat 720 form: {:?}", err),
+                        }
+                    }
+                    Err(err) => log::error!("Unable to generate Aeat 720 report: {}", err),
                 }
                 true
             }
@@ -106,12 +152,13 @@ impl Component for App {
                 }
                 self.tasks.clear();
                 self.link.send_message(Msg::GenerateD6);
+                self.link.send_message(Msg::GenerateAeat720);
                 true
             }
             Msg::UploadFile(file) => {
                 let callback = self.link.callback(Msg::UploadedFile);
                 self.tasks
-                    .push(self.reader.read_file(file, callback).unwrap());
+                    .push(ReaderService::read_file(file, callback).unwrap());
                 false
             }
             Msg::ErrorUploadPdf => {
@@ -146,7 +193,11 @@ impl Component for App {
               <Item layouts=vec!(ItemLayout::ItM(6), ItemLayout::ItXs(12)) align_self=AlignSelf::Center>
                 <center>{self.get_d6_button()}</center>
               </Item>
+              <Item layouts=vec!(ItemLayout::ItM(6), ItemLayout::ItXs(12)) align_self=AlignSelf::Center>
+                <center>{self.get_aeat720_button()}</center>
+              </Item>
             </Container>
+
           </>
         }
     }
@@ -156,7 +207,7 @@ impl App {
     fn greetings(&self) -> Html {
         html! {
           <>
-            <h2>{"Burocratin te ayuda a rellenar los formularios D6 y 720 a partir de los informes de tu brokers."}</h2>
+            <h2>{"Burocratin te ayuda a rellenar los formularios D6 y 720 a partir de los informes de tus brokers."}</h2>
             <p>
               {"Burocratin utiliza la tecnología "} <a href="https://en.wikipedia.org/wiki/WebAssembly" alt="WebAssembly">{"WebAssembly"}</a>
               {" con lo cual una vez la página realiza la carga inicial toda acción es local y ningún dato viaja por la red."}
@@ -287,6 +338,18 @@ impl App {
         } else {
             html! {
                 <button disabled=true type={"button"}>{"Descargar informe D6"}</button>
+            }
+        }
+    }
+
+    fn get_aeat720_button(&self) -> Html {
+        if !self.aeat720_form_path.is_empty() {
+            html! {
+              <a href={self.aeat720_form_path.clone()} alt="Informe D6 generado" download="fichero-720.txt"><button type={"button"}>{"Descargar informe AEAT 720"}</button></a>
+            }
+        } else {
+            html! {
+                <button disabled=true type={"button"}>{"Descargar informe AEAT 720"}</button>
             }
         }
     }

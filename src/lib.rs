@@ -17,6 +17,7 @@ mod app;
 mod d6_filler;
 mod degiro_parser;
 mod pdf_parser;
+mod reports;
 
 /// Main entry point for burocratin app
 #[wasm_bindgen(start)]

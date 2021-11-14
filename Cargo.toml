@@ -2,7 +2,7 @@
 name = "burocratin"
 version = "0.1.0"
 authors = ["Jorge Perez Burgos <vaijira@gmail.com>"]
-edition = "2018"
+edition = "2021"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
@@ -23,6 +23,7 @@ utf16-ext = "0.1"
 byteorder = "1.2"
 chrono = { version = "0.4", features = ["serde"] }
 console_error_panic_hook = "0.1"
+encoding_rs = "0.8"
 js-sys = "0.3"
 log = "0.4"
 nom = "6.0"
@@ -31,9 +32,9 @@ pdf = "0.7"
 rust_decimal = "1.7"
 serde = { version = "1.0", features = ["derive"] }
 xml-rs = "0.8"
-yew = "0.17"
+yew = "0.18"
 yew_assets= {version = "0.1", features = ["full"]}
-yew_styles = { version="0.9", features=["full"] }
+yew_styles = { version="0.10", features=["full"] }
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"
 wasm-logger = "0.2"
