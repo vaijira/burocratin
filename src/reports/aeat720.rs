@@ -680,8 +680,8 @@ mod tests {
             b' ', b' ', b' ', b' ', b' ', b' ', b' ', b' ', b' ', b' ', b' ', b' ', b' ', b' ',
             b' ', b' ', b' ', b' ', b' ', b' ', b' ', b' ', b' ', b' ', b' ',
             b' ', // contact name field
-            b'7', b'2', b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'0',
-            b'0', // id
+            b'7', b'2', b'0', // second document id
+            b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'0', // id
             b' ', //  complementary field
             b' ', // replacement field
             b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'0',
