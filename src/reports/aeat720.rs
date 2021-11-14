@@ -1,8 +1,8 @@
-use crate::account_notes::{AccountNotes, BalanceNote, BalanceNotes};
+use crate::account_notes::{AccountNote, BalanceNote};
 use anyhow::{bail, Result};
 use chrono::NaiveDate;
 use encoding_rs::ISO_8859_15;
-use rust_decimal::{Decimal, prelude::ToPrimitive};
+use rust_decimal::{prelude::ToPrimitive, Decimal};
 use std::io::Write;
 
 /*
@@ -80,19 +80,19 @@ type AeatRegisterArray = [u8; AEAT_720_REGISTER_SIZE_BYTES];
 
 #[derive(Debug, PartialEq)]
 enum Aeat720Field {
-    AlphaNumericField(usize, usize),
-    NumericField(usize, usize),
-    StringField(usize, usize),
+    AlphaNumeric(usize, usize),
+    Numeric(usize, usize),
+    String(usize, usize),
 }
 
 impl Aeat720Field {
     fn write_field(fields: &mut AeatRegisterArray, field: Aeat720Field, value: &str) -> Result<()> {
         match field {
-            Aeat720Field::NumericField(_, _) => {
+            Aeat720Field::Numeric(_, _) => {
                 let num_value = value.parse::<usize>()?;
                 Self::write_numeric_field(fields, field, num_value)?
             }
-            Aeat720Field::AlphaNumericField(begin, end) | Aeat720Field::StringField(begin, end) => {
+            Aeat720Field::AlphaNumeric(begin, end) | Aeat720Field::String(begin, end) => {
                 let size = (end - begin) + 1;
                 let mut slice = &mut fields[begin - 1..end];
 
@@ -101,9 +101,9 @@ impl Aeat720Field {
                     bail!("Unable to encode to ISO-8859-15")
                 } else {
                     let remainder = size - result.0.len();
-                    slice.write(&result.0)?;
+                    slice.write_all(&result.0)?;
                     if remainder > 0 {
-                        slice.write(" ".repeat(remainder).as_bytes())?;
+                        slice.write_all(" ".repeat(remainder).as_bytes())?;
                     }
                 }
             }
@@ -117,7 +117,7 @@ impl Aeat720Field {
         field: Aeat720Field,
         value: usize,
     ) -> Result<()> {
-        if let Aeat720Field::NumericField(begin, end) = field {
+        if let Aeat720Field::Numeric(begin, end) = field {
             let size = (end - begin) + 1;
             let mut slice = &mut fields[begin - 1..end];
             write!(slice, "{:0width$}", value, width = size)?;
@@ -139,27 +139,27 @@ impl SummaryRegister {
     const AEAT_720_TRANSMISSION_ASSET: &'static str = "T";
 
     // Field definitions
-    const REGISTER_TYPE_FIELD: Aeat720Field = Aeat720Field::NumericField(1, 1);
-    const DOCUMENT_ID_FIELD: Aeat720Field = Aeat720Field::NumericField(2, 4);
-    const YEAR_FIELD: Aeat720Field = Aeat720Field::NumericField(5, 8);
-    const NIF_FIELD: Aeat720Field = Aeat720Field::AlphaNumericField(9, 17);
-    const NAME_FIELD: Aeat720Field = Aeat720Field::AlphaNumericField(18, 57);
-    const TRANSMISSION_FIELD: Aeat720Field = Aeat720Field::StringField(58, 58);
-    const TELEPHONE_FIELD: Aeat720Field = Aeat720Field::NumericField(59, 67);
-    const CONTACT_NAME_FIELD: Aeat720Field = Aeat720Field::AlphaNumericField(68, 107);
-    const SECOND_DOCUMENT_ID_FIELD: Aeat720Field = Aeat720Field::NumericField(108, 110);
-    const ID_FIELD: Aeat720Field = Aeat720Field::NumericField(111, 120);
-    const COMPLEMENTARY_FIELD: Aeat720Field = Aeat720Field::StringField(121, 121);
-    const REPLACEMENT_FIELD: Aeat720Field = Aeat720Field::StringField(122, 122);
-    const PREVIOUS_DECLARARION_ID_FIELD: Aeat720Field = Aeat720Field::NumericField(123, 135);
-    const TOTAL_DETAIL_REGISTERS_FIELD: Aeat720Field = Aeat720Field::NumericField(136, 144);
-    const ACQUISITON_SIGN_FIELD: Aeat720Field = Aeat720Field::StringField(145, 145); // 'N' if negative
-    const ACQUISITION_INT_FIELD: Aeat720Field = Aeat720Field::NumericField(146, 160);
-    const ACQUISITION_FRACTION_FIELD: Aeat720Field = Aeat720Field::NumericField(161, 162);
-    const VALUATION_SIGN_FIELD: Aeat720Field = Aeat720Field::StringField(163, 163); // 'N' if negative
-    const VALUATION_INT_FIELD: Aeat720Field = Aeat720Field::NumericField(164, 178);
-    const VALUATION_FRACTION_FIELD: Aeat720Field = Aeat720Field::NumericField(179, 180);
-    const REMAINDER_BLANK_FIELD: Aeat720Field = Aeat720Field::StringField(181, 500);
+    const REGISTER_TYPE_FIELD: Aeat720Field = Aeat720Field::Numeric(1, 1);
+    const DOCUMENT_ID_FIELD: Aeat720Field = Aeat720Field::Numeric(2, 4);
+    const YEAR_FIELD: Aeat720Field = Aeat720Field::Numeric(5, 8);
+    const NIF_FIELD: Aeat720Field = Aeat720Field::AlphaNumeric(9, 17);
+    const NAME_FIELD: Aeat720Field = Aeat720Field::AlphaNumeric(18, 57);
+    const TRANSMISSION_FIELD: Aeat720Field = Aeat720Field::String(58, 58);
+    const TELEPHONE_FIELD: Aeat720Field = Aeat720Field::Numeric(59, 67);
+    const CONTACT_NAME_FIELD: Aeat720Field = Aeat720Field::AlphaNumeric(68, 107);
+    const SECOND_DOCUMENT_ID_FIELD: Aeat720Field = Aeat720Field::Numeric(108, 110);
+    const ID_FIELD: Aeat720Field = Aeat720Field::Numeric(111, 120);
+    const COMPLEMENTARY_FIELD: Aeat720Field = Aeat720Field::String(121, 121);
+    const REPLACEMENT_FIELD: Aeat720Field = Aeat720Field::String(122, 122);
+    const PREVIOUS_DECLARARION_ID_FIELD: Aeat720Field = Aeat720Field::Numeric(123, 135);
+    const TOTAL_DETAIL_REGISTERS_FIELD: Aeat720Field = Aeat720Field::Numeric(136, 144);
+    const ACQUISITON_SIGN_FIELD: Aeat720Field = Aeat720Field::String(145, 145); // 'N' if negative
+    const ACQUISITION_INT_FIELD: Aeat720Field = Aeat720Field::Numeric(146, 160);
+    const ACQUISITION_FRACTION_FIELD: Aeat720Field = Aeat720Field::Numeric(161, 162);
+    const VALUATION_SIGN_FIELD: Aeat720Field = Aeat720Field::String(163, 163); // 'N' if negative
+    const VALUATION_INT_FIELD: Aeat720Field = Aeat720Field::Numeric(164, 178);
+    const VALUATION_FRACTION_FIELD: Aeat720Field = Aeat720Field::Numeric(179, 180);
+    const REMAINDER_BLANK_FIELD: Aeat720Field = Aeat720Field::String(181, 500);
 }
 
 impl Default for SummaryRegister {
@@ -201,11 +201,7 @@ impl Default for SummaryRegister {
             AEAT_720_DOCUMENT_ID,
         );
 
-        Aeat720Field::write_numeric_field(
-            &mut fields,
-            Self::ID_FIELD,
-            0
-        );
+        Aeat720Field::write_numeric_field(&mut fields, Self::ID_FIELD, 0);
 
         Aeat720Field::write_field(&mut fields, Self::COMPLEMENTARY_FIELD, "");
         Aeat720Field::write_field(&mut fields, Self::REPLACEMENT_FIELD, "");
@@ -228,12 +224,7 @@ impl Default for SummaryRegister {
 }
 
 impl SummaryRegister {
-    fn new(
-        notes: &BalanceNotes,
-        year: usize,
-        nif: &str,
-        name: &str,
-    ) -> Result<Self> {
+    fn new(notes: &[BalanceNote], year: usize, nif: &str, name: &str) -> Result<Self> {
         let mut fields = Self::default().fields;
 
         Aeat720Field::write_field(&mut fields, Self::DOCUMENT_ID_FIELD, nif)?;
@@ -242,7 +233,11 @@ impl SummaryRegister {
 
         Aeat720Field::write_field(&mut fields, Self::NAME_FIELD, name)?;
 
-        Aeat720Field::write_numeric_field(&mut fields, Self::TOTAL_DETAIL_REGISTERS_FIELD, notes.len())?;
+        Aeat720Field::write_numeric_field(
+            &mut fields,
+            Self::TOTAL_DETAIL_REGISTERS_FIELD,
+            notes.len(),
+        )?;
 
         let mut total_acquisition = Decimal::new(0, 2);
 
@@ -251,7 +246,11 @@ impl SummaryRegister {
         }
 
         if total_acquisition.is_sign_negative() {
-            Aeat720Field::write_field(&mut fields, Self::ACQUISITON_SIGN_FIELD, AEAT_720_NEGATIVE_SIGN)?;
+            Aeat720Field::write_field(
+                &mut fields,
+                Self::ACQUISITON_SIGN_FIELD,
+                AEAT_720_NEGATIVE_SIGN,
+            )?;
         }
 
         Aeat720Field::write_numeric_field(
@@ -288,44 +287,44 @@ impl DetailRegister {
     const AEAT_720_ASSET_REPRESENTATON: &'static str = "A";
 
     // Field definitions
-    const REGISTER_TYPE_FIELD: Aeat720Field = Aeat720Field::NumericField(1, 1);
-    const DOCUMENT_ID_FIELD: Aeat720Field = Aeat720Field::NumericField(2, 4);
-    const YEAR_FIELD: Aeat720Field = Aeat720Field::NumericField(5, 8);
-    const NIF_FIELD: Aeat720Field = Aeat720Field::AlphaNumericField(9, 17);
-    const DECLARED_NIF_FIELD: Aeat720Field = Aeat720Field::AlphaNumericField(18, 26);
-    const PROXY_NIF_FIELD: Aeat720Field = Aeat720Field::AlphaNumericField(27, 35);
-    const NAME_FIELD: Aeat720Field = Aeat720Field::AlphaNumericField(36, 75);
-    const DECLARATION_TYPE_FIELD: Aeat720Field = Aeat720Field::NumericField(76, 76);
-    const OWNERSHIP_TYPE_FIELD: Aeat720Field = Aeat720Field::AlphaNumericField(77, 101);
-    const ASSET_TYPE_FIELD: Aeat720Field = Aeat720Field::StringField(102, 102);
-    const ASSET_SUBTYPE_FIELD: Aeat720Field = Aeat720Field::NumericField(103, 103);
-    const REAL_STATE_ASSET_TYPE_FIELD: Aeat720Field = Aeat720Field::AlphaNumericField(104, 128);
-    const COUNTRY_CODE_FIELD: Aeat720Field = Aeat720Field::StringField(129, 130);
-    const STOCK_ID_TYPE_FIELD: Aeat720Field = Aeat720Field::NumericField(131, 131);
-    const STOCK_ID_FIELD: Aeat720Field = Aeat720Field::AlphaNumericField(132, 143);
-    const ACCOUNT_ID_TYPE_FIELD: Aeat720Field = Aeat720Field::StringField(144, 144);
-    const ACCOUNT_ID_FIELD: Aeat720Field = Aeat720Field::AlphaNumericField(145, 155);
-    const ACCOUNT_CODE_FIELD: Aeat720Field = Aeat720Field::AlphaNumericField(156, 189);
-    const ENTITY_NAME_FIELD: Aeat720Field = Aeat720Field::AlphaNumericField(190, 230);
-    const ENTITY_NIF_FIELD: Aeat720Field = Aeat720Field::AlphaNumericField(231, 250);
-    const ENTITY_ADDRESS_FIELD: Aeat720Field = Aeat720Field::AlphaNumericField(251, 412);
-    const ENTITY_COUNTRY_CODE_FIELD: Aeat720Field = Aeat720Field::AlphaNumericField(413, 414);
-    const FIRST_ACQUISITION_DATE_FIELD: Aeat720Field = Aeat720Field::NumericField(415, 422);
-    const ACQUISITION_TYPE_FIELD: Aeat720Field = Aeat720Field::StringField(423, 423);
-    const EXTINCTION_DATE_FIELD: Aeat720Field = Aeat720Field::NumericField(424, 431);
-    const ACQUISITON_SIGN_FIELD: Aeat720Field = Aeat720Field::StringField(432, 432); // 'N' if negative
-    const ACQUISITION_INT_FIELD: Aeat720Field = Aeat720Field::NumericField(433, 444);
-    const ACQUISITION_FRACTION_FIELD: Aeat720Field = Aeat720Field::NumericField(445, 446);
-    const VALUATION_SIGN_FIELD: Aeat720Field = Aeat720Field::StringField(447, 447); // 'N' if negative
-    const VALUATION_INT_FIELD: Aeat720Field = Aeat720Field::NumericField(448, 459);
-    const VALUATION_FRACTION_FIELD: Aeat720Field = Aeat720Field::NumericField(460, 461);
-    const STOCK_REPRESENTATION_FIELD: Aeat720Field = Aeat720Field::StringField(462, 462); // 'A' usually
-    const STOCK_QUANTITY_INT_FIELD: Aeat720Field = Aeat720Field::NumericField(463, 472);
-    const STOCK_QUANTITY_FRACTION_FIELD: Aeat720Field = Aeat720Field::NumericField(473, 474);
-    const REAL_STATE_REPRESENTATION_FIELD: Aeat720Field = Aeat720Field::StringField(475, 475);
-    const OWNED_PERCENTAGE_INT_FIELD: Aeat720Field = Aeat720Field::NumericField(476, 478);
-    const OWNED_PERCENTAGE_FRACTION_FIELD: Aeat720Field = Aeat720Field::NumericField(479, 480);
-    const REMAINDER_BLANK_FIELD: Aeat720Field = Aeat720Field::StringField(481, 500);
+    const REGISTER_TYPE_FIELD: Aeat720Field = Aeat720Field::Numeric(1, 1);
+    const DOCUMENT_ID_FIELD: Aeat720Field = Aeat720Field::Numeric(2, 4);
+    const YEAR_FIELD: Aeat720Field = Aeat720Field::Numeric(5, 8);
+    const NIF_FIELD: Aeat720Field = Aeat720Field::AlphaNumeric(9, 17);
+    const DECLARED_NIF_FIELD: Aeat720Field = Aeat720Field::AlphaNumeric(18, 26);
+    const PROXY_NIF_FIELD: Aeat720Field = Aeat720Field::AlphaNumeric(27, 35);
+    const NAME_FIELD: Aeat720Field = Aeat720Field::AlphaNumeric(36, 75);
+    const DECLARATION_TYPE_FIELD: Aeat720Field = Aeat720Field::Numeric(76, 76);
+    const OWNERSHIP_TYPE_FIELD: Aeat720Field = Aeat720Field::AlphaNumeric(77, 101);
+    const ASSET_TYPE_FIELD: Aeat720Field = Aeat720Field::String(102, 102);
+    const ASSET_SUBTYPE_FIELD: Aeat720Field = Aeat720Field::Numeric(103, 103);
+    const REAL_STATE_ASSET_TYPE_FIELD: Aeat720Field = Aeat720Field::AlphaNumeric(104, 128);
+    const COUNTRY_CODE_FIELD: Aeat720Field = Aeat720Field::String(129, 130);
+    const STOCK_ID_TYPE_FIELD: Aeat720Field = Aeat720Field::Numeric(131, 131);
+    const STOCK_ID_FIELD: Aeat720Field = Aeat720Field::AlphaNumeric(132, 143);
+    const ACCOUNT_ID_TYPE_FIELD: Aeat720Field = Aeat720Field::String(144, 144);
+    const ACCOUNT_ID_FIELD: Aeat720Field = Aeat720Field::AlphaNumeric(145, 155);
+    const ACCOUNT_CODE_FIELD: Aeat720Field = Aeat720Field::AlphaNumeric(156, 189);
+    const ENTITY_NAME_FIELD: Aeat720Field = Aeat720Field::AlphaNumeric(190, 230);
+    const ENTITY_NIF_FIELD: Aeat720Field = Aeat720Field::AlphaNumeric(231, 250);
+    const ENTITY_ADDRESS_FIELD: Aeat720Field = Aeat720Field::AlphaNumeric(251, 412);
+    const ENTITY_COUNTRY_CODE_FIELD: Aeat720Field = Aeat720Field::AlphaNumeric(413, 414);
+    const FIRST_ACQUISITION_DATE_FIELD: Aeat720Field = Aeat720Field::Numeric(415, 422);
+    const ACQUISITION_TYPE_FIELD: Aeat720Field = Aeat720Field::String(423, 423);
+    const EXTINCTION_DATE_FIELD: Aeat720Field = Aeat720Field::Numeric(424, 431);
+    const ACQUISITON_SIGN_FIELD: Aeat720Field = Aeat720Field::String(432, 432); // 'N' if negative
+    const ACQUISITION_INT_FIELD: Aeat720Field = Aeat720Field::Numeric(433, 444);
+    const ACQUISITION_FRACTION_FIELD: Aeat720Field = Aeat720Field::Numeric(445, 446);
+    const VALUATION_SIGN_FIELD: Aeat720Field = Aeat720Field::String(447, 447); // 'N' if negative
+    const VALUATION_INT_FIELD: Aeat720Field = Aeat720Field::Numeric(448, 459);
+    const VALUATION_FRACTION_FIELD: Aeat720Field = Aeat720Field::Numeric(460, 461);
+    const STOCK_REPRESENTATION_FIELD: Aeat720Field = Aeat720Field::String(462, 462); // 'A' usually
+    const STOCK_QUANTITY_INT_FIELD: Aeat720Field = Aeat720Field::Numeric(463, 472);
+    const STOCK_QUANTITY_FRACTION_FIELD: Aeat720Field = Aeat720Field::Numeric(473, 474);
+    const REAL_STATE_REPRESENTATION_FIELD: Aeat720Field = Aeat720Field::String(475, 475);
+    const OWNED_PERCENTAGE_INT_FIELD: Aeat720Field = Aeat720Field::Numeric(476, 478);
+    const OWNED_PERCENTAGE_FRACTION_FIELD: Aeat720Field = Aeat720Field::Numeric(479, 480);
+    const REMAINDER_BLANK_FIELD: Aeat720Field = Aeat720Field::String(481, 500);
 }
 
 impl Default for DetailRegister {
@@ -448,7 +447,7 @@ impl Default for DetailRegister {
 impl DetailRegister {
     fn new(
         note: &BalanceNote,
-        transactions: &AccountNotes,
+        transactions: &[AccountNote],
         year: usize,
         nif: &str,
         name: &str,
@@ -535,8 +534,8 @@ pub struct Aeat720Report {
 
 impl Aeat720Report {
     pub fn new(
-        balance_sheet: &BalanceNotes,
-        transactions: &AccountNotes,
+        balance_sheet: &[BalanceNote],
+        transactions: &[AccountNote],
         year: usize,
         nif: &str,
         name: &str,
@@ -549,7 +548,7 @@ impl Aeat720Report {
         }
 
         Ok(Aeat720Report {
-            summary: SummaryRegister::new(balance_sheet,  year, nif, name)?,
+            summary: SummaryRegister::new(balance_sheet, year, nif, name)?,
             details,
         })
     }
@@ -561,12 +560,12 @@ impl Aeat720Report {
             AEAT_720_REGISTER_SIZE_BYTES * (self.details.len() + 1) + (self.details.len() + 1),
         );
 
-        result.write(&self.summary.fields)?;
-        result.write(b"\n")?;
+        result.write_all(&self.summary.fields)?;
+        result.write_all(b"\n")?;
 
         for detail in self.details {
-            result.write(&detail.fields)?;
-            result.write(b"\n")?;
+            result.write_all(&detail.fields)?;
+            result.write_all(b"\n")?;
         }
 
         Ok(result)
@@ -681,8 +680,8 @@ mod tests {
             b' ', b' ', b' ', b' ', b' ', b' ', b' ', b' ', b' ', b' ', b' ', b' ', b' ', b' ',
             b' ', b' ', b' ', b' ', b' ', b' ', b' ', b' ', b' ', b' ', b' ',
             b' ', // contact name field
-            b'7', b'2', b'0',
-            b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'0', // id
+            b'7', b'2', b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'0',
+            b'0', // id
             b' ', //  complementary field
             b' ', // replacement field
             b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'0',

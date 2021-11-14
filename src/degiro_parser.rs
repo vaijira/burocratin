@@ -65,9 +65,7 @@ impl DegiroParser {
             "decimal value",
             map_res(
                 recognize(many1(terminated(one_of("0123456789"), many0(is_a(",."))))),
-                |out: &str| {
-                    Decimal::from_str(&str::replace(&str::replace(&out, ".", ""), ",", "."))
-                },
+                |out: &str| Decimal::from_str(&str::replace(&str::replace(out, ".", ""), ",", ".")),
             ),
         )(input)
     }
@@ -82,9 +80,7 @@ impl DegiroParser {
                     char(','),
                     recognize(many1(terminated(one_of("0123456789"), many0(char('.'))))),
                 ))),
-                |out: &str| {
-                    Decimal::from_str(&str::replace(&str::replace(&out, ".", ""), ",", "."))
-                },
+                |out: &str| Decimal::from_str(&str::replace(&str::replace(out, ".", ""), ",", ".")),
             ),
         )(input)
     }

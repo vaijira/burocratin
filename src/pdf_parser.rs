@@ -137,7 +137,7 @@ fn parse_cmap(data: &[u8]) -> HashMap<u16, String> {
 
                         for (cid, unicode_data) in (cid_start..=cid_end).zip(unicode_data_arr) {
                             let unicode =
-                                utf16be_to_string(&unicode_data.as_string().unwrap().as_bytes());
+                                utf16be_to_string(unicode_data.as_string().unwrap().as_bytes());
                             map.insert(cid, unicode);
                         }
                     }
