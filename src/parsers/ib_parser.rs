@@ -356,6 +356,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(clippy::mistyped_literal_suffixes)]
     fn ibparser_parse_account_notes_test() {
         let ibparser = IBParser::new(DEFAULT_HTML_TEST).unwrap();
         let notes = ibparser.parse_account_notes().unwrap();
@@ -427,6 +428,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(clippy::mistyped_literal_suffixes)]
     fn ibparser_parse_balance_notes_test() {
         let ibparser = IBParser::new(DEFAULT_HTML_TEST).unwrap();
         let notes = ibparser.parse_balance_notes().unwrap();
