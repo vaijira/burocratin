@@ -1,8 +1,11 @@
 use std::vec;
 
 use crate::reports::aeat720::Aeat720Report;
-use crate::{account_notes::AccountNotes, d6_filler::create_d6_form, degiro_parser::DegiroParser};
-use crate::{account_notes::BalanceNotes, pdf_parser::read_pdf};
+use crate::{
+    account_notes::AccountNotes, d6_filler::create_d6_form, parsers::degiro_parser::DegiroParser,
+    parsers::ib_parser::IBParser,
+};
+use crate::{account_notes::BalanceNotes, pdf_parser::read_pdf, zip_parser::read_zip_str};
 
 use js_sys::{Array, Uint8Array};
 use wasm_bindgen::JsValue;
@@ -31,9 +34,12 @@ pub struct App {
 pub enum Msg {
     GenerateD6,
     GenerateAeat720,
-    UploadFile(File),
-    UploadedFile(FileData),
+    UploadDegiroFile(File),
+    UploadIBFile(File),
+    UploadedDegiroFile(FileData),
+    UploadedIBFile(FileData),
     ErrorUploadPdf,
+    ErrorUploadZip,
 }
 
 impl Component for App {
@@ -127,9 +133,9 @@ impl Component for App {
                 }
                 true
             }
-            Msg::UploadedFile(file) => {
+            Msg::UploadedDegiroFile(file) => {
                 log::debug!(
-                    "file: {} len: {}, content: {:X?}",
+                    "pdf file: {} len: {}, content: {:X?}",
                     file.name,
                     file.content.len(),
                     file.content.get(0..16)
@@ -155,14 +161,45 @@ impl Component for App {
                 self.link.send_message(Msg::GenerateAeat720);
                 true
             }
-            Msg::UploadFile(file) => {
-                let callback = self.link.callback(Msg::UploadedFile);
+            Msg::UploadedIBFile(file) => {
+                log::debug!(
+                    "zip file: {} len: {}, content: {:X?}",
+                    file.name,
+                    file.content.len(),
+                    file.content.get(0..16)
+                );
+                let zip_data = read_zip_str(file.content);
+                if let Ok(data) = zip_data {
+                    if let Ok(parser) = IBParser::new(&data) {
+                        let _ = parser.parse_balance_notes();
+                        let _ = parser.parse_account_notes();
+                    }
+                } else {
+                    log::error!("Unable to read zip content");
+                }
+                self.tasks.clear();
+                self.link.send_message(Msg::GenerateD6);
+                self.link.send_message(Msg::GenerateAeat720);
+                true
+            }
+            Msg::UploadDegiroFile(file) => {
+                let callback = self.link.callback(Msg::UploadedDegiroFile);
+                self.tasks
+                    .push(ReaderService::read_file(file, callback).unwrap());
+                false
+            }
+            Msg::UploadIBFile(file) => {
+                let callback = self.link.callback(Msg::UploadedIBFile);
                 self.tasks
                     .push(ReaderService::read_file(file, callback).unwrap());
                 false
             }
             Msg::ErrorUploadPdf => {
-                log::error!("Error to upload pdf");
+                log::error!("Error uploading Degiro pdf");
+                false
+            }
+            Msg::ErrorUploadZip => {
+                log::error!("Error uploading InteractiveBrokers zip file");
                 false
             }
         }
@@ -233,7 +270,7 @@ impl App {
                             onchange_signal = self.link.callback(|data: ChangeData | {
                                 if let ChangeData::Files(files) = data {
                                     let file = files.get(0).unwrap();
-                                    Msg::UploadFile(file)
+                                    Msg::UploadDegiroFile(file)
                                 } else {
                                     Msg::ErrorUploadPdf
                                 }
@@ -247,14 +284,14 @@ impl App {
                     <FormLabel text="Informe anual Interactive Brokers:" />
                     <FormFile
                         alt="Fichero informe Interactive Brokers"
-                        accept=vec!["application/xhtml+xml".to_string(), "text/html".to_string()]
+                        accept=vec!["application/zip".to_string()]
                         underline=false
                         onchange_signal = self.link.callback(|data: ChangeData | {
                             if let ChangeData::Files(files) = data {
                                 let file = files.get(0).unwrap();
-                                Msg::UploadFile(file)
+                                Msg::UploadIBFile(file)
                             } else {
-                                Msg::ErrorUploadPdf
+                                Msg::ErrorUploadZip
                             }
                         })
                     />

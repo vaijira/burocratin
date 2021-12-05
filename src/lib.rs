@@ -15,9 +15,10 @@ use yew::prelude::*;
 mod account_notes;
 mod app;
 mod d6_filler;
-mod degiro_parser;
+mod parsers;
 mod pdf_parser;
 mod reports;
+mod zip_parser;
 
 /// Main entry point for burocratin app
 #[wasm_bindgen(start)]

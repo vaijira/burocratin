@@ -23,7 +23,7 @@ impl From<&str> for BrokerOperation {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub struct CompanyInfo {
     pub name: String,
     pub isin: String,
