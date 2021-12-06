@@ -1,5 +1,8 @@
+use std::rc::Rc;
+
 use crate::account_notes::{
-    AccountNote, AccountNotes, BalanceNote, BalanceNotes, BrokerOperation, CompanyInfo,
+    AccountNote, AccountNotes, BalanceNote, BalanceNotes, BrokerInformation, BrokerOperation,
+    CompanyInfo,
 };
 
 use anyhow::{bail, Result};
@@ -29,6 +32,7 @@ type Res<T, U> = IResult<T, U, VerboseError<T>>;
 
 pub struct DegiroParser {
     content: String,
+    broker: Rc<BrokerInformation>,
 }
 
 const DEGIRO_BALANCE_HEADER_BEGIN: &str = "\nCASH & CASH FUND (EUR)\n";
@@ -155,7 +159,10 @@ impl DegiroParser {
         })
     }
 
-    fn account_note(input: &str) -> Res<&str, AccountNote> {
+    fn account_note<'a>(
+        input: &'a str,
+        broker: &Rc<BrokerInformation>,
+    ) -> Res<&'a str, AccountNote> {
         context(
             "account note",
             tuple((
@@ -191,34 +198,28 @@ impl DegiroParser {
                 _,
                 value,
                 _,
-                value_in_euro,
+                _value_in_euro,
                 _,
                 commision,
                 _,
-                exchange_rate,
+                _exchange_rate,
                 earnings_opt,
             ) = res;
-            let earnings: Decimal = earnings_opt.unwrap_or_else(|| ('\n', Decimal::new(0, 2))).1;
+            let _earnings: Decimal = earnings_opt.unwrap_or_else(|| ('\n', Decimal::new(0, 2))).1;
 
             (
                 next_input,
                 AccountNote::new(
-                    date,
-                    company,
-                    operation,
-                    quantity,
-                    price,
-                    value,
-                    value_in_euro,
-                    commision,
-                    exchange_rate,
-                    earnings,
+                    date, company, operation, quantity, price, value, commision, broker,
                 ),
             )
         })
     }
 
-    fn balance_note(input: &str) -> Res<&str, BalanceNote> {
+    fn balance_note<'a>(
+        input: &'a str,
+        broker: &Rc<BrokerInformation>,
+    ) -> Res<&'a str, BalanceNote> {
         context(
             "balance note",
             tuple((
@@ -246,24 +247,35 @@ impl DegiroParser {
                     currency.to_string(),
                     price,
                     value_in_euro,
+                    broker,
                 ),
             )
         })
     }
 
-    fn account_notes(input: &str) -> Res<&str, AccountNotes> {
+    fn account_notes<'a>(
+        input: &'a str,
+        broker: &Rc<BrokerInformation>,
+    ) -> Res<&'a str, AccountNotes> {
         context(
             "account notes",
-            many0(preceded(char('\n'), DegiroParser::account_note)),
+            many0(preceded(char('\n'), |x| {
+                DegiroParser::account_note(x, broker)
+            })),
         )(input)
     }
 
-    fn balance_notes(input: &str) -> Res<&str, BalanceNotes> {
+    fn balance_notes<'a>(
+        input: &'a str,
+        broker: &Rc<BrokerInformation>,
+    ) -> Res<&'a str, BalanceNotes> {
         context(
             "balance notes",
             tuple((
                 take_until("\n"),
-                many0(preceded(char('\n'), DegiroParser::balance_note)),
+                many0(preceded(char('\n'), |x| {
+                    DegiroParser::balance_note(x, broker)
+                })),
             )),
         )(input)
         .map(|(next_input, res)| (next_input, res.1))
@@ -271,7 +283,7 @@ impl DegiroParser {
 
     fn parse_account_notes(&self, notes: &str) -> Result<AccountNotes> {
         log::debug!("account notes:-{}-", notes);
-        let notes = match DegiroParser::account_notes(notes) {
+        let notes = match DegiroParser::account_notes(notes, &self.broker) {
             Ok((_, notes)) => notes,
             Err(err) => {
                 bail!("Unable to parse account notes: {}", err);
@@ -283,7 +295,7 @@ impl DegiroParser {
 
     fn parse_balance_notes(&self, notes: &str) -> Result<BalanceNotes> {
         log::debug!("balance notes:-{}-", notes);
-        let notes = match DegiroParser::balance_notes(notes) {
+        let notes = match DegiroParser::balance_notes(notes, &self.broker) {
             Ok((_, notes)) => notes,
             Err(err) => {
                 bail!("Unable to parse balance notes: {}", err);
@@ -341,8 +353,11 @@ impl DegiroParser {
         Ok(result)
     }
 
-    pub fn new(content: String) -> DegiroParser {
-        DegiroParser { content }
+    pub fn new(content: String, broker: &Rc<BrokerInformation>) -> DegiroParser {
+        DegiroParser {
+            content,
+            broker: Rc::clone(broker),
+        }
     }
 
     pub fn parse_pdf_content(&self) -> Result<(BalanceNotes, AccountNotes)> {
@@ -480,6 +495,10 @@ mod tests {
 
     #[test]
     fn balance_note_test() {
+        let degiro_broker: Rc<BrokerInformation> = Rc::new(BrokerInformation::new(
+            String::from("Degiro"),
+            String::from("NL"),
+        ));
         const BURFORD_NOTE: &str = r#"BURFORD CAP LD
 GG00B4L84979
 LSE
@@ -489,7 +508,7 @@ LSE
 GBX"#;
 
         assert_eq!(
-            DegiroParser::balance_note(BURFORD_NOTE),
+            DegiroParser::balance_note(BURFORD_NOTE, &degiro_broker),
             Ok((
                 "",
                 BalanceNote::new(
@@ -502,6 +521,7 @@ GBX"#;
                     String::from("GBX"),
                     Decimal::new(712_0000, 4),
                     Decimal::new(3889_94, 2),
+                    &degiro_broker,
                 )
             ))
         );
@@ -509,6 +529,10 @@ GBX"#;
 
     #[test]
     fn account_note_test() {
+        let degiro_broker: Rc<BrokerInformation> = Rc::new(BrokerInformation::new(
+            String::from("Degiro"),
+            String::from("NL"),
+        ));
         const BURFORD_NOTE: &str = r#"31/10/2018
 BURFORD CAP LD
 GG00B4L84979
@@ -520,7 +544,7 @@ C
 5,28
 0,0114"#;
         assert_eq!(
-            DegiroParser::account_note(BURFORD_NOTE),
+            DegiroParser::account_note(BURFORD_NOTE, &degiro_broker),
             Ok((
                 "",
                 AccountNote::new(
@@ -533,14 +557,16 @@ C
                     Decimal::new(122, 0),
                     Decimal::new(1_616_0000, 4),
                     Decimal::new(197_152_00, 2),
-                    Decimal::new(2_247_93, 2),
                     Decimal::new(5_28, 2),
-                    Decimal::new(0_0114, 4),
-                    Decimal::new(0, 2),
+                    &degiro_broker,
                 )
             ))
         );
 
+        let degiro_broker: Rc<BrokerInformation> = Rc::new(BrokerInformation::new(
+            String::from("Degiro"),
+            String::from("NL"),
+        ));
         const BURFORD_LONG_NOTE: &str = r#"31/10/2018
 BURFORD
 CAP LD
@@ -553,7 +579,7 @@ C
 5,28
 0,0114"#;
         assert_eq!(
-            DegiroParser::account_note(BURFORD_LONG_NOTE),
+            DegiroParser::account_note(BURFORD_LONG_NOTE, &degiro_broker),
             Ok((
                 "",
                 AccountNote::new(
@@ -566,10 +592,8 @@ C
                     Decimal::new(122, 0),
                     Decimal::new(1_616_0000, 4),
                     Decimal::new(197_152_00, 2),
-                    Decimal::new(2_247_93, 2),
                     Decimal::new(5_28, 2),
-                    Decimal::new(0_0114, 4),
-                    Decimal::new(0, 2),
+                    &degiro_broker,
                 )
             ))
         );
@@ -577,7 +601,11 @@ C
 
     #[test]
     fn degiro_2018_parse_content_test() {
-        let parser = DegiroParser::new(INPUT_2018.to_string());
+        let degiro_broker: Rc<BrokerInformation> = Rc::new(BrokerInformation::new(
+            String::from("Degiro"),
+            String::from("NL"),
+        ));
+        let parser = DegiroParser::new(INPUT_2018.to_string(), &degiro_broker);
         let (balance_notes, account_notes) = parser.parse_pdf_content().unwrap();
         let bal_notes = vec![
             BalanceNote::new(
@@ -590,6 +618,7 @@ C
                 String::from("GBX"),
                 Decimal::new(1_656_0000, 4),
                 Decimal::new(2_247_00, 2),
+                &degiro_broker,
             ),
             BalanceNote::new(
                 CompanyInfo {
@@ -601,6 +630,7 @@ C
                 String::from("USD"),
                 Decimal::new(131_0900, 4),
                 Decimal::new(2_401_07, 2),
+                &degiro_broker,
             ),
             BalanceNote::new(
                 CompanyInfo {
@@ -612,6 +642,7 @@ C
                 String::from("USD"),
                 Decimal::new(20_9300, 4),
                 Decimal::new(2555_72, 2),
+                &degiro_broker,
             ),
             BalanceNote::new(
                 CompanyInfo {
@@ -623,6 +654,7 @@ C
                 String::from("EUR"),
                 Decimal::new(1_1940, 4),
                 Decimal::new(1319_37, 2),
+                &degiro_broker,
             ),
             BalanceNote::new(
                 CompanyInfo {
@@ -634,6 +666,7 @@ C
                 String::from("GBX"),
                 Decimal::new(160_0000, 4),
                 Decimal::new(1005_43, 2),
+                &degiro_broker,
             ),
             BalanceNote::new(
                 CompanyInfo {
@@ -645,6 +678,7 @@ C
                 String::from("USD"),
                 Decimal::new(57_0400, 4),
                 Decimal::new(2039_76, 2),
+                &degiro_broker,
             ),
         ];
 
@@ -661,10 +695,8 @@ C
                 Decimal::new(122, 0),
                 Decimal::new(1_616_0000, 4),
                 Decimal::new(197_152_00, 2),
-                Decimal::new(2_247_93, 2),
                 Decimal::new(5_28, 2),
-                Decimal::new(0_0114, 4),
-                Decimal::new(0, 2),
+                &degiro_broker,
             ),
             AccountNote::new(
                 NaiveDate::from_ymd(2018, 10, 22),
@@ -676,10 +708,8 @@ C
                 Decimal::new(21, 0),
                 Decimal::new(154_7600, 4),
                 Decimal::new(3_249_96, 2),
-                Decimal::new(2_834_62, 2),
                 Decimal::new(0_57, 2),
-                Decimal::new(0_8722, 4),
-                Decimal::new(0, 2),
+                &degiro_broker,
             ),
             AccountNote::new(
                 NaiveDate::from_ymd(2018, 10, 22),
@@ -691,10 +721,8 @@ C
                 Decimal::new(140, 0),
                 Decimal::new(23_8900, 4),
                 Decimal::new(3_344_60, 2),
-                Decimal::new(2_917_16, 2),
                 Decimal::new(0_99, 2),
-                Decimal::new(0_8722, 4),
-                Decimal::new(0, 2),
+                &degiro_broker,
             ),
             AccountNote::new(
                 NaiveDate::from_ymd(2018, 11, 23),
@@ -706,10 +734,8 @@ C
                 Decimal::new(877, 0),
                 Decimal::new(1_9000, 4),
                 Decimal::new(1_666_30, 2),
-                Decimal::new(1_666_30, 2),
                 Decimal::new(4_97, 2),
-                Decimal::new(1_0000, 4),
-                Decimal::new(0, 2),
+                &degiro_broker,
             ),
             AccountNote::new(
                 NaiveDate::from_ymd(2018, 11, 23),
@@ -721,10 +747,8 @@ C
                 Decimal::new(228, 0),
                 Decimal::new(1_9000, 4),
                 Decimal::new(433_20, 2),
-                Decimal::new(433_20, 2),
                 Decimal::new(0_25, 2),
-                Decimal::new(1_0000, 4),
-                Decimal::new(0, 2),
+                &degiro_broker,
             ),
             AccountNote::new(
                 NaiveDate::from_ymd(2018, 12, 3),
@@ -736,10 +760,8 @@ C
                 Decimal::new(565, 0),
                 Decimal::new(310_0000, 4),
                 Decimal::new(175_150_00, 2),
-                Decimal::new(1_962_91, 2),
                 Decimal::new(5_15, 2),
-                Decimal::new(0_0112, 4),
-                Decimal::new(0, 2),
+                &degiro_broker,
             ),
             AccountNote::new(
                 NaiveDate::from_ymd(2018, 12, 31),
@@ -751,10 +773,8 @@ C
                 Decimal::new(41, 0),
                 Decimal::new(56_6000, 4),
                 Decimal::new(2_320_60, 2),
-                Decimal::new(2_024_03, 2),
                 Decimal::new(0_64, 2),
-                Decimal::new(0_8722, 4),
-                Decimal::new(0, 2),
+                &degiro_broker,
             ),
         ];
         assert_eq!(acc_notes, account_notes);
@@ -762,7 +782,11 @@ C
 
     #[test]
     fn degiro_2020_parse_content_test() {
-        let parser = DegiroParser::new(INPUT_2020.to_string());
+        let degiro_broker: Rc<BrokerInformation> = Rc::new(BrokerInformation::new(
+            String::from("Degiro"),
+            String::from("NL"),
+        ));
+        let parser = DegiroParser::new(INPUT_2020.to_string(), &degiro_broker);
         let (balance_notes, account_notes) = parser.parse_pdf_content().unwrap();
 
         let bal_notes = vec![
@@ -776,6 +800,7 @@ C
                 String::from("USD"),
                 Decimal::new(13_1950, 4),
                 Decimal::new(3240_43, 2),
+                &degiro_broker,
             ),
             BalanceNote::new(
                 CompanyInfo {
@@ -787,6 +812,7 @@ C
                 String::from("GBX"),
                 Decimal::new(711_0000, 4),
                 Decimal::new(3686_96, 2),
+                &degiro_broker,
             ),
             BalanceNote::new(
                 CompanyInfo {
@@ -798,6 +824,7 @@ C
                 String::from("SEK"),
                 Decimal::new(152_2000, 4),
                 Decimal::new(3104_50, 2),
+                &degiro_broker,
             ),
             BalanceNote::new(
                 CompanyInfo {
@@ -809,6 +836,7 @@ C
                 String::from("USD"),
                 Decimal::new(3_6300, 4),
                 Decimal::new(2971_52, 2),
+                &degiro_broker,
             ),
             BalanceNote::new(
                 CompanyInfo {
@@ -820,6 +848,7 @@ C
                 String::from("USD"),
                 Decimal::new(30_3600, 4),
                 Decimal::new(15358_97, 2),
+                &degiro_broker,
             ),
             BalanceNote::new(
                 CompanyInfo {
@@ -831,6 +860,7 @@ C
                 String::from("USD"),
                 Decimal::new(273_1600, 4),
                 Decimal::new(4695_78, 2),
+                &degiro_broker,
             ),
             BalanceNote::new(
                 CompanyInfo {
@@ -842,6 +872,7 @@ C
                 String::from("EUR"),
                 Decimal::new(786_0000, 4),
                 Decimal::new(2358_00, 2),
+                &degiro_broker,
             ),
             BalanceNote::new(
                 CompanyInfo {
@@ -853,6 +884,7 @@ C
                 String::from("GBX"),
                 Decimal::new(4196_0000, 4),
                 Decimal::new(2349_76, 2),
+                &degiro_broker,
             ),
             BalanceNote::new(
                 CompanyInfo {
@@ -864,6 +896,7 @@ C
                 String::from("GBX"),
                 Decimal::new(540_0000, 4),
                 Decimal::new(4838_40, 2),
+                &degiro_broker,
             ),
             BalanceNote::new(
                 CompanyInfo {
@@ -875,6 +908,7 @@ C
                 String::from("PLN"),
                 Decimal::new(18_8000, 4),
                 Decimal::new(4122_84, 2),
+                &degiro_broker,
             ),
             BalanceNote::new(
                 CompanyInfo {
@@ -886,6 +920,7 @@ C
                 String::from("USD"),
                 Decimal::new(87_9000, 4),
                 Decimal::new(10073_69, 2),
+                &degiro_broker,
             ),
             BalanceNote::new(
                 CompanyInfo {
@@ -897,6 +932,7 @@ C
                 String::from("GBX"),
                 Decimal::new(6380_0000, 4),
                 Decimal::new(10361_12, 2),
+                &degiro_broker,
             ),
             BalanceNote::new(
                 CompanyInfo {
@@ -908,6 +944,7 @@ C
                 String::from("GBX"),
                 Decimal::new(2860_0000, 4),
                 Decimal::new(4164_16, 2),
+                &degiro_broker,
             ),
             BalanceNote::new(
                 CompanyInfo {
@@ -919,6 +956,7 @@ C
                 String::from("NOK"),
                 Decimal::new(54_6000, 4),
                 Decimal::new(2239_80, 2),
+                &degiro_broker,
             ),
             BalanceNote::new(
                 CompanyInfo {
@@ -930,6 +968,7 @@ C
                 String::from("USD"),
                 Decimal::new(84_7900, 4),
                 Decimal::new(2359_91, 2),
+                &degiro_broker,
             ),
             BalanceNote::new(
                 CompanyInfo {
@@ -941,6 +980,7 @@ C
                 String::from("USD"),
                 Decimal::new(119_1950, 4),
                 Decimal::new(6732_54, 2),
+                &degiro_broker,
             ),
         ];
         assert_eq!(bal_notes, balance_notes);
@@ -956,10 +996,8 @@ C
                 Decimal::new(50, 0),
                 Decimal::new(128_8000, 4),
                 Decimal::new(6440_00, 2),
-                Decimal::new(618_24, 2),
                 Decimal::new(4_31, 2),
-                Decimal::new(0_0960, 4),
-                Decimal::new(0_00, 2),
+                &degiro_broker,
             ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 09, 15),
@@ -971,10 +1009,8 @@ C
                 Decimal::new(13, 0),
                 Decimal::new(129_0000, 4),
                 Decimal::new(1677_00, 2),
-                Decimal::new(160_99, 2),
                 Decimal::new(0_08, 2),
-                Decimal::new(0_0960, 4),
-                Decimal::new(0_00, 2),
+                &degiro_broker,
             ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 09, 24),
@@ -986,10 +1022,8 @@ C
                 Decimal::new(142, 0),
                 Decimal::new(118_8000, 4),
                 Decimal::new(16869_60, 2),
-                Decimal::new(1589_12, 2),
                 Decimal::new(4_79, 2),
-                Decimal::new(0_0942, 4),
-                Decimal::new(0_00, 2),
+                &degiro_broker,
             ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 06, 11),
@@ -1001,10 +1035,8 @@ C
                 Decimal::new(700, 0),
                 Decimal::new(3_4800, 4),
                 Decimal::new(2436_00, 2),
-                Decimal::new(2156_10, 2),
                 Decimal::new(2_97, 2),
-                Decimal::new(0_8851, 4),
-                Decimal::new(0_00, 2),
+                &degiro_broker,
             ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 06, 11),
@@ -1016,10 +1048,8 @@ C
                 Decimal::new(300, 0),
                 Decimal::new(3_4800, 4),
                 Decimal::new(1044_00, 2),
-                Decimal::new(924_04, 2),
                 Decimal::new(1_06, 2),
-                Decimal::new(0_8851, 4),
-                Decimal::new(0_00, 2),
+                &degiro_broker,
             ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 01, 13),
@@ -1031,10 +1061,8 @@ C
                 Decimal::new(100, 0),
                 Decimal::new(25_3300, 4),
                 Decimal::new(2533_00, 2),
-                Decimal::new(2274_89, 2),
                 Decimal::new(0_86, 2),
-                Decimal::new(0_8981, 4),
-                Decimal::new(0_00, 2),
+                &degiro_broker,
             ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 01, 13),
@@ -1046,10 +1074,8 @@ C
                 Decimal::new(40, 0),
                 Decimal::new(25_3700, 4),
                 Decimal::new(1014_80, 2),
-                Decimal::new(911_39, 2),
                 Decimal::new(0_14, 2),
-                Decimal::new(0_8981, 4),
-                Decimal::new(0_00, 2),
+                &degiro_broker,
             ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 02, 12),
@@ -1061,10 +1087,8 @@ C
                 Decimal::new(100, 0),
                 Decimal::new(24_3550, 4),
                 Decimal::new(2435_50, 2),
-                Decimal::new(2239_69, 2),
                 Decimal::new(0_87, 2),
-                Decimal::new(0_9196, 4),
-                Decimal::new(0_00, 2),
+                &degiro_broker,
             ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 02, 12),
@@ -1076,10 +1100,8 @@ C
                 Decimal::new(38, 0),
                 Decimal::new(24_4150, 4),
                 Decimal::new(927_77, 2),
-                Decimal::new(853_18, 2),
                 Decimal::new(0_14, 2),
-                Decimal::new(0_9196, 4),
-                Decimal::new(0_00, 2),
+                &degiro_broker,
             ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 03, 05),
@@ -1091,10 +1113,8 @@ C
                 Decimal::new(40, 0),
                 Decimal::new(21_0000, 4),
                 Decimal::new(840_00, 2),
-                Decimal::new(747_60, 2),
                 Decimal::new(0_64, 2),
-                Decimal::new(0_8900, 4),
-                Decimal::new(0_00, 2),
+                &degiro_broker,
             ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 03, 05),
@@ -1106,10 +1126,8 @@ C
                 Decimal::new(40, 0),
                 Decimal::new(21_0000, 4),
                 Decimal::new(840_00, 2),
-                Decimal::new(747_60, 2),
                 Decimal::new(0_14, 2),
-                Decimal::new(0_8900, 4),
-                Decimal::new(0_00, 2),
+                &degiro_broker,
             ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 08, 11),
@@ -1121,10 +1139,8 @@ C
                 Decimal::new(3, 0),
                 Decimal::new(680_0000, 4),
                 Decimal::new(2040_00, 2),
-                Decimal::new(2040_00, 2),
                 Decimal::new(5_02, 2),
-                Decimal::new(1_0000, 4),
-                Decimal::new(0_00, 2),
+                &degiro_broker,
             ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 03, 06),
@@ -1136,10 +1152,8 @@ C
                 Decimal::new(70, 0),
                 Decimal::new(21_4400, 4),
                 Decimal::new(1500_80, 2),
-                Decimal::new(1500_80, 2),
                 Decimal::new(4_75, 2),
-                Decimal::new(1_0000, 4),
-                Decimal::new(0_00, 2),
+                &degiro_broker,
             ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 06, 11),
@@ -1151,10 +1165,8 @@ C
                 Decimal::new(70, 0),
                 Decimal::new(30_9400, 4),
                 Decimal::new(2165_80, 2),
-                Decimal::new(2165_80, 2),
                 Decimal::new(5_08, 2),
-                Decimal::new(1_0000, 4),
-                Decimal::new(665_0000, 4),
+                &degiro_broker,
             ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 07, 07),
@@ -1166,10 +1178,8 @@ C
                 Decimal::new(50, 0),
                 Decimal::new(3520_0000, 4),
                 Decimal::new(176000_00, 2),
-                Decimal::new(1958_00, 2),
                 Decimal::new(4_97, 2),
-                Decimal::new(0_0111, 4),
-                Decimal::new(0_00, 2),
+                &degiro_broker,
             ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 05, 20),
@@ -1181,10 +1191,8 @@ C
                 Decimal::new(355, 0),
                 Decimal::new(447_5000, 4),
                 Decimal::new(158862_50, 2),
-                Decimal::new(1771_63, 2),
                 Decimal::new(4_89, 2),
-                Decimal::new(0_0112, 4),
-                Decimal::new(0_00, 2),
+                &degiro_broker,
             ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 05, 20),
@@ -1196,10 +1204,8 @@ C
                 Decimal::new(434, 0),
                 Decimal::new(447_5000, 4),
                 Decimal::new(194215_00, 2),
-                Decimal::new(2165_89, 2),
                 Decimal::new(1_09, 2),
-                Decimal::new(0_0112, 4),
-                Decimal::new(0_00, 2),
+                &degiro_broker,
             ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 05, 20),
@@ -1211,10 +1217,8 @@ C
                 Decimal::new(10, 0),
                 Decimal::new(447_5000, 4),
                 Decimal::new(4475_00, 2),
-                Decimal::new(49_91, 2),
                 Decimal::new(0_03, 2),
-                Decimal::new(0_0112, 4),
-                Decimal::new(0_00, 2),
+                &degiro_broker,
             ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 05, 20),
@@ -1226,10 +1230,8 @@ C
                 Decimal::new(1, 0),
                 Decimal::new(447_5000, 4),
                 Decimal::new(447_50, 2),
-                Decimal::new(4_99, 2),
                 Decimal::new(0_00, 2),
-                Decimal::new(0_0112, 4),
-                Decimal::new(0_00, 2),
+                &degiro_broker,
             ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 05, 19),
@@ -1241,10 +1243,8 @@ C
                 Decimal::new(100, 0),
                 Decimal::new(42_0400, 4),
                 Decimal::new(4204_00, 2),
-                Decimal::new(3848_76, 2),
                 Decimal::new(0_87, 2),
-                Decimal::new(0_9155, 4),
-                Decimal::new(832_6120, 4),
+                &degiro_broker,
             ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 05, 19),
@@ -1256,10 +1256,8 @@ C
                 Decimal::new(2, 0),
                 Decimal::new(42_0100, 4),
                 Decimal::new(84_02, 2),
-                Decimal::new(76_92, 2),
                 Decimal::new(0_01, 2),
-                Decimal::new(0_9155, 4),
-                Decimal::new(16_5973, 4),
+                &degiro_broker,
             ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 02, 18),
@@ -1271,10 +1269,8 @@ C
                 Decimal::new(695, 0),
                 Decimal::new(20_6000, 4),
                 Decimal::new(14317_00, 2),
-                Decimal::new(3354_47, 2),
                 Decimal::new(10_37, 2),
-                Decimal::new(0_2343, 4),
-                Decimal::new(0_00, 2),
+                &degiro_broker,
             ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 02, 18),
@@ -1286,10 +1282,8 @@ C
                 Decimal::new(49, 0),
                 Decimal::new(20_7000, 4),
                 Decimal::new(1014_30, 2),
-                Decimal::new(237_65, 2),
                 Decimal::new(0_38, 2),
-                Decimal::new(0_2343, 4),
-                Decimal::new(0_00, 2),
+                &degiro_broker,
             ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 02, 18),
@@ -1301,10 +1295,8 @@ C
                 Decimal::new(256, 0),
                 Decimal::new(20_7000, 4),
                 Decimal::new(5299_20, 2),
-                Decimal::new(1241_60, 2),
                 Decimal::new(1_99, 2),
-                Decimal::new(0_2343, 4),
-                Decimal::new(0_00, 2),
+                &degiro_broker,
             ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 01, 17),
@@ -1316,10 +1308,8 @@ C
                 Decimal::new(25, 0),
                 Decimal::new(1544_0000, 4),
                 Decimal::new(38600_00, 2),
-                Decimal::new(452_86, 2),
                 Decimal::new(4_26, 2),
-                Decimal::new(0_0117, 4),
-                Decimal::new(0_00, 2),
+                &degiro_broker,
             ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 01, 17),
@@ -1331,10 +1321,8 @@ C
                 Decimal::new(105, 0),
                 Decimal::new(1544_0000, 4),
                 Decimal::new(162120_00, 2),
-                Decimal::new(1901_99, 2),
                 Decimal::new(1_11, 2),
-                Decimal::new(0_0117, 4),
-                Decimal::new(0_00, 2),
+                &degiro_broker,
             ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 01, 17),
@@ -1346,10 +1334,8 @@ C
                 Decimal::new(1105, 0),
                 Decimal::new(2_2560, 4),
                 Decimal::new(2492_88, 2),
-                Decimal::new(2492_88, 2),
                 Decimal::new(5_45, 2),
-                Decimal::new(1_0000, 4),
-                Decimal::new(393_3800, 4),
+                &degiro_broker,
             ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 04, 01),
@@ -1361,10 +1347,8 @@ C
                 Decimal::new(59, 0),
                 Decimal::new(74_0000, 4),
                 Decimal::new(4366_00, 2),
-                Decimal::new(380_72, 2),
                 Decimal::new(4_19, 2),
-                Decimal::new(0_0872, 4),
-                Decimal::new(0_00, 2),
+                &degiro_broker,
             ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 04, 01),
@@ -1376,10 +1360,8 @@ C
                 Decimal::new(25, 0),
                 Decimal::new(74_0000, 4),
                 Decimal::new(1850_00, 2),
-                Decimal::new(161_32, 2),
                 Decimal::new(0_08, 2),
-                Decimal::new(0_0872, 4),
-                Decimal::new(0_00, 2),
+                &degiro_broker,
             ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 04, 01),
@@ -1391,10 +1373,8 @@ C
                 Decimal::new(346, 0),
                 Decimal::new(74_0000, 4),
                 Decimal::new(25604_00, 2),
-                Decimal::new(2232_67, 2),
                 Decimal::new(1_11, 2),
-                Decimal::new(0_0872, 4),
-                Decimal::new(0_00, 2),
+                &degiro_broker,
             ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 07, 06),
@@ -1406,10 +1386,8 @@ C
                 Decimal::new(216, 0),
                 Decimal::new(1830_0000, 4),
                 Decimal::new(395280_00, 2),
-                Decimal::new(4366_26, 2),
                 Decimal::new(6_19, 2),
-                Decimal::new(0_0110, 4),
-                Decimal::new(-80_3072, 4),
+                &degiro_broker,
             ),
             AccountNote::new(
                 NaiveDate::from_ymd(2020, 01, 13),
@@ -1421,10 +1399,8 @@ C
                 Decimal::new(34, 0),
                 Decimal::new(60_6300, 4),
                 Decimal::new(2061_42, 2),
-                Decimal::new(1851_36, 2),
                 Decimal::new(0_62, 2),
-                Decimal::new(0_8981, 4),
-                Decimal::new(0_00, 2),
+                &degiro_broker,
             ),
         ];
         assert_eq!(acc_notes, account_notes);

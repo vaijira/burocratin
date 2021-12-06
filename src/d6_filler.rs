@@ -14,16 +14,14 @@ struct D6Context {
     page_id: u32,
     field_id: u32,
     notes_index: usize,
-    broker: String,
 }
 
 impl D6Context {
-    fn new(broker: &str) -> D6Context {
+    fn new() -> D6Context {
         D6Context {
             page_id: 1,
             field_id: 0x2DB,
             notes_index: 0,
-            broker: broker.into(),
         }
     }
 }
@@ -110,7 +108,7 @@ fn write_company_note<W: Write>(
     write_field(writer, context, &note.company.name)?;
     write_field(writer, context, "400")?;
     write_field(writer, context, "01")?;
-    write_field(writer, context, &context.broker.clone())?;
+    write_field(writer, context, &note.broker.country_code)?;
     write_field(writer, context, &note.currency)?;
     write_field(writer, context, &format_valuation(&note.quantity))?;
     context.field_id += 1; // for empty field
@@ -160,9 +158,9 @@ fn write_page<W: Write>(
     Ok(())
 }
 
-pub fn create_d6_form(notes: &[BalanceNote], broker: &str) -> Result<Vec<u8>> {
+pub fn create_d6_form(notes: &[BalanceNote]) -> Result<Vec<u8>> {
     let mut target: Vec<u8> = Vec::new();
-    let mut context = D6Context::new(broker);
+    let mut context = D6Context::new();
 
     let mut writer = EmitterConfig::new()
         .line_separator("\r\n")
@@ -187,11 +185,17 @@ pub fn create_d6_form(notes: &[BalanceNote], broker: &str) -> Result<Vec<u8>> {
 
 #[cfg(test)]
 mod tests {
+
     use super::*;
-    use crate::account_notes::{BalanceNote, BalanceNotes, CompanyInfo};
+    use crate::account_notes::{BalanceNote, BalanceNotes, BrokerInformation, CompanyInfo};
+    use std::rc::Rc;
 
     #[test]
     fn create_d6_form_test() {
+        let degiro_broker: Rc<BrokerInformation> = Rc::new(BrokerInformation::new(
+            String::from("Degiro"),
+            String::from("NL"),
+        ));
         let balance_notes: BalanceNotes = vec![
             BalanceNote::new(
                 CompanyInfo {
@@ -203,6 +207,7 @@ mod tests {
                 String::from("GBX"),
                 Decimal::new(1_656_0000, 4),
                 Decimal::new(2_247_00, 2),
+                &degiro_broker,
             ),
             BalanceNote::new(
                 CompanyInfo {
@@ -214,6 +219,7 @@ mod tests {
                 String::from("USD"),
                 Decimal::new(131_0900, 4),
                 Decimal::new(2_401_07, 2),
+                &degiro_broker,
             ),
             BalanceNote::new(
                 CompanyInfo {
@@ -225,6 +231,7 @@ mod tests {
                 String::from("USD"),
                 Decimal::new(20_9300, 4),
                 Decimal::new(2555_72, 2),
+                &degiro_broker,
             ),
             BalanceNote::new(
                 CompanyInfo {
@@ -236,6 +243,7 @@ mod tests {
                 String::from("EUR"),
                 Decimal::new(1_1940, 4),
                 Decimal::new(1319_37, 2),
+                &degiro_broker,
             ),
             BalanceNote::new(
                 CompanyInfo {
@@ -247,6 +255,7 @@ mod tests {
                 String::from("GBX"),
                 Decimal::new(160_0000, 4),
                 Decimal::new(1005_43, 2),
+                &degiro_broker,
             ),
             BalanceNote::new(
                 CompanyInfo {
@@ -258,10 +267,11 @@ mod tests {
                 String::from("USD"),
                 Decimal::new(57_0400, 4),
                 Decimal::new(2039_76, 2),
+                &degiro_broker,
             ),
         ];
 
-        let d6_form = create_d6_form(&balance_notes, "NL").unwrap();
+        let d6_form = create_d6_form(&balance_notes).unwrap();
         assert_eq!(
             D6_FORM_XML_RESULT.replace("\n", "\r\n"),
             str::from_utf8(&d6_form[..]).unwrap()

@@ -34,7 +34,7 @@ pdf = "0.7"
 rust_decimal = "1.7"
 scraper = "0.12"
 selectors = "0.22"
-serde = { version = "1.0", features = ["derive"] }
+serde = { version = "1.0", features = ["derive", "rc"] }
 xml-rs = "0.8"
 yew = "0.18"
 yew_assets= {version = "0.1", features = ["full"]}

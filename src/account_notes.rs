@@ -1,7 +1,7 @@
 use chrono::NaiveDate;
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
-use std::convert::From;
+use std::{convert::From, rc::Rc};
 
 pub type AccountNotes = Vec<AccountNote>;
 pub type BalanceNotes = Vec<BalanceNote>;
@@ -37,10 +37,8 @@ pub struct AccountNote {
     pub quantity: Decimal,
     pub price: Decimal,
     pub value: Decimal,
-    pub value_in_euro: Decimal,
     pub commision: Decimal,
-    pub exchange_rate: Decimal,
-    pub earnings: Decimal,
+    pub broker: Rc<BrokerInformation>,
 }
 
 impl AccountNote {
@@ -52,10 +50,8 @@ impl AccountNote {
         quantity: Decimal,
         price: Decimal,
         value: Decimal,
-        value_in_euro: Decimal,
         commision: Decimal,
-        exchange_rate: Decimal,
-        earnings: Decimal,
+        broker: &Rc<BrokerInformation>,
     ) -> AccountNote {
         AccountNote {
             date,
@@ -64,10 +60,8 @@ impl AccountNote {
             quantity,
             price,
             value,
-            value_in_euro,
             commision,
-            exchange_rate,
-            earnings,
+            broker: Rc::clone(broker),
         }
     }
 }
@@ -80,6 +74,7 @@ pub struct BalanceNote {
     pub currency: String,
     pub price: Decimal,
     pub value_in_euro: Decimal,
+    pub broker: Rc<BrokerInformation>,
 }
 
 impl BalanceNote {
@@ -90,6 +85,7 @@ impl BalanceNote {
         currency: String,
         price: Decimal,
         value_in_euro: Decimal,
+        broker: &Rc<BrokerInformation>,
     ) -> BalanceNote {
         BalanceNote {
             company,
@@ -98,6 +94,43 @@ impl BalanceNote {
             currency,
             price,
             value_in_euro,
+            broker: Rc::clone(broker),
+        }
+    }
+}
+
+#[derive(Debug, Eq, PartialEq, Deserialize, Serialize)]
+pub struct BrokerInformation {
+    pub name: String,
+    pub country_code: String,
+}
+
+impl BrokerInformation {
+    pub fn new(name: String, cc: String) -> Self {
+        Self {
+            name,
+            country_code: cc,
+        }
+    }
+}
+pub struct FinancialInformation {
+    pub account_notes: AccountNotes,
+    pub balance_notes: BalanceNotes,
+    pub name: String,
+    pub surname: String,
+    pub nif: String,
+    pub year: usize,
+}
+
+impl FinancialInformation {
+    pub fn new() -> Self {
+        Self {
+            account_notes: vec![],
+            balance_notes: vec![],
+            name: String::from(""),
+            surname: String::from(""),
+            nif: String::from("0"),
+            year: 0,
         }
     }
 }

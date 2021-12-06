@@ -23,7 +23,9 @@ mod zip_parser;
 /// Main entry point for burocratin app
 #[wasm_bindgen(start)]
 pub fn run_app() {
-    wasm_logger::init(wasm_logger::Config::new(log::Level::Debug));
+    wasm_logger::init(
+        wasm_logger::Config::new(log::Level::Debug).module_prefix(env!("CARGO_PKG_NAME")),
+    );
     console_error_panic_hook::set_once();
 
     App::<app::App>::new().mount_to_body();

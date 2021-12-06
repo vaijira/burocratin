@@ -1,7 +1,8 @@
-use std::{collections::HashMap, str::FromStr};
+use std::{collections::HashMap, rc::Rc, str::FromStr};
 
 use crate::account_notes::{
-    AccountNote, AccountNotes, BalanceNote, BalanceNotes, BrokerOperation, CompanyInfo,
+    AccountNote, AccountNotes, BalanceNote, BalanceNotes, BrokerInformation, BrokerOperation,
+    CompanyInfo,
 };
 use anyhow::{anyhow, bail, Result};
 use chrono::NaiveDate;
@@ -31,6 +32,7 @@ enum NoteState {
 
 pub struct IBParser {
     dom: Html,
+    broker: Rc<BrokerInformation>,
     companies_info: HashMap<String, CompanyInfo>,
 }
 
@@ -38,12 +40,13 @@ impl IBParser {
     const STOCKS_STR: &'static str = "Stocks";
     const EUR_CURRENCY_STR: &'static str = "EUR";
 
-    pub fn new(data: &str) -> Result<Self> {
+    pub fn new(data: &str, broker: &Rc<BrokerInformation>) -> Result<Self> {
         let dom = Html::parse_document(data);
         let companies_info = IBParser::parse_companies_info(&dom)?;
 
         Ok(Self {
             dom,
+            broker: Rc::clone(broker),
             companies_info,
         })
     }
@@ -79,7 +82,7 @@ impl IBParser {
         let commision = field_values
             .get(6)
             .ok_or_else(|| anyhow!("No value found"))?;
-        let earnings = field_values
+        let _earnings = field_values
             .get(8)
             .ok_or_else(|| anyhow!("No value found"))?;
         let company_info = self
@@ -94,10 +97,8 @@ impl IBParser {
             quantity.abs(),
             Decimal::from_str(&str::replace(price, ",", ""))?,
             Decimal::from_str(&str::replace(value, ",", ""))?.abs(),
-            Decimal::from_str(&str::replace(value, ",", ""))?.abs(),
             Decimal::from_str(&str::replace(commision, ",", ""))?.abs(),
-            Decimal::new(0, 0),
-            Decimal::from_str(&str::replace(earnings, ",", ""))?,
+            &self.broker,
         ))
     }
 
@@ -245,6 +246,7 @@ impl IBParser {
             String::from(currency.or(Some(IBParser::EUR_CURRENCY_STR)).unwrap()),
             Decimal::from_str(&str::replace(price, ",", ""))?,
             Decimal::from_str(&str::replace(value_in_euro, ",", ""))?,
+            &self.broker,
         ))
     }
 
@@ -358,7 +360,11 @@ mod tests {
     #[test]
     #[allow(clippy::mistyped_literal_suffixes)]
     fn ibparser_parse_account_notes_test() {
-        let ibparser = IBParser::new(DEFAULT_HTML_TEST).unwrap();
+        let ib_broker: Rc<BrokerInformation> = Rc::new(BrokerInformation::new(
+            String::from("Interactive Brokers"),
+            String::from("IE"),
+        ));
+        let ibparser = IBParser::new(DEFAULT_HTML_TEST, &ib_broker).unwrap();
         let notes = ibparser.parse_account_notes().unwrap();
 
         let acc_notes = vec![
@@ -372,10 +378,8 @@ mod tests {
                 Decimal::new(1500, 0),
                 Decimal::new(4_0550, 4),
                 Decimal::new(6082_50, 2),
-                Decimal::new(6082_50, 2),
                 Decimal::new(6_08, 2),
-                Decimal::new(0, 0),
-                Decimal::new(3939_16, 2),
+                &ib_broker,
             ),
             AccountNote::new(
                 NaiveDate::from_ymd(2019, 9, 12),
@@ -387,10 +391,8 @@ mod tests {
                 Decimal::new(45, 0),
                 Decimal::new(73_5000, 4),
                 Decimal::new(3307_50, 2),
-                Decimal::new(3307_50, 2),
                 Decimal::new(4_00, 2),
-                Decimal::new(0, 0),
-                Decimal::new(0_00, 2),
+                &ib_broker,
             ),
             AccountNote::new(
                 NaiveDate::from_ymd(2019, 9, 11),
@@ -402,10 +404,8 @@ mod tests {
                 Decimal::new(90, 0),
                 Decimal::new(35_4388889, 7),
                 Decimal::new(3189_50, 2),
-                Decimal::new(3189_50, 2),
                 Decimal::new(4_00, 2),
-                Decimal::new(0, 0),
-                Decimal::new(0_00, 2),
+                &ib_broker,
             ),
             AccountNote::new(
                 NaiveDate::from_ymd(2019, 2, 15),
@@ -417,10 +417,8 @@ mod tests {
                 Decimal::new(14, 0),
                 Decimal::new(3_8800, 4),
                 Decimal::new(54_32, 2),
-                Decimal::new(54_32, 2),
                 Decimal::new(0_07, 2),
-                Decimal::new(0, 0),
-                Decimal::new(0_00, 2),
+                &ib_broker,
             ),
         ];
 
@@ -430,7 +428,11 @@ mod tests {
     #[test]
     #[allow(clippy::mistyped_literal_suffixes)]
     fn ibparser_parse_balance_notes_test() {
-        let ibparser = IBParser::new(DEFAULT_HTML_TEST).unwrap();
+        let ib_broker: Rc<BrokerInformation> = Rc::new(BrokerInformation::new(
+            String::from("Interactive Brokers"),
+            String::from("IE"),
+        ));
+        let ibparser = IBParser::new(DEFAULT_HTML_TEST, &ib_broker).unwrap();
         let notes = ibparser.parse_balance_notes().unwrap();
 
         let bal_notes = vec![
@@ -444,6 +446,7 @@ mod tests {
                 String::from("EUR"),
                 Decimal::new(5_7600, 4),
                 Decimal::new(1728_00, 2),
+                &ib_broker,
             ),
             BalanceNote::new(
                 CompanyInfo {
@@ -455,6 +458,7 @@ mod tests {
                 String::from("EUR"),
                 Decimal::new(9_3000, 4),
                 Decimal::new(651, 0),
+                &ib_broker,
             ),
             BalanceNote::new(
                 CompanyInfo {
@@ -466,6 +470,7 @@ mod tests {
                 String::from("EUR"),
                 Decimal::new(66_5300, 4),
                 Decimal::new(2993_85, 2),
+                &ib_broker,
             ),
             BalanceNote::new(
                 CompanyInfo {
@@ -477,6 +482,7 @@ mod tests {
                 String::from("EUR"),
                 Decimal::new(36_7000, 4),
                 Decimal::new(3303_00, 2),
+                &ib_broker,
             ),
             BalanceNote::new(
                 CompanyInfo {
@@ -488,6 +494,7 @@ mod tests {
                 String::from("USD"),
                 Decimal::new(35_2300, 4),
                 Decimal::new(6283_91, 2),
+                &ib_broker,
             ),
             BalanceNote::new(
                 CompanyInfo {
@@ -499,6 +506,7 @@ mod tests {
                 String::from("USD"),
                 Decimal::new(19_4600, 4),
                 Decimal::new(1735_52, 2),
+                &ib_broker,
             ),
             BalanceNote::new(
                 CompanyInfo {
@@ -510,6 +518,7 @@ mod tests {
                 String::from("USD"),
                 Decimal::new(5_3200, 4),
                 Decimal::new(4953_35, 2),
+                &ib_broker,
             ),
         ];
 

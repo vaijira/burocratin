@@ -1,11 +1,12 @@
+use std::rc::Rc;
 use std::vec;
 
+use crate::account_notes::{BrokerInformation, FinancialInformation};
 use crate::reports::aeat720::Aeat720Report;
 use crate::{
-    account_notes::AccountNotes, d6_filler::create_d6_form, parsers::degiro_parser::DegiroParser,
-    parsers::ib_parser::IBParser,
+    d6_filler::create_d6_form, parsers::degiro_parser::DegiroParser, parsers::ib_parser::IBParser,
 };
-use crate::{account_notes::BalanceNotes, pdf_parser::read_pdf, zip_parser::read_zip_str};
+use crate::{pdf_parser::read_pdf, zip_parser::read_zip_str};
 
 use js_sys::{Array, Uint8Array};
 use wasm_bindgen::JsValue;
@@ -23,9 +24,10 @@ use yew_styles::layouts::{
 };
 
 pub struct App {
+    degiro_broker: Rc<BrokerInformation>,
+    ib_broker: Rc<BrokerInformation>,
     tasks: Vec<ReaderTask>,
-    degiro_balance_notes: BalanceNotes,
-    degiro_account_notes: AccountNotes,
+    financial_information: FinancialInformation,
     d6_form_path: String,
     aeat720_form_path: String,
     link: ComponentLink<Self>,
@@ -49,9 +51,16 @@ impl Component for App {
     fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
         log::debug!("App created");
         Self {
+            degiro_broker: Rc::new(BrokerInformation::new(
+                String::from("Degiro"),
+                String::from("NL"),
+            )),
+            ib_broker: Rc::new(BrokerInformation::new(
+                String::from("Interactive Brokers"),
+                String::from("IE"),
+            )),
             tasks: vec![],
-            degiro_balance_notes: vec![],
-            degiro_account_notes: vec![],
+            financial_information: FinancialInformation::new(),
             d6_form_path: "".to_string(),
             aeat720_form_path: "".to_string(),
             link,
@@ -61,7 +70,7 @@ impl Component for App {
     fn update(&mut self, message: Self::Message) -> ShouldRender {
         match message {
             Msg::GenerateD6 => {
-                match create_d6_form(&self.degiro_balance_notes, "NL") {
+                match create_d6_form(&self.financial_information.balance_notes) {
                     Ok(d6_form) => {
                         let mut blob_properties = BlobPropertyBag::new();
                         blob_properties.type_("application/octet-stream");
@@ -91,11 +100,11 @@ impl Component for App {
             }
             Msg::GenerateAeat720 => {
                 let aeat720report = match Aeat720Report::new(
-                    &self.degiro_balance_notes,
-                    &self.degiro_account_notes,
-                    2020,
-                    "0",
-                    "",
+                    &self.financial_information.balance_notes,
+                    &self.financial_information.account_notes,
+                    self.financial_information.year,
+                    &self.financial_information.nif,
+                    &self.financial_information.name,
                 ) {
                     Ok(report) => report,
                     Err(err) => {
@@ -142,11 +151,21 @@ impl Component for App {
                 );
                 let pdf_data = read_pdf(file.content);
                 if let Ok(data) = pdf_data {
-                    let parser = DegiroParser::new(data);
+                    let parser = DegiroParser::new(data, &self.degiro_broker);
                     let pdf_content = parser.parse_pdf_content();
-                    if let Ok((balance_notes, account_notes)) = pdf_content {
-                        self.degiro_balance_notes = balance_notes;
-                        self.degiro_account_notes = account_notes;
+                    if let Ok((mut balance_notes, mut account_notes)) = pdf_content {
+                        self.financial_information
+                            .account_notes
+                            .retain(|note| note.broker != self.degiro_broker);
+                        self.financial_information
+                            .balance_notes
+                            .retain(|note| note.broker != self.degiro_broker);
+                        self.financial_information
+                            .account_notes
+                            .append(&mut account_notes);
+                        self.financial_information
+                            .balance_notes
+                            .append(&mut balance_notes);
                     } else {
                         log::error!(
                             "Error loading degiro account notes: {}",
@@ -170,9 +189,27 @@ impl Component for App {
                 );
                 let zip_data = read_zip_str(file.content);
                 if let Ok(data) = zip_data {
-                    if let Ok(parser) = IBParser::new(&data) {
-                        let _ = parser.parse_balance_notes();
-                        let _ = parser.parse_account_notes();
+                    if let Ok(parser) = IBParser::new(&data, &self.ib_broker) {
+                        let account_notes = parser.parse_account_notes();
+                        let balance_notes = parser.parse_balance_notes();
+                        if let (Ok(mut account_notes), Ok(mut balance_notes)) =
+                            (account_notes, balance_notes)
+                        {
+                            self.financial_information
+                                .account_notes
+                                .retain(|note| note.broker != self.ib_broker);
+                            self.financial_information
+                                .balance_notes
+                                .retain(|note| note.broker != self.ib_broker);
+                            self.financial_information
+                                .account_notes
+                                .append(&mut account_notes);
+                            self.financial_information
+                                .balance_notes
+                                .append(&mut balance_notes);
+                        } else {
+                            log::error!("Unable to read interactive brokers info");
+                        }
                     }
                 } else {
                     log::error!("Unable to read zip content");
@@ -252,6 +289,11 @@ impl App {
             <p>
               <a href="mailto:contacto@burocratin.com" alt="contacto">{"Escríbeme"}</a>{" para cualquier duda o sugerencia."}
             </p>
+            <p>
+              {"El modelo 720 generado se puede presentar si es la primera declaración o"}
+              <a href="https://www.agenciatributaria.es/AEAT.internet/Inicio/Ayuda/Modelos__Procedimientos_y_Servicios/Ayuda_Modelo_720/Informacion_general/Preguntas_frecuentes__actualizadas_a_marzo_de_2014_/Nuevas_preguntas_frecuentes/Si_se_procede_a_la_venta_de_valores__articulo_42_ter_del_Reglamento_General_aprobado_por_el_RD_1065_2007___respecto_de_los_qu__on_de_informar_.shtml">
+              {"si se ha realizado alguna venta y reinvertido el importe"}</a>{"."}
+            </p>
           </>
         }
     }
@@ -281,7 +323,7 @@ impl App {
                 <Item layouts=vec!(ItemLayout::ItM(6), ItemLayout::ItXs(12))>
                 <FormGroup orientation=Orientation::Horizontal>
                     <img src="img/interactive_brokers.svg" alt="logo interactive brokers" width="70" height="70" />
-                    <FormLabel text="Informe anual Interactive Brokers:" />
+                    <FormLabel text="Informe anual Interactive Brokers (zip):" />
                     <FormFile
                         alt="Fichero informe Interactive Brokers"
                         accept=vec!["application/zip".to_string()]
@@ -303,15 +345,16 @@ impl App {
 
     fn get_account_notes(&self) -> Html {
         let notes = self
-            .degiro_account_notes
+            .financial_information
+            .account_notes
             .iter()
             .map(|note| {
                 html! {
                 <tr>
-                  <td>{"Degiro"}</td>
+                  <td>{&note.broker.name}</td>
                   <td>{&note.company.name}</td>
                   <td>{&note.company.isin}</td>
-                  <td>{&note.value_in_euro}</td>
+                  <td>{&note.value}</td>
                 </tr>}
             })
             .collect::<Html>();
@@ -336,12 +379,13 @@ impl App {
 
     fn get_balance_notes(&self) -> Html {
         let notes = self
-            .degiro_balance_notes
+            .financial_information
+            .balance_notes
             .iter()
             .map(|note| {
                 html! {
                 <tr>
-                  <td>{"Degiro"}</td>
+                  <td>{&note.broker.name}</td>
                   <td>{&note.company.name}</td>
                   <td>{&note.company.isin}</td>
                   <td>{&note.value_in_euro}</td>
