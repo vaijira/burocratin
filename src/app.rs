@@ -1,16 +1,11 @@
 use std::rc::Rc;
 use std::vec;
 
-use crate::account_notes::{BrokerInformation, FinancialInformation};
-use crate::reports::aeat720::Aeat720Report;
-use crate::{
-    d6_filler::create_d6_form, parsers::degiro_parser::DegiroParser, parsers::ib_parser::IBParser,
-};
-use crate::{pdf_parser::read_pdf, zip_parser::read_zip_str};
+use crate::data::{BrokerInformation, FinancialInformation};
+use crate::utils::web;
+use crate::{parsers::degiro::DegiroParser, parsers::ib::IBParser};
+use crate::{parsers::pdf::read_pdf, utils::zip::read_zip_str};
 
-use js_sys::{Array, Uint8Array};
-use wasm_bindgen::JsValue;
-use web_sys::{Blob, BlobPropertyBag, Url};
 use yew::prelude::*;
 use yew::services::reader::{File, FileData, ReaderService, ReaderTask};
 use yew_styles::forms::{
@@ -70,75 +65,19 @@ impl Component for App {
     fn update(&mut self, message: Self::Message) -> ShouldRender {
         match message {
             Msg::GenerateD6 => {
-                match create_d6_form(&self.financial_information.balance_notes) {
-                    Ok(d6_form) => {
-                        let mut blob_properties = BlobPropertyBag::new();
-                        blob_properties.type_("application/octet-stream");
-                        let d6_array = Array::new_with_length(1);
-                        d6_array.set(0, JsValue::from(Uint8Array::from(&d6_form[..])));
-                        //let text = str::from_utf8(&d6_form[..]).unwrap();
-                        let blob = Blob::new_with_u8_array_sequence_and_options(
-                            &JsValue::from(d6_array),
-                            &blob_properties,
-                        );
-                        match blob {
-                            Ok(blob_data) => {
-                                if !self.d6_form_path.is_empty() {
-                                    if let Err(err) = Url::revoke_object_url(&self.d6_form_path) {
-                                        log::error!("Error deleting old D6 form: {:?}", err);
-                                    }
-                                }
-                                self.d6_form_path =
-                                    Url::create_object_url_with_blob(&blob_data).unwrap();
-                            }
-                            Err(err) => log::error!("Unable to generate d6 form: {:?}", err),
-                        }
-                    }
-                    Err(err) => log::error!("Unable to generate D6: {}", err),
+                if let Ok(path) = web::generate_d6(
+                    &self.financial_information.balance_notes,
+                    &self.d6_form_path,
+                ) {
+                    self.d6_form_path = path;
                 }
                 true
             }
             Msg::GenerateAeat720 => {
-                let aeat720report = match Aeat720Report::new(
-                    &self.financial_information.balance_notes,
-                    &self.financial_information.account_notes,
-                    self.financial_information.year,
-                    &self.financial_information.nif,
-                    &self.financial_information.name,
-                ) {
-                    Ok(report) => report,
-                    Err(err) => {
-                        log::error!("Unable to generate Aeat720 report: {}", err);
-                        return true;
-                    }
-                };
-                match aeat720report.generate() {
-                    Ok(aeat720_form) => {
-                        let mut blob_properties = BlobPropertyBag::new();
-                        blob_properties.type_("application/octet-stream");
-                        let aeat720_array = Array::new_with_length(1);
-                        aeat720_array.set(0, JsValue::from(Uint8Array::from(&aeat720_form[..])));
-
-                        let blob = Blob::new_with_u8_array_sequence_and_options(
-                            &JsValue::from(aeat720_array),
-                            &blob_properties,
-                        );
-                        match blob {
-                            Ok(blob_data) => {
-                                if !self.aeat720_form_path.is_empty() {
-                                    if let Err(err) =
-                                        Url::revoke_object_url(&self.aeat720_form_path)
-                                    {
-                                        log::error!("Error deleting old aeat 720 form: {:?}", err);
-                                    }
-                                }
-                                self.aeat720_form_path =
-                                    Url::create_object_url_with_blob(&blob_data).unwrap();
-                            }
-                            Err(err) => log::error!("Unable to generate aeat 720 form: {:?}", err),
-                        }
-                    }
-                    Err(err) => log::error!("Unable to generate Aeat 720 report: {}", err),
+                if let Ok(path) =
+                    web::generate_720(&self.financial_information, &self.aeat720_form_path)
+                {
+                    self.aeat720_form_path = path;
                 }
                 true
             }
@@ -149,8 +88,8 @@ impl Component for App {
                     file.content.len(),
                     file.content.get(0..16)
                 );
-                let pdf_data = read_pdf(file.content);
-                if let Ok(data) = pdf_data {
+
+                if let Ok(data) = read_pdf(file.content) {
                     let parser = DegiroParser::new(data, &self.degiro_broker);
                     let pdf_content = parser.parse_pdf_content();
                     if let Ok((mut balance_notes, mut account_notes)) = pdf_content {
@@ -187,8 +126,8 @@ impl Component for App {
                     file.content.len(),
                     file.content.get(0..16)
                 );
-                let zip_data = read_zip_str(file.content);
-                if let Ok(data) = zip_data {
+
+                if let Ok(data) = read_zip_str(file.content) {
                     if let Ok(parser) = IBParser::new(&data, &self.ib_broker) {
                         let account_notes = parser.parse_account_notes();
                         let balance_notes = parser.parse_balance_notes();
@@ -290,8 +229,8 @@ impl App {
               <a href="mailto:contacto@burocratin.com" alt="contacto">{"Escríbeme"}</a>{" para cualquier duda o sugerencia."}
             </p>
             <p>
-              {"El modelo 720 generado se puede presentar si es la primera declaración o"}
-              <a href="https://www.agenciatributaria.es/AEAT.internet/Inicio/Ayuda/Modelos__Procedimientos_y_Servicios/Ayuda_Modelo_720/Informacion_general/Preguntas_frecuentes__actualizadas_a_marzo_de_2014_/Nuevas_preguntas_frecuentes/Si_se_procede_a_la_venta_de_valores__articulo_42_ter_del_Reglamento_General_aprobado_por_el_RD_1065_2007___respecto_de_los_qu__on_de_informar_.shtml">
+              {"El modelo 720 generado se puede presentar si es la primera declaración o "}
+              <a href="https://www.agenciatributaria.es/AEAT.internet/Inicio/Ayuda/Modelos__Procedimientos_y_Servicios/Ayuda_Modelo_720/Informacion_general/Preguntas_frecuentes__actualizadas_a_marzo_de_2014_/Nuevas_preguntas_frecuentes/Si_se_procede_a_la_venta_de_valores__articulo_42_ter_del_Reglamento_General_aprobado_por_el_RD_1065_2007___respecto_de_los_qu__on_de_informar_.shtml" alt="720 FAQ">
               {"si se ha realizado alguna venta y reinvertido el importe"}</a>{"."}
             </p>
           </>

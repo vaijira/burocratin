@@ -12,13 +12,11 @@
 use wasm_bindgen::prelude::*;
 use yew::prelude::*;
 
-mod account_notes;
 mod app;
-mod d6_filler;
+mod data;
 mod parsers;
-mod pdf_parser;
 mod reports;
-mod zip_parser;
+mod utils;
 
 /// Main entry point for burocratin app
 #[wasm_bindgen(start)]

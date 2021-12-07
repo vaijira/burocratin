@@ -1,4 +1,4 @@
-use crate::account_notes::BalanceNote;
+use crate::data::BalanceNote;
 
 use rust_decimal::Decimal;
 use std::io::Write;
@@ -187,7 +187,7 @@ pub fn create_d6_form(notes: &[BalanceNote]) -> Result<Vec<u8>> {
 mod tests {
 
     use super::*;
-    use crate::account_notes::{BalanceNote, BalanceNotes, BrokerInformation, CompanyInfo};
+    use crate::data::{BalanceNotes, BrokerInformation, CompanyInfo};
     use std::rc::Rc;
 
     #[test]

@@ -1,8 +1,11 @@
 use std::{collections::HashMap, rc::Rc, str::FromStr};
 
-use crate::account_notes::{
-    AccountNote, AccountNotes, BalanceNote, BalanceNotes, BrokerInformation, BrokerOperation,
-    CompanyInfo,
+use crate::{
+    data::{
+        AccountNote, AccountNotes, BalanceNote, BalanceNotes, BrokerInformation, BrokerOperation,
+        CompanyInfo,
+    },
+    utils::decimal,
 };
 use anyhow::{anyhow, bail, Result};
 use chrono::NaiveDate;
@@ -67,7 +70,7 @@ impl IBParser {
         let quantity_str = field_values
             .get(2)
             .ok_or_else(|| anyhow!("No mult found"))?;
-        let quantity = Decimal::from_str(&str::replace(quantity_str, ",", ""))?;
+        let quantity = Decimal::from_str(&decimal::normalize_str(quantity_str))?;
         let operation = if quantity.is_sign_negative() {
             BrokerOperation::Sell
         } else {
@@ -95,9 +98,9 @@ impl IBParser {
             company_info.clone(),
             operation,
             quantity.abs(),
-            Decimal::from_str(&str::replace(price, ",", ""))?,
-            Decimal::from_str(&str::replace(value, ",", ""))?.abs(),
-            Decimal::from_str(&str::replace(commision, ",", ""))?.abs(),
+            Decimal::from_str(&decimal::normalize_str(price))?,
+            Decimal::from_str(&decimal::normalize_str(value))?.abs(),
+            Decimal::from_str(&decimal::normalize_str(commision))?.abs(),
             &self.broker,
         ))
     }
@@ -241,11 +244,11 @@ impl IBParser {
         Ok(BalanceNote::new(
             company_info.clone(),
             String::from(""),
-            Decimal::from_str(&str::replace(quantity, ",", ""))?
-                * Decimal::from_str(&str::replace(mult, ",", ""))?,
+            Decimal::from_str(&decimal::normalize_str(quantity))?
+                * Decimal::from_str(&decimal::normalize_str(mult))?,
             String::from(currency.or(Some(IBParser::EUR_CURRENCY_STR)).unwrap()),
-            Decimal::from_str(&str::replace(price, ",", ""))?,
-            Decimal::from_str(&str::replace(value_in_euro, ",", ""))?,
+            Decimal::from_str(&decimal::normalize_str(price))?,
+            Decimal::from_str(&decimal::normalize_str(value_in_euro))?,
             &self.broker,
         ))
     }
@@ -330,7 +333,7 @@ impl IBParser {
                                 .get(5)
                                 .ok_or_else(|| anyhow!("Unable to get total in euro"))?;
                             let total_in_euro =
-                                Decimal::from_str(&str::replace(*total_in_euro_str, ",", ""))?;
+                                Decimal::from_str(&decimal::normalize_str(total_in_euro_str))?;
                             log::debug!("total in eur: {:?}", total_in_euro);
                             self.recalculate_balance_notes(&mut current_notes, &total_in_euro)?;
                         } else {

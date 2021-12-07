@@ -1,2 +1,3 @@
-pub mod degiro_parser;
-pub mod ib_parser;
+pub mod degiro;
+pub mod ib;
+pub mod pdf;

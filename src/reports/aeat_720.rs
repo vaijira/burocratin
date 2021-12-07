@@ -1,4 +1,4 @@
-use crate::account_notes::{AccountNote, BalanceNote};
+use crate::data::{AccountNote, BalanceNote};
 use anyhow::{bail, Result};
 use chrono::NaiveDate;
 use encoding_rs::ISO_8859_15;
