@@ -11,12 +11,17 @@ use yew::services::reader::{File, FileData, ReaderService, ReaderTask};
 use yew_styles::forms::{
     form_file::FormFile,
     form_group::{FormGroup, Orientation},
+    form_input::{FormInput, InputType},
     form_label::FormLabel,
 };
 use yew_styles::layouts::{
     container::{Container, Direction, Wrap},
     item::{AlignSelf, Item, ItemLayout},
 };
+use yew_styles::styles::Size;
+use yew_styles::text::{Text, TextType};
+
+const DEFAULT_YEAR: usize = 2020;
 
 pub struct App {
     degiro_broker: Rc<BrokerInformation>,
@@ -29,6 +34,10 @@ pub struct App {
 }
 
 pub enum Msg {
+    ChangeName(String),
+    ChangeSurname(String),
+    ChangeNif(String),
+    ChangeYear(String),
     GenerateD6,
     GenerateAeat720,
     UploadDegiroFile(File),
@@ -45,6 +54,8 @@ impl Component for App {
 
     fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
         log::debug!("App created");
+        let mut info = FinancialInformation::new();
+        info.year = DEFAULT_YEAR;
         Self {
             degiro_broker: Rc::new(BrokerInformation::new(
                 String::from("Degiro"),
@@ -55,7 +66,7 @@ impl Component for App {
                 String::from("IE"),
             )),
             tasks: vec![],
-            financial_information: FinancialInformation::new(),
+            financial_information: info,
             d6_form_path: "".to_string(),
             aeat720_form_path: "".to_string(),
             link,
@@ -64,7 +75,36 @@ impl Component for App {
 
     fn update(&mut self, message: Self::Message) -> ShouldRender {
         match message {
+            Msg::ChangeName(name) => {
+                log::debug!("change name to: {}", name);
+                self.financial_information.name = name;
+                self.link.send_message(Msg::GenerateD6);
+                self.link.send_message(Msg::GenerateAeat720);
+                true
+            }
+            Msg::ChangeSurname(surname) => {
+                log::debug!("change surname to: {}", surname);
+                self.financial_information.surname = surname;
+                self.link.send_message(Msg::GenerateD6);
+                self.link.send_message(Msg::GenerateAeat720);
+                true
+            }
+            Msg::ChangeNif(nif) => {
+                log::debug!("change nif to: {}", nif);
+                self.financial_information.nif = nif;
+                self.link.send_message(Msg::GenerateD6);
+                self.link.send_message(Msg::GenerateAeat720);
+                true
+            }
+            Msg::ChangeYear(year) => {
+                log::debug!("change year to: {}", year);
+                self.financial_information.year = year.parse::<usize>().unwrap_or(DEFAULT_YEAR);
+                self.link.send_message(Msg::GenerateD6);
+                self.link.send_message(Msg::GenerateAeat720);
+                true
+            }
             Msg::GenerateD6 => {
+                log::debug!("generate D6 form");
                 if let Ok(path) = web::generate_d6(
                     &self.financial_information.balance_notes,
                     &self.d6_form_path,
@@ -74,6 +114,7 @@ impl Component for App {
                 true
             }
             Msg::GenerateAeat720 => {
+                log::debug!("generate AEAT 720 form");
                 if let Ok(path) =
                     web::generate_720(&self.financial_information, &self.aeat720_form_path)
                 {
@@ -193,6 +234,8 @@ impl Component for App {
             <hr/>
             {self.get_form_file()}
             <hr/>
+            {self.get_personal_information()}
+            <hr/>
             <Container wrap=Wrap::Wrap direction=Direction::Row>
               <Item layouts=vec!(ItemLayout::ItM(6), ItemLayout::ItXs(12))>
                 {self.get_balance_notes()}
@@ -279,6 +322,63 @@ impl App {
                 </FormGroup>
             </Item>
             </Container>
+        }
+    }
+
+    fn get_personal_information(&self) -> Html {
+        html! {
+            <>
+             <Text
+              text_type=TextType::Plain
+              text_size=Size::Medium
+              plain_text="Rellena los siguientes campos si quieres que los informes se generen con ellos:"
+              html_text=None
+            />
+            <Container wrap=Wrap::Wrap direction=Direction::Row>
+
+              <Item layouts=vec!(ItemLayout::ItM(3), ItemLayout::ItXs(12))>
+                <FormGroup orientation=Orientation::Horizontal>
+                <FormLabel text="Nombre: " />
+                <FormInput
+                  input_type=InputType::Text
+                  oninput_signal=self.link.callback(|e: InputData| Msg::ChangeName(e.value))
+                />
+                </FormGroup>
+              </Item>
+
+              <Item layouts=vec!(ItemLayout::ItM(3), ItemLayout::ItXs(12))>
+                <FormGroup orientation=Orientation::Horizontal>
+                <FormLabel text="Apellidos: " />
+                <FormInput
+                  input_type=InputType::Text
+                  oninput_signal=self.link.callback(|e: InputData| Msg::ChangeSurname(e.value))
+                />
+                </FormGroup>
+              </Item>
+
+              <Item layouts=vec!(ItemLayout::ItM(3), ItemLayout::ItXs(12))>
+                <FormGroup orientation=Orientation::Horizontal>
+                <FormLabel text="NIF: " />
+                <FormInput
+                  input_type=InputType::Text
+                  oninput_signal=self.link.callback(|e: InputData| Msg::ChangeNif(e.value))
+                />
+                </FormGroup>
+              </Item>
+
+              <Item layouts=vec!(ItemLayout::ItM(3), ItemLayout::ItXs(12))>
+                <FormGroup orientation=Orientation::Horizontal>
+                <FormLabel text="Año: " />
+                <FormInput
+                  placeholder=self.financial_information.year.to_string()
+                  input_type=InputType::Text
+                  oninput_signal=self.link.callback(|e: InputData| Msg::ChangeYear(e.value))
+                />
+                </FormGroup>
+              </Item>
+
+            </Container>
+            </>
         }
     }
 

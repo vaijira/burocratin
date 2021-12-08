@@ -227,7 +227,7 @@ impl SummaryRegister {
     fn new(notes: &[BalanceNote], year: usize, nif: &str, name: &str) -> Result<Self> {
         let mut fields = Self::default().fields;
 
-        Aeat720Field::write_field(&mut fields, Self::DOCUMENT_ID_FIELD, nif)?;
+        Aeat720Field::write_field(&mut fields, Self::NIF_FIELD, nif)?;
 
         Aeat720Field::write_numeric_field(&mut fields, Self::YEAR_FIELD, year)?;
 
