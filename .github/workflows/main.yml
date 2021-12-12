@@ -84,6 +84,48 @@ jobs:
           command: test
           args: --doc
 
+  integration-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        toolchain:
+          - 1.56.1 # MSRV
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.toolchain }}
+          override: true
+          profile: minimal
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: cargo-${{ runner.os }}-${{ hashFiles('**/Cargo.toml') }}
+          restore-keys: |
+            cargo-${{ runner.os }}-
+      - uses: jetli/trunk-action@v0.1.0
+        with:
+          version: 'latest'
+      - uses: jetli/wasm-bindgen-action@v0.1.0
+        with:
+          version: 'latest'
+      - name: install yew-styles css
+        run: npm install yew-styles --prefix tmp
+      - name: Build app
+        run: trunk -v build --release
+      - uses: isbang/compose-action@v1.0.0
+        with:
+          compose-file: ./docker-compose.yml
+      - name: Run Integration tests
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --test interaction -- --test-threads=1
+
   site:
     name: Deploy site
     runs-on: ubuntu-latest

@@ -14,3 +14,10 @@ services:
     network_mode: "host"
     volumes:
     - ./tests/data:/test_data
+  static-web-server:
+    image: joseluisq/static-web-server:2
+    environment:
+      - SERVER_PORT=8080
+    network_mode: "host"
+    volumes:
+    - ./dist:/public

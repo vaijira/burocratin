@@ -22,6 +22,7 @@ To run unit tests execute: cargo test --lib
 To run doc tests execute: cargo test --doc
 
 To run integration test you'll need docker-compose to start a selenium container:
-    * docker-compose up -d
-    * trunk serve
-    * cargo test --test interaction -- --ignored --test-threads=1
+* docker-compose up -d
+* cargo test --test interaction -- --ignored --test-threads=1
+* docker-compose down
+
