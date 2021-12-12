@@ -125,7 +125,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --test interaction -- --test-threads=1
+          args: --test interaction -- --ignored --test-threads=1
 
   site:
     name: Deploy site
