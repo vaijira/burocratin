@@ -1,7 +1,6 @@
 mod common;
 
 use thirtyfour::prelude::*;
-use tokio;
 
 #[tokio::test]
 async fn test_ib_2019_chrome() -> WebDriverResult<()> {
