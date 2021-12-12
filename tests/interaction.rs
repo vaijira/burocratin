@@ -3,6 +3,7 @@ mod common;
 use thirtyfour::prelude::*;
 
 #[tokio::test]
+#[ignore]
 async fn test_ib_2019_chrome() -> WebDriverResult<()> {
     common::setup();
     let mut caps = DesiredCapabilities::chrome();

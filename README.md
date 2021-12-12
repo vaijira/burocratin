@@ -14,7 +14,7 @@ You need to install:
 * [trunk](https://trunkrs.dev/): cargo install trunk wasm-bindgen-cli.
 * [cargo make](https://sagiegurari.github.io/cargo-make/): cargo install --force cargo-make.
 
-Run cargo make and trunk serve and access http://localhost:8080 to test the application.
+Run cargo make, cargo make trunk and trunk serve and access http://localhost:8080 to test the application.
 
 ## TESTS
 To run unit tests execute: cargo test --lib
@@ -24,4 +24,4 @@ To run doc tests execute: cargo test --doc
 To run integration test you'll need docker-compose to start a selenium container:
     * docker-compose up -d
     * trunk serve
-    * cargo test --test interaction -- --test-threads=1
+    * cargo test --test interaction -- --ignored --test-threads=1
