@@ -77,21 +77,21 @@ impl Component for App {
         match message {
             Msg::ChangeName(name) => {
                 log::debug!("change name to: {}", name);
-                self.financial_information.name = name;
+                self.financial_information.name = name.to_uppercase();
                 self.link.send_message(Msg::GenerateD6);
                 self.link.send_message(Msg::GenerateAeat720);
                 true
             }
             Msg::ChangeSurname(surname) => {
                 log::debug!("change surname to: {}", surname);
-                self.financial_information.surname = surname;
+                self.financial_information.surname = surname.to_uppercase();
                 self.link.send_message(Msg::GenerateD6);
                 self.link.send_message(Msg::GenerateAeat720);
                 true
             }
             Msg::ChangeNif(nif) => {
                 log::debug!("change nif to: {}", nif);
-                self.financial_information.nif = nif;
+                self.financial_information.nif = nif.to_uppercase();
                 self.link.send_message(Msg::GenerateD6);
                 self.link.send_message(Msg::GenerateAeat720);
                 true
@@ -105,10 +105,8 @@ impl Component for App {
             }
             Msg::GenerateD6 => {
                 log::debug!("generate D6 form");
-                if let Ok(path) = web::generate_d6(
-                    &self.financial_information.balance_notes,
-                    &self.d6_form_path,
-                ) {
+                if let Ok(path) = web::generate_d6(&self.financial_information, &self.d6_form_path)
+                {
                     self.d6_form_path = path;
                 }
                 true
@@ -276,6 +274,15 @@ impl App {
               <a href="https://www.agenciatributaria.es/AEAT.internet/Inicio/Ayuda/Modelos__Procedimientos_y_Servicios/Ayuda_Modelo_720/Informacion_general/Preguntas_frecuentes__actualizadas_a_marzo_de_2014_/Nuevas_preguntas_frecuentes/Si_se_procede_a_la_venta_de_valores__articulo_42_ter_del_Reglamento_General_aprobado_por_el_RD_1065_2007___respecto_de_los_qu__on_de_informar_.shtml" alt="720 FAQ">
               {"si se ha realizado alguna venta y reinvertido el importe"}</a>{"."}
             </p>
+            <ul>{"Limitaciones:"}
+            <li>{"Sólo rellena información de acciones, no líquidez del broker."}</li>
+            <li>{"El código de país que usará para Degiro será NL y para interactive brokers IE."}</li>
+            <li>{"Modelo 720:Revisar el código de domiciliación del país, por defecto cogerá el del ISIN, pero esto no siempre es correcto."}</li>
+            <li>{"Modelo 720: Revisar la fecha de primera incorporación si tu primera transacción fue antes del año a declarar."}</li>
+            <li>{"Modelo D6: Revisar la clase de valor que tenemos, por defecto 01 - Acciones con derecho a voto."}</li>
+            <li>{"Modelo D6: Si la moneda es GBX, ajustarla a GBP."}</li>
+            </ul>
+            <p>{"El autor no se hace responsable del uso resultante de esta aplicación."}</p>
           </>
         }
     }
@@ -288,6 +295,7 @@ impl App {
                         <img src="img/degiro.svg" alt="logo broker Degiro" width="70" height="70" />
                         <FormLabel text="Informe anual broker Degiro:" />
                         <FormFile
+                            id={"degiro_report"}
                             alt="Fichero informe broker Degiro"
                             accept=vec!["application/pdf".to_string()]
                             underline=false
@@ -307,6 +315,7 @@ impl App {
                     <img src="img/interactive_brokers.svg" alt="logo interactive brokers" width="70" height="70" />
                     <FormLabel text="Informe anual Interactive Brokers (zip):" />
                     <FormFile
+                        id={"ib_report"}
                         alt="Fichero informe Interactive Brokers"
                         accept=vec!["application/zip".to_string()]
                         underline=false
@@ -340,6 +349,8 @@ impl App {
                 <FormGroup orientation=Orientation::Horizontal>
                 <FormLabel text="Nombre: " />
                 <FormInput
+                  id={"name"}
+                  alt={"Nombre"}
                   input_type=InputType::Text
                   oninput_signal=self.link.callback(|e: InputData| Msg::ChangeName(e.value))
                 />
@@ -350,6 +361,8 @@ impl App {
                 <FormGroup orientation=Orientation::Horizontal>
                 <FormLabel text="Apellidos: " />
                 <FormInput
+                  id={"surname"}
+                  alt={"Apellidos"}
                   input_type=InputType::Text
                   oninput_signal=self.link.callback(|e: InputData| Msg::ChangeSurname(e.value))
                 />
@@ -360,6 +373,8 @@ impl App {
                 <FormGroup orientation=Orientation::Horizontal>
                 <FormLabel text="NIF: " />
                 <FormInput
+                  id={"nif"}
+                  alt={"NIF"}
                   input_type=InputType::Text
                   oninput_signal=self.link.callback(|e: InputData| Msg::ChangeNif(e.value))
                 />
@@ -370,6 +385,8 @@ impl App {
                 <FormGroup orientation=Orientation::Horizontal>
                 <FormLabel text="Año: " />
                 <FormInput
+                  id={"year"}
+                  alt={"Año"}
                   placeholder=self.financial_information.year.to_string()
                   input_type=InputType::Text
                   oninput_signal=self.link.callback(|e: InputData| Msg::ChangeYear(e.value))
@@ -453,7 +470,7 @@ impl App {
     fn get_d6_button(&self) -> Html {
         if !self.d6_form_path.is_empty() {
             html! {
-              <a href={self.d6_form_path.clone()} alt="Informe D6 generado" download="d6.aforixm"><button type={"button"}>{"Descargar informe D6"}</button></a>
+              <a id={"aforix_d6_form"} href={self.d6_form_path.clone()} alt="Informe D6 generado" download="d6.aforixm"><button type={"button"}>{"Descargar informe D6"}</button></a>
             }
         } else {
             html! {
@@ -465,7 +482,7 @@ impl App {
     fn get_aeat720_button(&self) -> Html {
         if !self.aeat720_form_path.is_empty() {
             html! {
-              <a href={self.aeat720_form_path.clone()} alt="Informe D6 generado" download="fichero-720.txt"><button type={"button"}>{"Descargar informe AEAT 720"}</button></a>
+              <a id={"aeat_720_form"} href={self.aeat720_form_path.clone()} alt="Informe D6 generado" download="fichero-720.txt"><button type={"button"}>{"Descargar informe AEAT 720"}</button></a>
             }
         } else {
             html! {

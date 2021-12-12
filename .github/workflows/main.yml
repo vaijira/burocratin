@@ -73,11 +73,16 @@ jobs:
           restore-keys: |
             cargo-${{ runner.os }}-
 
-      - name: Run tests
+      - name: Run Unit tests
         uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --all-targets --workspace
+          args: --lib
+      - name: Run Doc tests
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --doc
 
   site:
     name: Deploy site

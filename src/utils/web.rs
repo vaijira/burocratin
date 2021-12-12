@@ -1,5 +1,5 @@
 use crate::{
-    data::{BalanceNote, FinancialInformation},
+    data::FinancialInformation,
     reports::{aeat_720::Aeat720Report, aforix_d6::create_d6_form},
 };
 
@@ -8,9 +8,9 @@ use js_sys::{Array, Uint8Array};
 use wasm_bindgen::JsValue;
 use web_sys::{Blob, BlobPropertyBag, Url};
 
-pub fn generate_d6(notes: &[BalanceNote], old_path: &str) -> Result<String> {
+pub fn generate_d6(info: &FinancialInformation, old_path: &str) -> Result<String> {
     let result: String;
-    match create_d6_form(notes) {
+    match create_d6_form(info) {
         Ok(d6_form) => {
             let mut blob_properties = BlobPropertyBag::new();
             blob_properties.type_("application/octet-stream");
@@ -48,13 +48,7 @@ pub fn generate_d6(notes: &[BalanceNote], old_path: &str) -> Result<String> {
 
 pub fn generate_720(info: &FinancialInformation, old_path: &str) -> Result<String> {
     let result;
-    let aeat720report = match Aeat720Report::new(
-        &info.balance_notes,
-        &info.account_notes,
-        info.year,
-        &info.nif,
-        &info.name,
-    ) {
+    let aeat720report = match Aeat720Report::new(info) {
         Ok(report) => report,
         Err(err) => {
             log::error!("Unable to generate Aeat720 report: {}", err);

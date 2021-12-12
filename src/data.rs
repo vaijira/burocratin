@@ -129,8 +129,12 @@ impl FinancialInformation {
             balance_notes: vec![],
             name: String::from(""),
             surname: String::from(""),
-            nif: String::from("0"),
+            nif: String::from(""),
             year: 0,
         }
+    }
+
+    pub fn full_name(&self) -> String {
+        self.surname.clone() + " " + &self.name
     }
 }

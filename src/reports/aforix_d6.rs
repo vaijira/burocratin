@@ -1,4 +1,4 @@
-use crate::data::BalanceNote;
+use crate::data::{BalanceNote, FinancialInformation};
 
 use rust_decimal::Decimal;
 use std::io::Write;
@@ -67,7 +67,11 @@ fn write_field<W: Write>(
     Ok(())
 }
 
-fn write_page_header<W: Write>(writer: &mut EventWriter<W>, context: &mut D6Context) -> Result<()> {
+fn write_page_header<W: Write>(
+    writer: &mut EventWriter<W>,
+    context: &mut D6Context,
+    info: &FinancialInformation,
+) -> Result<()> {
     writer.write(XmlEvent::start_element("Pagina"))?;
 
     writer.write(XmlEvent::start_element("Tipo"))?;
@@ -81,7 +85,18 @@ fn write_page_header<W: Write>(writer: &mut EventWriter<W>, context: &mut D6Cont
     writer.write(XmlEvent::start_element("Campos"))?;
 
     write_field(writer, context, "D")?;
-    context.field_id += 5;
+
+    write_field(writer, context, &info.year.to_string())?;
+
+    if context.page_id == 1 {
+        context.field_id += 2;
+        write_field(writer, context, &info.full_name())?;
+        write_field(writer, context, &info.nif)?;
+    } else {
+        write_field(writer, context, &info.full_name())?;
+        write_field(writer, context, &info.nif)?;
+        context.field_id += 2;
+    }
 
     Ok(())
 }
@@ -112,7 +127,11 @@ fn write_company_note<W: Write>(
     write_field(writer, context, &note.currency)?;
     write_field(writer, context, &format_valuation(&note.quantity))?;
     context.field_id += 1; // for empty field
-    write_field(writer, context, &format_valuation(&note.value_in_euro))?;
+    write_field(
+        writer,
+        context,
+        &format_valuation(&(note.quantity * note.price).round_dp(2)),
+    )?;
     context.field_id += 2;
     context.notes_index += 1;
 
@@ -122,13 +141,18 @@ fn write_company_note<W: Write>(
 fn write_first_page<W: Write>(
     writer: &mut EventWriter<W>,
     context: &mut D6Context,
-    notes: &[BalanceNote],
+    info: &FinancialInformation,
 ) -> Result<()> {
-    write_page_header(writer, context)?;
+    write_page_header(writer, context, info)?;
     context.field_id += 7;
 
-    while context.notes_index < notes.len() && context.notes_index < RECORDS_FIRST_PAGE {
-        write_company_note(writer, context, notes.get(context.notes_index).unwrap())?;
+    while context.notes_index < info.balance_notes.len() && context.notes_index < RECORDS_FIRST_PAGE
+    {
+        write_company_note(
+            writer,
+            context,
+            info.balance_notes.get(context.notes_index).unwrap(),
+        )?;
     }
 
     write_page_footer(writer, context)?;
@@ -139,18 +163,22 @@ fn write_first_page<W: Write>(
 fn write_page<W: Write>(
     writer: &mut EventWriter<W>,
     context: &mut D6Context,
-    notes: &[BalanceNote],
+    info: &FinancialInformation,
 ) -> Result<()> {
     context.field_id = 0x320;
 
-    write_page_header(writer, context)?;
+    write_page_header(writer, context, info)?;
 
     let initial_index = context.notes_index;
 
-    while context.notes_index < notes.len()
+    while context.notes_index < info.balance_notes.len()
         && context.notes_index < initial_index + RECORDS_PER_PAGE
     {
-        write_company_note(writer, context, notes.get(context.notes_index).unwrap())?;
+        write_company_note(
+            writer,
+            context,
+            info.balance_notes.get(context.notes_index).unwrap(),
+        )?;
     }
 
     write_page_footer(writer, context)?;
@@ -158,7 +186,7 @@ fn write_page<W: Write>(
     Ok(())
 }
 
-pub fn create_d6_form(notes: &[BalanceNote]) -> Result<Vec<u8>> {
+pub fn create_d6_form(info: &FinancialInformation) -> Result<Vec<u8>> {
     let mut target: Vec<u8> = Vec::new();
     let mut context = D6Context::new();
 
@@ -171,11 +199,11 @@ pub fn create_d6_form(notes: &[BalanceNote]) -> Result<Vec<u8>> {
 
     write_d6_header(&mut writer)?;
 
-    while context.notes_index < notes.len() {
+    while context.notes_index < info.balance_notes.len() {
         if context.notes_index == 0 {
-            write_first_page(&mut writer, &mut context, notes)?;
+            write_first_page(&mut writer, &mut context, info)?;
         } else {
-            write_page(&mut writer, &mut context, notes)?;
+            write_page(&mut writer, &mut context, info)?;
         }
     }
     write_d6_footer(&mut writer)?;
@@ -189,6 +217,20 @@ mod tests {
     use super::*;
     use crate::data::{BalanceNotes, BrokerInformation, CompanyInfo};
     use std::rc::Rc;
+
+    fn compare_strs_by_line(file1: &str, file2: &str) {
+        let mut line_number = 1;
+        let mut iter1 = file1.lines();
+        let mut iter2 = file2.lines();
+        while let (Some(line1), Some(line2)) = (iter1.next(), iter2.next()) {
+            assert_eq!(
+                line1, line2,
+                "comparing lines in files, line number: {}",
+                line_number
+            );
+            line_number += 1;
+        }
+    }
 
     #[test]
     fn create_d6_form_test() {
@@ -270,11 +312,17 @@ mod tests {
                 &degiro_broker,
             ),
         ];
+        let mut info = FinancialInformation::new();
+        info.balance_notes = balance_notes;
+        info.name = String::from("NILES");
+        info.surname = String::from("SMITH DONCIC");
+        info.year = 2019;
+        info.nif = String::from("123456789A");
 
-        let d6_form = create_d6_form(&balance_notes).unwrap();
-        assert_eq!(
-            D6_FORM_XML_RESULT.replace("\n", "\r\n"),
-            str::from_utf8(&d6_form[..]).unwrap()
+        let d6_form = create_d6_form(&info).unwrap();
+        compare_strs_by_line(
+            &D6_FORM_XML_RESULT.replace("\n", "\r\n"),
+            str::from_utf8(&d6_form[..]).unwrap(),
         );
     }
 
@@ -288,6 +336,18 @@ mod tests {
       <Campo>
         <Codigo>2DB</Codigo>
         <Datos>D</Datos>
+      </Campo>
+      <Campo>
+        <Codigo>2DC</Codigo>
+        <Datos>2019</Datos>
+      </Campo>
+      <Campo>
+        <Codigo>2DF</Codigo>
+        <Datos>SMITH DONCIC NILES</Datos>
+      </Campo>
+      <Campo>
+        <Codigo>2E0</Codigo>
+        <Datos>123456789A</Datos>
       </Campo>
       <Campo>
         <Codigo>2E8</Codigo>
@@ -323,7 +383,7 @@ mod tests {
       </Campo>
       <Campo>
         <Codigo>2F1</Codigo>
-        <Datos>2247,00</Datos>
+        <Datos>202032,00</Datos>
       </Campo>
       <Campo>
         <Codigo>2F4</Codigo>
@@ -359,7 +419,7 @@ mod tests {
       </Campo>
       <Campo>
         <Codigo>2FD</Codigo>
-        <Datos>2401,07</Datos>
+        <Datos>2752,89</Datos>
       </Campo>
       <Campo>
         <Codigo>300</Codigo>
@@ -395,7 +455,7 @@ mod tests {
       </Campo>
       <Campo>
         <Codigo>309</Codigo>
-        <Datos>2555,72</Datos>
+        <Datos>2930,20</Datos>
       </Campo>
     </Campos>
   </Pagina>
@@ -405,6 +465,18 @@ mod tests {
       <Campo>
         <Codigo>320</Codigo>
         <Datos>D</Datos>
+      </Campo>
+      <Campo>
+        <Codigo>321</Codigo>
+        <Datos>2019</Datos>
+      </Campo>
+      <Campo>
+        <Codigo>322</Codigo>
+        <Datos>SMITH DONCIC NILES</Datos>
+      </Campo>
+      <Campo>
+        <Codigo>323</Codigo>
+        <Datos>123456789A</Datos>
       </Campo>
       <Campo>
         <Codigo>326</Codigo>
@@ -476,7 +548,7 @@ mod tests {
       </Campo>
       <Campo>
         <Codigo>33B</Codigo>
-        <Datos>1005,43</Datos>
+        <Datos>90400,00</Datos>
       </Campo>
       <Campo>
         <Codigo>33E</Codigo>
@@ -512,7 +584,7 @@ mod tests {
       </Campo>
       <Campo>
         <Codigo>347</Codigo>
-        <Datos>2039,76</Datos>
+        <Datos>2338,64</Datos>
       </Campo>
     </Campos>
   </Pagina>

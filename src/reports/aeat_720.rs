@@ -1,4 +1,4 @@
-use crate::data::{AccountNote, BalanceNote};
+use crate::data::{AccountNote, BalanceNote, FinancialInformation};
 use anyhow::{bail, Result};
 use chrono::NaiveDate;
 use encoding_rs::ISO_8859_15;
@@ -201,7 +201,7 @@ impl Default for SummaryRegister {
             AEAT_720_DOCUMENT_ID,
         );
 
-        Aeat720Field::write_numeric_field(&mut fields, Self::ID_FIELD, 0);
+        Aeat720Field::write_numeric_field(&mut fields, Self::ID_FIELD, 1);
 
         Aeat720Field::write_field(&mut fields, Self::COMPLEMENTARY_FIELD, "");
         Aeat720Field::write_field(&mut fields, Self::REPLACEMENT_FIELD, "");
@@ -232,6 +232,8 @@ impl SummaryRegister {
         Aeat720Field::write_numeric_field(&mut fields, Self::YEAR_FIELD, year)?;
 
         Aeat720Field::write_field(&mut fields, Self::NAME_FIELD, name)?;
+
+        Aeat720Field::write_field(&mut fields, Self::CONTACT_NAME_FIELD, name)?;
 
         Aeat720Field::write_numeric_field(
             &mut fields,
@@ -458,7 +460,11 @@ impl DetailRegister {
         Aeat720Field::write_field(&mut fields, Self::NIF_FIELD, nif)?;
         Aeat720Field::write_field(&mut fields, Self::DECLARED_NIF_FIELD, nif)?;
         Aeat720Field::write_field(&mut fields, Self::NAME_FIELD, name)?;
-        // Aeat720Field::write_field(&mut fields, Self::COUNTRY_CODE_FIELD, note.broker_country_code)?;
+        Aeat720Field::write_field(
+            &mut fields,
+            Self::COUNTRY_CODE_FIELD,
+            &note.broker.country_code,
+        )?;
         Aeat720Field::write_field(&mut fields, Self::STOCK_ID_FIELD, &note.company.isin)?;
         Aeat720Field::write_field(
             &mut fields,
@@ -533,22 +539,23 @@ pub struct Aeat720Report {
 }
 
 impl Aeat720Report {
-    pub fn new(
-        balance_sheet: &[BalanceNote],
-        transactions: &[AccountNote],
-        year: usize,
-        nif: &str,
-        name: &str,
-    ) -> Result<Aeat720Report> {
+    pub fn new(info: &FinancialInformation) -> Result<Aeat720Report> {
         let mut details = Vec::new();
+        let full_name = info.full_name();
 
-        for balance_note in balance_sheet.iter() {
-            let detail = DetailRegister::new(balance_note, transactions, year, nif, name)?;
+        for balance_note in &info.balance_notes {
+            let detail = DetailRegister::new(
+                balance_note,
+                &info.account_notes,
+                info.year,
+                &info.nif,
+                &full_name,
+            )?;
             details.push(detail);
         }
 
         Ok(Aeat720Report {
-            summary: SummaryRegister::new(balance_sheet, year, nif, name)?,
+            summary: SummaryRegister::new(&info.balance_notes, info.year, &info.nif, &full_name)?,
             details,
         })
     }
@@ -681,7 +688,7 @@ mod tests {
             b' ', b' ', b' ', b' ', b' ', b' ', b' ', b' ', b' ', b' ', b' ',
             b' ', // contact name field
             b'7', b'2', b'0', // second document id
-            b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'0', // id
+            b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'1', // id
             b' ', //  complementary field
             b' ', // replacement field
             b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'0',
