@@ -279,8 +279,7 @@ impl App {
             <li>{"El código de país que usará para Degiro será NL y para interactive brokers IE."}</li>
             <li>{"Modelo 720:Revisar el código de domiciliación del país, por defecto cogerá el del ISIN, pero esto no siempre es correcto."}</li>
             <li>{"Modelo 720: Revisar la fecha de primera incorporación si tu primera transacción fue antes del año a declarar."}</li>
-            <li>{"Modelo D6: Revisar la clase de valor que tenemos, por defecto 01 - Acciones con derecho a voto."}</li>
-            <li>{"Modelo D6: Si la moneda es GBX, ajustarla a GBP."}</li>
+            <li>{"Modelo D6: Revisar la clase de valor que tenemos, por defecto: \"01 - Acciones con derecho a voto\"."}</li>
             </ul>
             <p>{"El autor no se hace responsable del uso resultante de esta aplicación."}</p>
           </>

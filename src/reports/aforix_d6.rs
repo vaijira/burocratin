@@ -10,6 +10,9 @@ const AFORIX_D6_FORM_TYPE: &str = "D-6";
 const RECORDS_FIRST_PAGE: usize = 3;
 const RECORDS_PER_PAGE: usize = 6;
 
+const GBX_CURRENCY: &str = "GBX";
+const GBP_CURRENCY: &str = "GBP";
+
 struct D6Context {
     page_id: u32,
     field_id: u32,
@@ -124,14 +127,19 @@ fn write_company_note<W: Write>(
     write_field(writer, context, "400")?;
     write_field(writer, context, "01")?;
     write_field(writer, context, &note.broker.country_code)?;
-    write_field(writer, context, &note.currency)?;
+    if note.currency == GBX_CURRENCY {
+        write_field(writer, context, GBP_CURRENCY)?;
+    } else {
+        write_field(writer, context, &note.currency)?;
+    }
     write_field(writer, context, &format_valuation(&note.quantity))?;
     context.field_id += 1; // for empty field
-    write_field(
-        writer,
-        context,
-        &format_valuation(&(note.quantity * note.price).round_dp(2)),
-    )?;
+    let price = if note.currency == GBX_CURRENCY {
+        ((note.quantity * note.price) / Decimal::new(100, 0)).round_dp(2)
+    } else {
+        (note.quantity * note.price).round_dp(2)
+    };
+    write_field(writer, context, &format_valuation(&price))?;
     context.field_id += 2;
     context.notes_index += 1;
 
@@ -375,7 +383,7 @@ mod tests {
       </Campo>
       <Campo>
         <Codigo>2EE</Codigo>
-        <Datos>GBX</Datos>
+        <Datos>GBP</Datos>
       </Campo>
       <Campo>
         <Codigo>2EF</Codigo>
@@ -383,7 +391,7 @@ mod tests {
       </Campo>
       <Campo>
         <Codigo>2F1</Codigo>
-        <Datos>202032,00</Datos>
+        <Datos>2020,32</Datos>
       </Campo>
       <Campo>
         <Codigo>2F4</Codigo>
@@ -540,7 +548,7 @@ mod tests {
       </Campo>
       <Campo>
         <Codigo>338</Codigo>
-        <Datos>GBX</Datos>
+        <Datos>GBP</Datos>
       </Campo>
       <Campo>
         <Codigo>339</Codigo>
@@ -548,7 +556,7 @@ mod tests {
       </Campo>
       <Campo>
         <Codigo>33B</Codigo>
-        <Datos>90400,00</Datos>
+        <Datos>904,00</Datos>
       </Campo>
       <Campo>
         <Codigo>33E</Codigo>

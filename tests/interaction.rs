@@ -1,15 +1,10 @@
 mod common;
 
-use thirtyfour::prelude::*;
+use thirtyfour::{http::reqwest_async::ReqwestDriverAsync, prelude::*, GenericWebDriver};
 
-#[tokio::test]
-#[ignore]
-async fn test_ib_2019_chrome() -> WebDriverResult<()> {
-    common::setup();
-    let mut caps = DesiredCapabilities::chrome();
-    let caps = caps.set_headless()?;
-    let driver = WebDriver::new("http://localhost:4444", &caps).await?;
-
+async fn fill_all_fields(
+    driver: &GenericWebDriver<ReqwestDriverAsync>,
+) -> WebDriverResult<(String, String)> {
     driver.get("http://localhost:8080").await?;
 
     let name_input = driver.find_element(By::Id("name")).await?;
@@ -64,20 +59,69 @@ async fn test_ib_2019_chrome() -> WebDriverResult<()> {
         .await
         .expect("blob string");
 
-    // Always explicitly close the browser. There are no async destructors.
-    driver.quit().await?;
+    Ok((aeat_720_form, aforix_d6_form))
+}
 
+fn check_report_content(aeat_720_report: &str, aforix_d6_report: &str) {
     let aeat_720_test_form = common::load_test_file(
         &(env!("CARGO_MANIFEST_DIR").to_owned() + "/tests/data/fichero-720_2019.txt"),
     )
     .expect("aeat 720 test file should exist");
-    common::compare_strs_by_line(&aeat_720_form, &aeat_720_test_form);
+    common::compare_strs_by_line(aeat_720_report, &aeat_720_test_form);
 
     let aforix_d6_test_form = common::load_test_file(
         &(env!("CARGO_MANIFEST_DIR").to_owned() + "/tests/data/d6_2019.aforixm"),
     )
     .expect("aforix D6 test file should exist");
-    common::compare_strs_by_line(&aforix_d6_form, &aforix_d6_test_form);
+    common::compare_strs_by_line(&aforix_d6_report, &aforix_d6_test_form);
+}
+
+#[tokio::test]
+#[ignore]
+async fn test_all_reports_2019_chrome() -> WebDriverResult<()> {
+    common::setup();
+    let mut caps = DesiredCapabilities::chrome();
+    let caps = caps.set_headless()?;
+
+    let driver = WebDriver::new("http://localhost:4444", &caps).await?;
+
+    let result = fill_all_fields(&driver).await;
+
+    driver.quit().await?;
+
+    if let Ok((aeat_720_form, aforix_d6_form)) = result {
+        check_report_content(&aeat_720_form, &aforix_d6_form);
+    } else {
+        assert!(
+            false,
+            "Unable to obtain AEAT 720 form and/or D6 aforix form"
+        );
+    }
+
+    Ok(())
+}
+
+#[tokio::test]
+#[ignore]
+async fn test_all_reports_2019_firefox() -> WebDriverResult<()> {
+    common::setup();
+    let mut caps = DesiredCapabilities::firefox();
+    let caps = caps.set_headless()?;
+
+    let driver = WebDriver::new("http://localhost:4444", &caps).await?;
+
+    let result = fill_all_fields(&driver).await;
+
+    driver.quit().await?;
+
+    if let Ok((aeat_720_form, aforix_d6_form)) = result {
+        check_report_content(&aeat_720_form, &aforix_d6_form);
+    } else {
+        assert!(
+            false,
+            "Unable to obtain AEAT 720 form and/or D6 aforix form"
+        );
+    }
 
     Ok(())
 }

@@ -83,7 +83,7 @@
       </Campo>
       <Campo>
         <Codigo>2FA</Codigo>
-        <Datos>GBX</Datos>
+        <Datos>GBP</Datos>
       </Campo>
       <Campo>
         <Codigo>2FB</Codigo>
@@ -91,7 +91,7 @@
       </Campo>
       <Campo>
         <Codigo>2FD</Codigo>
-        <Datos>329656,00</Datos>
+        <Datos>3296,56</Datos>
       </Campo>
       <Campo>
         <Codigo>300</Codigo>
@@ -284,7 +284,7 @@
       </Campo>
       <Campo>
         <Codigo>350</Codigo>
-        <Datos>GBX</Datos>
+        <Datos>GBP</Datos>
       </Campo>
       <Campo>
         <Codigo>351</Codigo>
@@ -292,7 +292,7 @@
       </Campo>
       <Campo>
         <Codigo>353</Codigo>
-        <Datos>819250,00</Datos>
+        <Datos>8192,50</Datos>
       </Campo>
       <Campo>
         <Codigo>356</Codigo>
@@ -356,7 +356,7 @@
       </Campo>
       <Campo>
         <Codigo>368</Codigo>
-        <Datos>GBX</Datos>
+        <Datos>GBP</Datos>
       </Campo>
       <Campo>
         <Codigo>369</Codigo>
@@ -364,7 +364,7 @@
       </Campo>
       <Campo>
         <Codigo>36B</Codigo>
-        <Datos>403920,00</Datos>
+        <Datos>4039,20</Datos>
       </Campo>
     </Campos>
   </Pagina>
