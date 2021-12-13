@@ -44,7 +44,7 @@ async fn fill_all_fields(
         .expect("href for form should have been generated");
 
     log::info!("href aeat 720 form: ->{}<-", href_aeat_720_form);
-    let aeat_720_form = common::get_file_content_chrome(&driver, &href_aeat_720_form)
+    let aeat_720_form = common::get_file_content_chrome(driver, &href_aeat_720_form)
         .await
         .expect("blob string");
 
@@ -55,7 +55,7 @@ async fn fill_all_fields(
         .expect("href for form should have been generated");
 
     log::info!("href aforix d6 form: ->{}<-", href_aforix_d6_form);
-    let aforix_d6_form = common::get_file_content_chrome(&driver, &href_aforix_d6_form)
+    let aforix_d6_form = common::get_file_content_chrome(driver, &href_aforix_d6_form)
         .await
         .expect("blob string");
 
@@ -73,7 +73,7 @@ fn check_report_content(aeat_720_report: &str, aforix_d6_report: &str) {
         &(env!("CARGO_MANIFEST_DIR").to_owned() + "/tests/data/d6_2019.aforixm"),
     )
     .expect("aforix D6 test file should exist");
-    common::compare_strs_by_line(&aforix_d6_report, &aforix_d6_test_form);
+    common::compare_strs_by_line(aforix_d6_report, &aforix_d6_test_form);
 }
 
 #[tokio::test]
@@ -92,10 +92,7 @@ async fn test_all_reports_2019_chrome() -> WebDriverResult<()> {
     if let Ok((aeat_720_form, aforix_d6_form)) = result {
         check_report_content(&aeat_720_form, &aforix_d6_form);
     } else {
-        assert!(
-            false,
-            "Unable to obtain AEAT 720 form and/or D6 aforix form"
-        );
+        panic!("Unable to obtain AEAT 720 form and/or D6 aforix form");
     }
 
     Ok(())
@@ -117,10 +114,7 @@ async fn test_all_reports_2019_firefox() -> WebDriverResult<()> {
     if let Ok((aeat_720_form, aforix_d6_form)) = result {
         check_report_content(&aeat_720_form, &aforix_d6_form);
     } else {
-        assert!(
-            false,
-            "Unable to obtain AEAT 720 form and/or D6 aforix form"
-        );
+        panic!("Unable to obtain AEAT 720 form and/or D6 aforix form");
     }
 
     Ok(())
