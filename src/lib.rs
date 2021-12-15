@@ -5,7 +5,7 @@
     unused_extern_crates,
     warnings
 )]
-
+#![allow(clippy::inconsistent_digit_grouping)]
 //! helps with burocracy
 
 #![recursion_limit = "4096"]

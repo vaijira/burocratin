@@ -78,7 +78,7 @@ impl DegiroCSVParser {
 mod tests {
     use super::*;
 
-    fn compare_vectors_by_item<T>(vec1: &Vec<T>, vec2: &Vec<T>)
+    fn compare_vectors_by_item<T>(vec1: &[T], vec2: &[T])
     where
         T: std::fmt::Debug + std::cmp::PartialEq,
     {
@@ -96,6 +96,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(clippy::mistyped_literal_suffixes)]
     fn test_parse_csv() {
         let degiro_broker: Rc<BrokerInformation> = Rc::new(BrokerInformation::new(
             String::from("Degiro"),

@@ -456,7 +456,7 @@ mod tests {
         );
         assert_eq!(
             DegiroParser::decimal_value("0,9030\n"),
-            Ok(("\n", Decimal::new(09030, 4)))
+            Ok(("\n", Decimal::new(9030, 4)))
         );
         assert_eq!(
             DegiroParser::decimal_value("a234,23\n"),
@@ -482,7 +482,7 @@ mod tests {
         );
         assert_eq!(
             DegiroParser::earnings_value("0,9030\n"),
-            Ok(("\n", Decimal::new(09030, 4)))
+            Ok(("\n", Decimal::new(9030, 4)))
         );
         assert_eq!(
             DegiroParser::earnings_value("1234\n"),
@@ -710,7 +710,7 @@ C
                 Decimal::new(21, 0),
                 Decimal::new(154_7600, 4),
                 Decimal::new(3_249_96, 2),
-                Decimal::new(0_57, 2),
+                Decimal::new(57, 2),
                 &degiro_broker,
             ),
             AccountNote::new(
@@ -723,7 +723,7 @@ C
                 Decimal::new(140, 0),
                 Decimal::new(23_8900, 4),
                 Decimal::new(3_344_60, 2),
-                Decimal::new(0_99, 2),
+                Decimal::new(99, 2),
                 &degiro_broker,
             ),
             AccountNote::new(
@@ -749,7 +749,7 @@ C
                 Decimal::new(228, 0),
                 Decimal::new(1_9000, 4),
                 Decimal::new(433_20, 2),
-                Decimal::new(0_25, 2),
+                Decimal::new(25, 2),
                 &degiro_broker,
             ),
             AccountNote::new(
@@ -775,7 +775,7 @@ C
                 Decimal::new(41, 0),
                 Decimal::new(56_6000, 4),
                 Decimal::new(2_320_60, 2),
-                Decimal::new(0_64, 2),
+                Decimal::new(64, 2),
                 &degiro_broker,
             ),
         ];
@@ -989,7 +989,7 @@ C
 
         let acc_notes = vec![
             AccountNote::new(
-                NaiveDate::from_ymd(2020, 09, 15),
+                NaiveDate::from_ymd(2020, 9, 15),
                 CompanyInfo {
                     name: String::from("CTT SYSTEMS"),
                     isin: String::from("SE0000418923"),
@@ -1002,7 +1002,7 @@ C
                 &degiro_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2020, 09, 15),
+                NaiveDate::from_ymd(2020, 9, 15),
                 CompanyInfo {
                     name: String::from("CTT SYSTEMS"),
                     isin: String::from("SE0000418923"),
@@ -1011,11 +1011,11 @@ C
                 Decimal::new(13, 0),
                 Decimal::new(129_0000, 4),
                 Decimal::new(1677_00, 2),
-                Decimal::new(0_08, 2),
+                Decimal::new(8, 2),
                 &degiro_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2020, 09, 24),
+                NaiveDate::from_ymd(2020, 9, 24),
                 CompanyInfo {
                     name: String::from("CTT SYSTEMS"),
                     isin: String::from("SE0000418923"),
@@ -1028,7 +1028,7 @@ C
                 &degiro_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2020, 06, 11),
+                NaiveDate::from_ymd(2020, 6, 11),
                 CompanyInfo {
                     name: String::from("CVD EQUIPMENT CORPORAT"),
                     isin: String::from("US1266011030"),
@@ -1041,7 +1041,7 @@ C
                 &degiro_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2020, 06, 11),
+                NaiveDate::from_ymd(2020, 6, 11),
                 CompanyInfo {
                     name: String::from("CVD EQUIPMENT CORPORAT"),
                     isin: String::from("US1266011030"),
@@ -1054,7 +1054,7 @@ C
                 &degiro_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2020, 01, 13),
+                NaiveDate::from_ymd(2020, 1, 13),
                 CompanyInfo {
                     name: String::from("EVI INDUSTRIES INC"),
                     isin: String::from("US26929N1028"),
@@ -1063,11 +1063,11 @@ C
                 Decimal::new(100, 0),
                 Decimal::new(25_3300, 4),
                 Decimal::new(2533_00, 2),
-                Decimal::new(0_86, 2),
+                Decimal::new(86, 2),
                 &degiro_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2020, 01, 13),
+                NaiveDate::from_ymd(2020, 1, 13),
                 CompanyInfo {
                     name: String::from("EVI INDUSTRIES INC"),
                     isin: String::from("US26929N1028"),
@@ -1076,11 +1076,11 @@ C
                 Decimal::new(40, 0),
                 Decimal::new(25_3700, 4),
                 Decimal::new(1014_80, 2),
-                Decimal::new(0_14, 2),
+                Decimal::new(14, 2),
                 &degiro_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2020, 02, 12),
+                NaiveDate::from_ymd(2020, 2, 12),
                 CompanyInfo {
                     name: String::from("EVI INDUSTRIES INC"),
                     isin: String::from("US26929N1028"),
@@ -1089,11 +1089,11 @@ C
                 Decimal::new(100, 0),
                 Decimal::new(24_3550, 4),
                 Decimal::new(2435_50, 2),
-                Decimal::new(0_87, 2),
+                Decimal::new(87, 2),
                 &degiro_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2020, 02, 12),
+                NaiveDate::from_ymd(2020, 2, 12),
                 CompanyInfo {
                     name: String::from("EVI INDUSTRIES INC"),
                     isin: String::from("US26929N1028"),
@@ -1102,11 +1102,11 @@ C
                 Decimal::new(38, 0),
                 Decimal::new(24_4150, 4),
                 Decimal::new(927_77, 2),
-                Decimal::new(0_14, 2),
+                Decimal::new(14, 2),
                 &degiro_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2020, 03, 05),
+                NaiveDate::from_ymd(2020, 3, 5),
                 CompanyInfo {
                     name: String::from("EVI INDUSTRIES INC"),
                     isin: String::from("US26929N1028"),
@@ -1115,11 +1115,11 @@ C
                 Decimal::new(40, 0),
                 Decimal::new(21_0000, 4),
                 Decimal::new(840_00, 2),
-                Decimal::new(0_64, 2),
+                Decimal::new(64, 2),
                 &degiro_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2020, 03, 05),
+                NaiveDate::from_ymd(2020, 3, 5),
                 CompanyInfo {
                     name: String::from("EVI INDUSTRIES INC"),
                     isin: String::from("US26929N1028"),
@@ -1128,11 +1128,11 @@ C
                 Decimal::new(40, 0),
                 Decimal::new(21_0000, 4),
                 Decimal::new(840_00, 2),
-                Decimal::new(0_14, 2),
+                Decimal::new(14, 2),
                 &degiro_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2020, 08, 11),
+                NaiveDate::from_ymd(2020, 8, 11),
                 CompanyInfo {
                     name: String::from("FINANCIERE ODET"),
                     isin: String::from("FR0000062234"),
@@ -1145,7 +1145,7 @@ C
                 &degiro_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2020, 03, 06),
+                NaiveDate::from_ymd(2020, 3, 6),
                 CompanyInfo {
                     name: String::from("FLOWTRADERS"),
                     isin: String::from("NL0011279492"),
@@ -1158,7 +1158,7 @@ C
                 &degiro_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2020, 06, 11),
+                NaiveDate::from_ymd(2020, 6, 11),
                 CompanyInfo {
                     name: String::from("FLOWTRADERS"),
                     isin: String::from("NL0011279492"),
@@ -1171,7 +1171,7 @@ C
                 &degiro_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2020, 07, 07),
+                NaiveDate::from_ymd(2020, 7, 7),
                 CompanyInfo {
                     name: String::from("GENUS"),
                     isin: String::from("GB0002074580"),
@@ -1184,7 +1184,7 @@ C
                 &degiro_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2020, 05, 20),
+                NaiveDate::from_ymd(2020, 5, 20),
                 CompanyInfo {
                     name: String::from("GEORGIA CAPITAL"),
                     isin: String::from("GB00BF4HYV08"),
@@ -1197,7 +1197,7 @@ C
                 &degiro_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2020, 05, 20),
+                NaiveDate::from_ymd(2020, 5, 20),
                 CompanyInfo {
                     name: String::from("GEORGIA CAPITAL"),
                     isin: String::from("GB00BF4HYV08"),
@@ -1210,7 +1210,7 @@ C
                 &degiro_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2020, 05, 20),
+                NaiveDate::from_ymd(2020, 5, 20),
                 CompanyInfo {
                     name: String::from("GEORGIA CAPITAL"),
                     isin: String::from("GB00BF4HYV08"),
@@ -1219,11 +1219,11 @@ C
                 Decimal::new(10, 0),
                 Decimal::new(447_5000, 4),
                 Decimal::new(4475_00, 2),
-                Decimal::new(0_03, 2),
+                Decimal::new(3, 2),
                 &degiro_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2020, 05, 20),
+                NaiveDate::from_ymd(2020, 5, 20),
                 CompanyInfo {
                     name: String::from("GEORGIA CAPITAL"),
                     isin: String::from("GB00BF4HYV08"),
@@ -1236,7 +1236,7 @@ C
                 &degiro_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2020, 05, 19),
+                NaiveDate::from_ymd(2020, 5, 19),
                 CompanyInfo {
                     name: String::from("GRAVITY CO. LTD. - AM"),
                     isin: String::from("US38911N2062"),
@@ -1245,11 +1245,11 @@ C
                 Decimal::new(100, 0),
                 Decimal::new(42_0400, 4),
                 Decimal::new(4204_00, 2),
-                Decimal::new(0_87, 2),
+                Decimal::new(87, 2),
                 &degiro_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2020, 05, 19),
+                NaiveDate::from_ymd(2020, 5, 19),
                 CompanyInfo {
                     name: String::from("GRAVITY CO. LTD. - AM"),
                     isin: String::from("US38911N2062"),
@@ -1258,11 +1258,11 @@ C
                 Decimal::new(2, 0),
                 Decimal::new(42_0100, 4),
                 Decimal::new(84_02, 2),
-                Decimal::new(0_01, 2),
+                Decimal::new(1, 2),
                 &degiro_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2020, 02, 18),
+                NaiveDate::from_ymd(2020, 2, 18),
                 CompanyInfo {
                     name: String::from("INTER RAO LIETUVA AB"),
                     isin: String::from("LT0000128621"),
@@ -1275,7 +1275,7 @@ C
                 &degiro_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2020, 02, 18),
+                NaiveDate::from_ymd(2020, 2, 18),
                 CompanyInfo {
                     name: String::from("INTER RAO LIETUVA AB"),
                     isin: String::from("LT0000128621"),
@@ -1284,11 +1284,11 @@ C
                 Decimal::new(49, 0),
                 Decimal::new(20_7000, 4),
                 Decimal::new(1014_30, 2),
-                Decimal::new(0_38, 2),
+                Decimal::new(38, 2),
                 &degiro_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2020, 02, 18),
+                NaiveDate::from_ymd(2020, 2, 18),
                 CompanyInfo {
                     name: String::from("INTER RAO LIETUVA AB"),
                     isin: String::from("LT0000128621"),
@@ -1301,7 +1301,7 @@ C
                 &degiro_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2020, 01, 17),
+                NaiveDate::from_ymd(2020, 1, 17),
                 CompanyInfo {
                     name: String::from("KEYWORDS STUDIO"),
                     isin: String::from("GB00BBQ38507"),
@@ -1314,7 +1314,7 @@ C
                 &degiro_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2020, 01, 17),
+                NaiveDate::from_ymd(2020, 1, 17),
                 CompanyInfo {
                     name: String::from("KEYWORDS STUDIO"),
                     isin: String::from("GB00BBQ38507"),
@@ -1327,7 +1327,7 @@ C
                 &degiro_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2020, 01, 17),
+                NaiveDate::from_ymd(2020, 1, 17),
                 CompanyInfo {
                     name: String::from("MONDO TV"),
                     isin: String::from("IT0001447785"),
@@ -1340,7 +1340,7 @@ C
                 &degiro_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2020, 04, 01),
+                NaiveDate::from_ymd(2020, 4, 1),
                 CompanyInfo {
                     name: String::from("Okeanis Eco Tankers Corp"),
                     isin: String::from("MHY641771016"),
@@ -1353,7 +1353,7 @@ C
                 &degiro_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2020, 04, 01),
+                NaiveDate::from_ymd(2020, 4, 1),
                 CompanyInfo {
                     name: String::from("Okeanis Eco Tankers Corp"),
                     isin: String::from("MHY641771016"),
@@ -1362,11 +1362,11 @@ C
                 Decimal::new(25, 0),
                 Decimal::new(74_0000, 4),
                 Decimal::new(1850_00, 2),
-                Decimal::new(0_08, 2),
+                Decimal::new(8, 2),
                 &degiro_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2020, 04, 01),
+                NaiveDate::from_ymd(2020, 4, 1),
                 CompanyInfo {
                     name: String::from("Okeanis Eco Tankers Corp"),
                     isin: String::from("MHY641771016"),
@@ -1379,7 +1379,7 @@ C
                 &degiro_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2020, 07, 06),
+                NaiveDate::from_ymd(2020, 7, 6),
                 CompanyInfo {
                     name: String::from("ROCKROSE ENERGY"),
                     isin: String::from("GB00BYNFCH09"),
@@ -1392,7 +1392,7 @@ C
                 &degiro_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2020, 01, 13),
+                NaiveDate::from_ymd(2020, 1, 13),
                 CompanyInfo {
                     name: String::from("SHAKE SHACK INC. CLAS"),
                     isin: String::from("US8190471016"),
@@ -1401,7 +1401,7 @@ C
                 Decimal::new(34, 0),
                 Decimal::new(60_6300, 4),
                 Decimal::new(2061_42, 2),
-                Decimal::new(0_62, 2),
+                Decimal::new(62, 2),
                 &degiro_broker,
             ),
         ];

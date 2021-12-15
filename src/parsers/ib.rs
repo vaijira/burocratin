@@ -420,7 +420,7 @@ mod tests {
                 Decimal::new(14, 0),
                 Decimal::new(3_8800, 4),
                 Decimal::new(54_32, 2),
-                Decimal::new(0_07, 2),
+                Decimal::new(7, 2),
                 &ib_broker,
             ),
         ];
