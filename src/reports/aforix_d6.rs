@@ -1,4 +1,4 @@
-use crate::data::{BalanceNote, FinancialInformation};
+use crate::data::{BalanceNote, FinancialInformation, SPAIN_COUNTRY_CODE};
 
 use rust_decimal::Decimal;
 use std::io::Write;
@@ -124,7 +124,11 @@ fn write_company_note<W: Write>(
     write_field(writer, context, "N")?;
     write_field(writer, context, &note.company.isin)?;
     write_field(writer, context, &note.company.name)?;
-    write_field(writer, context, "400")?;
+    if &note.company.name[0..2] == SPAIN_COUNTRY_CODE {
+        write_field(writer, context, "800")?;
+    } else {
+        write_field(writer, context, "400")?;
+    }
     write_field(writer, context, "01")?;
     write_field(writer, context, &note.broker.country_code)?;
     if note.currency == GBX_CURRENCY {

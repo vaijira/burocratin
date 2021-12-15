@@ -23,6 +23,7 @@ utf16-ext = "0.1"
 byteorder = "1.2"
 chrono = { version = "0.4", features = ["serde"] }
 console_error_panic_hook = "0.1"
+csv = "1.1"
 encoding_rs = "0.8"
 html5ever = "0.25"
 instant = { version = "0.1", features =  [ "wasm-bindgen", "inaccurate" ] }

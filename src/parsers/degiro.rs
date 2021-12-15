@@ -355,8 +355,8 @@ impl DegiroParser {
         Ok(result)
     }
 
-    pub fn new(content: String, broker: &Rc<BrokerInformation>) -> DegiroParser {
-        DegiroParser {
+    pub fn new(content: String, broker: &Rc<BrokerInformation>) -> Self {
+        Self {
             content,
             broker: Rc::clone(broker),
         }

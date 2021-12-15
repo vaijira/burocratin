@@ -6,6 +6,8 @@ use std::{convert::From, rc::Rc};
 pub type AccountNotes = Vec<AccountNote>;
 pub type BalanceNotes = Vec<BalanceNote>;
 
+pub const SPAIN_COUNTRY_CODE: &str = "ES";
+
 #[derive(Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub enum BrokerOperation {
     Buy,

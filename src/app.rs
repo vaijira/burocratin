@@ -2,6 +2,7 @@ use std::rc::Rc;
 use std::vec;
 
 use crate::data::{BrokerInformation, FinancialInformation};
+use crate::parsers::degiro_csv::DegiroCSVParser;
 use crate::utils::web;
 use crate::{parsers::degiro::DegiroParser, parsers::ib::IBParser};
 use crate::{parsers::pdf::read_pdf, utils::zip::read_zip_str};
@@ -21,7 +22,7 @@ use yew_styles::layouts::{
 use yew_styles::styles::Size;
 use yew_styles::text::{Text, TextType};
 
-const DEFAULT_YEAR: usize = 2020;
+const DEFAULT_YEAR: usize = 2021;
 
 pub struct App {
     degiro_broker: Rc<BrokerInformation>,
@@ -41,10 +42,13 @@ pub enum Msg {
     GenerateD6,
     GenerateAeat720,
     UploadDegiroFile(File),
+    UploadDegiroCSVFile(File),
     UploadIBFile(File),
     UploadedDegiroFile(FileData),
+    UploadedDegiroCSVFile(FileData),
     UploadedIBFile(FileData),
     ErrorUploadPdf,
+    ErrorUploadCSV,
     ErrorUploadZip,
 }
 
@@ -146,12 +150,47 @@ impl Component for App {
                             .append(&mut balance_notes);
                     } else {
                         log::error!(
-                            "Error loading degiro account notes: {}",
+                            "Error loading degiro pdf notes: {}",
                             pdf_content.err().unwrap()
                         );
                     }
                 } else {
                     log::error!("Unable to read pdf content");
+                }
+                self.tasks.clear();
+                self.link.send_message(Msg::GenerateD6);
+                self.link.send_message(Msg::GenerateAeat720);
+                true
+            }
+            Msg::UploadedDegiroCSVFile(file) => {
+                log::debug!(
+                    "pdf file: {} len: {}, content: {:X?}",
+                    file.name,
+                    file.content.len(),
+                    file.content.get(0..16)
+                );
+
+                if let Ok(data) = String::from_utf8(file.content) {
+                    let parser = DegiroCSVParser::new(data, &self.degiro_broker);
+                    let csv_content = parser.parse_csv();
+                    if let Ok(mut balance_notes) = csv_content {
+                        self.financial_information
+                            .account_notes
+                            .retain(|note| note.broker != self.degiro_broker);
+                        self.financial_information
+                            .balance_notes
+                            .retain(|note| note.broker != self.degiro_broker);
+                        self.financial_information
+                            .balance_notes
+                            .append(&mut balance_notes);
+                    } else {
+                        log::error!(
+                            "Error loading degiro csv notes: {}",
+                            csv_content.err().unwrap()
+                        );
+                    }
+                } else {
+                    log::error!("Unable to read csv content");
                 }
                 self.tasks.clear();
                 self.link.send_message(Msg::GenerateD6);
@@ -203,6 +242,12 @@ impl Component for App {
                     .push(ReaderService::read_file(file, callback).unwrap());
                 false
             }
+            Msg::UploadDegiroCSVFile(file) => {
+                let callback = self.link.callback(Msg::UploadedDegiroCSVFile);
+                self.tasks
+                    .push(ReaderService::read_file(file, callback).unwrap());
+                false
+            }
             Msg::UploadIBFile(file) => {
                 let callback = self.link.callback(Msg::UploadedIBFile);
                 self.tasks
@@ -211,6 +256,10 @@ impl Component for App {
             }
             Msg::ErrorUploadPdf => {
                 log::error!("Error uploading Degiro pdf");
+                false
+            }
+            Msg::ErrorUploadCSV => {
+                log::error!("Error uploading Degiro CSV");
                 false
             }
             Msg::ErrorUploadZip => {
@@ -267,7 +316,9 @@ impl App {
               {" con lo cual una vez la página realiza la carga inicial toda acción es local y ningún dato viaja por la red."}
             </p>
             <p>
-              <a href="mailto:contacto@burocratin.com" alt="contacto">{"Escríbeme"}</a>{" para cualquier duda o sugerencia."}
+              {"Para cualquier mejora, duda, sugerencia o error puedes crear un "}
+              <a href="https://github.com/vaijira/burocratin/issues" alt="github issue">{"ticket"}</a>
+              {" o mandar un "}<a href="mailto:contacto@burocratin.com" alt="contacto">{"mail"}</a>{"."}
             </p>
             <p>
               {"El modelo 720 generado se puede presentar si es la primera declaración o "}
@@ -289,13 +340,14 @@ impl App {
     fn get_form_file(&self) -> Html {
         html! {
             <Container wrap=Wrap::Wrap direction=Direction::Row>
-                <Item layouts=vec!(ItemLayout::ItM(6), ItemLayout::ItXs(12))>
+                <Item layouts=vec!(ItemLayout::ItM(4), ItemLayout::ItXs(12))>
+
                     <FormGroup orientation=Orientation::Horizontal>
-                        <img src="img/degiro.svg" alt="logo broker Degiro" width="70" height="70" />
-                        <FormLabel text="Informe anual broker Degiro:" />
+                    <img src="img/degiro.svg" alt="logo broker Degiro" width="70" height="70" />
+                        <FormLabel text="Informe anual broker Degiro (PDF):" />
                         <FormFile
                             id={"degiro_report"}
-                            alt="Fichero informe broker Degiro"
+                            alt="Fichero PDF informe broker Degiro"
                             accept=vec!["application/pdf".to_string()]
                             underline=false
                             onchange_signal = self.link.callback(|data: ChangeData | {
@@ -309,10 +361,30 @@ impl App {
                         />
                     </FormGroup>
                 </Item>
-                <Item layouts=vec!(ItemLayout::ItM(6), ItemLayout::ItXs(12))>
+                <Item layouts=vec!(ItemLayout::ItM(4), ItemLayout::ItXs(12))>
+                    <FormGroup orientation=Orientation::Horizontal>
+                    <img src="img/degiro.svg" alt="logo broker Degiro" width="70" height="70" />
+                    <FormLabel text="Informe anual broker Degiro (CSV):" />
+                    <FormFile
+                        id={"degiro_csv_report"}
+                        alt="Fichero CSV informe broker Degiro"
+                        accept=vec!["text/csv".to_string()]
+                        underline=false
+                        onchange_signal = self.link.callback(|data: ChangeData | {
+                            if let ChangeData::Files(files) = data {
+                                let file = files.get(0).unwrap();
+                                Msg::UploadDegiroCSVFile(file)
+                            } else {
+                                Msg::ErrorUploadCSV
+                            }
+                        })
+                    />
+                </FormGroup>
+                </Item>
+                <Item layouts=vec!(ItemLayout::ItM(4), ItemLayout::ItXs(12))>
                 <FormGroup orientation=Orientation::Horizontal>
                     <img src="img/interactive_brokers.svg" alt="logo interactive brokers" width="70" height="70" />
-                    <FormLabel text="Informe anual Interactive Brokers (zip):" />
+                    <FormLabel text="Informe anual Interactive Brokers (ZIP):" />
                     <FormFile
                         id={"ib_report"}
                         alt="Fichero informe Interactive Brokers"
