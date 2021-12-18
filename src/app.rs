@@ -9,6 +9,7 @@ use crate::{parsers::pdf::read_pdf, utils::zip::read_zip_str};
 
 use yew::prelude::*;
 use yew::services::reader::{File, FileData, ReaderService, ReaderTask};
+use yew_assets::info_assets::{InfoAssets, InfoIcon};
 use yew_styles::forms::{
     form_file::FormFile,
     form_group::{FormGroup, Orientation},
@@ -19,17 +20,19 @@ use yew_styles::layouts::{
     container::{Container, Direction, Wrap},
     item::{AlignSelf, Item, ItemLayout},
 };
-use yew_styles::styles::Size;
+use yew_styles::styles::{Palette, Position, Size, Style};
 use yew_styles::text::{Text, TextType};
+use yew_styles::tooltip::Tooltip;
 
 const DEFAULT_YEAR: usize = 2021;
+const DEFAULT_UX_COLOR: &str = "#FFFFFF";
+const DEFAULT_UX_SIZE: &str = "30";
 
 pub struct App {
     degiro_broker: Rc<BrokerInformation>,
     ib_broker: Rc<BrokerInformation>,
     tasks: Vec<ReaderTask>,
     financial_information: FinancialInformation,
-    d6_form_path: String,
     aeat720_form_path: String,
     link: ComponentLink<Self>,
 }
@@ -39,7 +42,6 @@ pub enum Msg {
     ChangeSurname(String),
     ChangeNif(String),
     ChangeYear(String),
-    GenerateD6,
     GenerateAeat720,
     UploadDegiroFile(File),
     UploadDegiroCSVFile(File),
@@ -71,7 +73,6 @@ impl Component for App {
             )),
             tasks: vec![],
             financial_information: info,
-            d6_form_path: "".to_string(),
             aeat720_form_path: "".to_string(),
             link,
         }
@@ -82,37 +83,25 @@ impl Component for App {
             Msg::ChangeName(name) => {
                 log::debug!("change name to: {}", name);
                 self.financial_information.name = name.to_uppercase();
-                self.link.send_message(Msg::GenerateD6);
                 self.link.send_message(Msg::GenerateAeat720);
                 true
             }
             Msg::ChangeSurname(surname) => {
                 log::debug!("change surname to: {}", surname);
                 self.financial_information.surname = surname.to_uppercase();
-                self.link.send_message(Msg::GenerateD6);
                 self.link.send_message(Msg::GenerateAeat720);
                 true
             }
             Msg::ChangeNif(nif) => {
                 log::debug!("change nif to: {}", nif);
                 self.financial_information.nif = nif.to_uppercase();
-                self.link.send_message(Msg::GenerateD6);
                 self.link.send_message(Msg::GenerateAeat720);
                 true
             }
             Msg::ChangeYear(year) => {
                 log::debug!("change year to: {}", year);
                 self.financial_information.year = year.parse::<usize>().unwrap_or(DEFAULT_YEAR);
-                self.link.send_message(Msg::GenerateD6);
                 self.link.send_message(Msg::GenerateAeat720);
-                true
-            }
-            Msg::GenerateD6 => {
-                log::debug!("generate D6 form");
-                if let Ok(path) = web::generate_d6(&self.financial_information, &self.d6_form_path)
-                {
-                    self.d6_form_path = path;
-                }
                 true
             }
             Msg::GenerateAeat720 => {
@@ -158,7 +147,6 @@ impl Component for App {
                     log::error!("Unable to read pdf content");
                 }
                 self.tasks.clear();
-                self.link.send_message(Msg::GenerateD6);
                 self.link.send_message(Msg::GenerateAeat720);
                 true
             }
@@ -193,7 +181,6 @@ impl Component for App {
                     log::error!("Unable to read csv content");
                 }
                 self.tasks.clear();
-                self.link.send_message(Msg::GenerateD6);
                 self.link.send_message(Msg::GenerateAeat720);
                 true
             }
@@ -232,7 +219,6 @@ impl Component for App {
                     log::error!("Unable to read zip content");
                 }
                 self.tasks.clear();
-                self.link.send_message(Msg::GenerateD6);
                 self.link.send_message(Msg::GenerateAeat720);
                 true
             }
@@ -293,10 +279,7 @@ impl Component for App {
             </Container>
             <hr/>
             <Container wrap=Wrap::Wrap direction=Direction::Row>
-              <Item layouts=vec!(ItemLayout::ItM(6), ItemLayout::ItXs(12)) align_self=AlignSelf::Center>
-                <center>{self.get_d6_button()}</center>
-              </Item>
-              <Item layouts=vec!(ItemLayout::ItM(6), ItemLayout::ItXs(12)) align_self=AlignSelf::Center>
+              <Item layouts=vec!(ItemLayout::ItM(12), ItemLayout::ItXs(12)) align_self=AlignSelf::Center>
                 <center>{self.get_aeat720_button()}</center>
               </Item>
             </Container>
@@ -316,6 +299,9 @@ impl App {
               {" con lo cual una vez la página realiza la carga inicial toda acción es local y ningún dato viaja por la red."}
             </p>
             <p>
+            {"A efectos prácticos (a menos que controles más del 10% de una empresa) el D-6 ha quedado "}<a href="https://www.boe.es/boe/dias/2021/12/17/pdfs/BOE-A-2021-20816.pdf" alt="cambio condiciones D-6">{"obsoleto"}</a>{" por lo que se desactiva."}
+            </p>
+            <p>
               {"Para cualquier mejora, duda, sugerencia o error puedes crear un "}
               <a href="https://github.com/vaijira/burocratin/issues" alt="github issue">{"ticket"}</a>
               {" o mandar un "}<a href="mailto:contacto@burocratin.com" alt="contacto">{"mail"}</a>{"."}
@@ -330,10 +316,69 @@ impl App {
             <li>{"El código de país que usará para Degiro será NL y para interactive brokers IE."}</li>
             <li>{"Modelo 720:Revisar el código de domiciliación del país, por defecto cogerá el del ISIN, pero esto no siempre es correcto."}</li>
             <li>{"Modelo 720: Revisar la fecha de primera incorporación si tu primera transacción fue antes del año a declarar."}</li>
-            <li>{"Modelo D6: Revisar la clase de valor que tenemos, por defecto: \"01 - Acciones con derecho a voto\"."}</li>
             </ul>
             <p>{"El autor no se hace responsable del uso resultante de esta aplicación."}</p>
           </>
+        }
+    }
+
+    fn help_degiro_pdf(&self) -> Html {
+        html! {
+            <ul>
+                {"Para descargar el informe anual de degiro en pdf: "}
+                <li>
+                {"Entre en la página de degiro con su usuario."}
+                </li>
+                <li>
+                {"En el menú izquierdo pulse Actividad y seguidamente informes."}
+                </li>
+                <li>
+                {"En informes seleccione el informe anual del año a declarar y  pulse descargar."}
+                </li>
+            </ul>
+        }
+    }
+
+    fn help_degiro_csv(&self) -> Html {
+        html! {
+            <ul>
+                {"Para descargar las posiciones de degiro en csv: "}
+                <li>
+                {"Entre en la página de degiro con su usuario."}
+                </li>
+                <li>
+                {"En el menú izquierdo pulse Cartera."}
+                </li>
+                <li>
+                {"Arriba a la derecha pulse el botón exportar."}
+                </li>
+                <li>
+                {"Seleccione la fecha de 31 de Diciembre del año a declarar y pulse CSV."}
+                </li>
+            </ul>
+        }
+    }
+
+    fn help_ib_report(&self) -> Html {
+        html! {
+            <ul>
+                {"Para descargar el informe anual de interactive brokers: "}
+                <li>
+                {"Entre en la página de interactive brokers con su usuario."}
+                </li>
+                <li>
+                {"En el menú superior seleccione informes y seguidamente extractos."}
+                </li>
+                <li>
+                {"Si ha tenido más de 1 cuenta seleccione todas pulsando en el identificador de usuario al lado de informes y seleccionando todos."}
+                </li>
+                <li>
+                {"En extractos predeterminados pulse en actividad, seleccione el período anual, el formato HTML/descargar y en opciones zip."}
+                </li>
+                <li>
+                {"Pulse ejecutar."}
+                </li>
+            </ul>
         }
     }
 
@@ -359,6 +404,20 @@ impl App {
                                 }
                             })
                         />
+                        <Tooltip
+                          tooltip_palette=Palette::Clean
+                          tooltip_style=Style::Outline
+                          tooltip_position=Position::Above
+                          tooltip_size=Size::Medium
+                          content=self.help_degiro_pdf()
+                          class_name="tooltip-page">
+
+                          <div class="tooltip-content">
+                            <InfoAssets
+                              icon=InfoIcon::HelpCircle
+                              fill=DEFAULT_UX_COLOR
+                              size=(DEFAULT_UX_SIZE.to_string(), DEFAULT_UX_SIZE.to_string())/></div>
+                        </Tooltip>
                     </FormGroup>
                 </Item>
                 <Item layouts=vec!(ItemLayout::ItM(4), ItemLayout::ItXs(12))>
@@ -379,6 +438,20 @@ impl App {
                             }
                         })
                     />
+                    <Tooltip
+                    tooltip_palette=Palette::Clean
+                    tooltip_style=Style::Outline
+                    tooltip_position=Position::Above
+                    tooltip_size=Size::Medium
+                    content=self.help_degiro_csv()
+                    class_name="tooltip-page">
+
+                    <div class="tooltip-content">
+                      <InfoAssets
+                        icon=InfoIcon::HelpCircle
+                        fill=DEFAULT_UX_COLOR
+                        size=(DEFAULT_UX_SIZE.to_string(), DEFAULT_UX_SIZE.to_string())/></div>
+                    </Tooltip>
                 </FormGroup>
                 </Item>
                 <Item layouts=vec!(ItemLayout::ItM(4), ItemLayout::ItXs(12))>
@@ -399,6 +472,20 @@ impl App {
                             }
                         })
                     />
+                    <Tooltip
+                    tooltip_palette=Palette::Clean
+                    tooltip_style=Style::Outline
+                    tooltip_position=Position::Left
+                    tooltip_size=Size::Medium
+                    content=self.help_ib_report()
+                    class_name="tooltip-page">
+
+                    <div class="tooltip-content">
+                      <InfoAssets
+                        icon=InfoIcon::HelpCircle
+                        fill=DEFAULT_UX_COLOR
+                        size=(DEFAULT_UX_SIZE.to_string(), DEFAULT_UX_SIZE.to_string())/></div>
+                    </Tooltip>
                 </FormGroup>
             </Item>
             </Container>
@@ -535,18 +622,6 @@ impl App {
             {notes}
             </tbody>
             </table>
-        }
-    }
-
-    fn get_d6_button(&self) -> Html {
-        if !self.d6_form_path.is_empty() {
-            html! {
-              <a id={"aforix_d6_form"} href={self.d6_form_path.clone()} alt="Informe D6 generado" download="d6.aforixm"><button type={"button"}>{"Descargar informe D6"}</button></a>
-            }
-        } else {
-            html! {
-                <button disabled=true type={"button"}>{"Descargar informe D6"}</button>
-            }
         }
     }
 

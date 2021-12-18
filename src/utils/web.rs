@@ -8,6 +8,7 @@ use js_sys::{Array, Uint8Array};
 use wasm_bindgen::JsValue;
 use web_sys::{Blob, BlobPropertyBag, Url};
 
+#[allow(dead_code)]
 pub fn generate_d6(info: &FinancialInformation, old_path: &str) -> Result<String> {
     let result: String;
     match create_d6_form(info) {
