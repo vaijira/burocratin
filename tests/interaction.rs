@@ -2,9 +2,7 @@ mod common;
 
 use thirtyfour::{http::reqwest_async::ReqwestDriverAsync, prelude::*, GenericWebDriver};
 
-async fn fill_all_fields(
-    driver: &GenericWebDriver<ReqwestDriverAsync>,
-) -> WebDriverResult<(String, String)> {
+async fn fill_all_fields(driver: &GenericWebDriver<ReqwestDriverAsync>) -> WebDriverResult<String> {
     driver.get("http://localhost:8080").await?;
 
     let name_input = driver.find_element(By::Id("name")).await?;
@@ -48,32 +46,15 @@ async fn fill_all_fields(
         .await
         .expect("blob string");
 
-    let aforix_d6_form = driver.find_element(By::Id("aforix_d6_form")).await?;
-    let href_aforix_d6_form = aforix_d6_form
-        .get_attribute("href")
-        .await?
-        .expect("href for form should have been generated");
-
-    log::info!("href aforix d6 form: ->{}<-", href_aforix_d6_form);
-    let aforix_d6_form = common::get_file_content_chrome(driver, &href_aforix_d6_form)
-        .await
-        .expect("blob string");
-
-    Ok((aeat_720_form, aforix_d6_form))
+    Ok(aeat_720_form)
 }
 
-fn check_report_content(aeat_720_report: &str, aforix_d6_report: &str) {
+fn check_report_content(aeat_720_report: &str) {
     let aeat_720_test_form = common::load_test_file(
         &(env!("CARGO_MANIFEST_DIR").to_owned() + "/tests/data/fichero-720_2019.txt"),
     )
     .expect("aeat 720 test file should exist");
     common::compare_strs_by_line(aeat_720_report, &aeat_720_test_form);
-
-    let aforix_d6_test_form = common::load_test_file(
-        &(env!("CARGO_MANIFEST_DIR").to_owned() + "/tests/data/d6_2019.aforixm"),
-    )
-    .expect("aforix D6 test file should exist");
-    common::compare_strs_by_line(aforix_d6_report, &aforix_d6_test_form);
 }
 
 #[tokio::test]
@@ -89,10 +70,10 @@ async fn test_all_reports_2019_chrome() -> WebDriverResult<()> {
 
     driver.quit().await?;
 
-    if let Ok((aeat_720_form, aforix_d6_form)) = result {
-        check_report_content(&aeat_720_form, &aforix_d6_form);
+    if let Ok(aeat_720_form) = result {
+        check_report_content(&aeat_720_form);
     } else {
-        panic!("Unable to obtain AEAT 720 form and/or D6 aforix form");
+        panic!("Unable to obtain AEAT 720 form");
     }
 
     Ok(())
@@ -111,8 +92,8 @@ async fn test_all_reports_2019_firefox() -> WebDriverResult<()> {
 
     driver.quit().await?;
 
-    if let Ok((aeat_720_form, aforix_d6_form)) = result {
-        check_report_content(&aeat_720_form, &aforix_d6_form);
+    if let Ok(aeat_720_form) = result {
+        check_report_content(&aeat_720_form);
     } else {
         panic!("Unable to obtain AEAT 720 form and/or D6 aforix form");
     }
