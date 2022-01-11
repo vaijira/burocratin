@@ -129,6 +129,7 @@ impl Aeat720Field {
     }
 }
 
+#[derive(Debug)]
 struct SummaryRegister {
     fields: AeatRegisterArray,
 }
@@ -273,6 +274,7 @@ impl SummaryRegister {
     }
 }
 
+#[derive(Debug)]
 struct DetailRegister {
     fields: AeatRegisterArray,
 }
@@ -520,11 +522,11 @@ impl DetailRegister {
         )?;
 
         let mut remainder = note.quantity.fract();
-        remainder.set_scale(0)?;
+        remainder.set_scale(2)?;
         Aeat720Field::write_numeric_field(
             &mut fields,
             Self::STOCK_QUANTITY_FRACTION_FIELD,
-            remainder.to_usize().unwrap_or(0),
+            remainder.trunc().to_usize().unwrap_or(0),
         )?;
 
         Aeat720Field::write_numeric_field(&mut fields, Self::OWNED_PERCENTAGE_INT_FIELD, 100)?;
@@ -569,7 +571,6 @@ impl Aeat720Report {
 
         result.write_all(&self.summary.fields)?;
         result.write_all(b"\n")?;
-
         for detail in self.details {
             result.write_all(&detail.fields)?;
             result.write_all(b"\n")?;

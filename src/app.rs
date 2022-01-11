@@ -378,6 +378,9 @@ impl App {
                 <li>
                 {"Pulse ejecutar."}
                 </li>
+                <li>
+                {"Si tuvo más de una cuenta en el año tendrá que modificar el zip para dejar sólo el html de la cuenta actual."}
+                </li>
             </ul>
         }
     }

@@ -23,6 +23,7 @@ static CONTRACT_INFO_SELECTOR: Lazy<Selector> =
 static TRANSACTIONS_SELECTOR: Lazy<Selector> =
     Lazy::new(|| Selector::parse(r#"div[id^="tblTransactions_"] div table"#).unwrap());
 
+static THEAD_TH_TR_SELECTOR: Lazy<Selector> = Lazy::new(|| Selector::parse(r#"thead tr"#).unwrap());
 static TBODY_TR_SELECTOR: Lazy<Selector> = Lazy::new(|| Selector::parse(r#"tbody tr"#).unwrap());
 static TR_SELECTOR: Lazy<Selector> = Lazy::new(|| Selector::parse(r#"tr"#).unwrap());
 
@@ -54,21 +55,26 @@ impl IBParser {
         })
     }
 
-    fn parse_account_note(&self, row: &ElementRef<'_>) -> Result<AccountNote> {
+    fn parse_account_note(
+        &self,
+        row: &ElementRef<'_>,
+        with_account_field: bool,
+    ) -> Result<AccountNote> {
         let field_values = row.text().filter(|x| *x != "\n").collect::<Vec<_>>();
+        let offset = if with_account_field { 1 } else { 0 };
         log::debug!(
-            "Processing field values for acount note:-{:?}-",
+            "Processing field values for account note:-{:?}-",
             field_values
         );
 
         let symbol = field_values
-            .get(0)
+            .get(offset)
             .ok_or_else(|| anyhow!("No ticker symbol"))?;
         let date = field_values
-            .get(1)
+            .get(1 + offset)
             .ok_or_else(|| anyhow!("No quantity found"))?;
         let quantity_str = field_values
-            .get(2)
+            .get(2 + offset)
             .ok_or_else(|| anyhow!("No mult found"))?;
         let quantity = Decimal::from_str(&decimal::normalize_str(quantity_str))?;
         let operation = if quantity.is_sign_negative() {
@@ -77,25 +83,30 @@ impl IBParser {
             BrokerOperation::Buy
         };
         let price = field_values
-            .get(3)
+            .get(3 + offset)
             .ok_or_else(|| anyhow!("No price found"))?;
         let value = field_values
-            .get(5)
+            .get(5 + offset)
             .ok_or_else(|| anyhow!("No value found"))?;
         let commision = field_values
-            .get(6)
+            .get(6 + offset)
             .ok_or_else(|| anyhow!("No value found"))?;
         let _earnings = field_values
-            .get(8)
+            .get(8 + offset)
             .ok_or_else(|| anyhow!("No value found"))?;
-        let company_info = self
-            .companies_info
-            .get(*symbol)
-            .ok_or_else(|| anyhow!("Not company info found"))?;
+        let company_info = if let Some(company) = self.companies_info.get(*symbol) {
+            company.clone()
+        } else {
+            log::error!("Not company info found for {}", symbol);
+            CompanyInfo {
+                name: symbol.to_string(),
+                isin: "".to_string(),
+            }
+        };
 
         Ok(AccountNote::new(
             NaiveDate::parse_from_str(date, "%Y-%m-%d, %H:%M:%S")?,
-            company_info.clone(),
+            company_info,
             operation,
             quantity.abs(),
             Decimal::from_str(&decimal::normalize_str(price))?,
@@ -111,6 +122,15 @@ impl IBParser {
 
         if let Some(transactions) = self.dom.select(&TRANSACTIONS_SELECTOR).next() {
             let mut state = NoteState::Invalid;
+            let mut with_account_field = false;
+
+            for table_row in transactions.select(&THEAD_TH_TR_SELECTOR) {
+                let row_values = table_row.text().filter(|x| *x != "\n").collect::<Vec<_>>();
+                log::debug!("Processing header in account notes:-{:?}-", row_values);
+                if row_values[0] == "Account" {
+                    with_account_field = true;
+                }
+            }
 
             for table_row in transactions.select(&TBODY_TR_SELECTOR) {
                 match state {
@@ -140,12 +160,20 @@ impl IBParser {
                     }
                     NoteState::Note => {
                         log::debug!("Note state");
+                        let has_class = |x: &Element| {
+                            x.has_class("header-asset", CaseSensitivity::AsciiCaseInsensitive)
+                        };
                         let element = table_row.value();
 
                         if element.has_class("row-summary", CaseSensitivity::AsciiCaseInsensitive) {
-                            result.push(self.parse_account_note(&table_row)?);
-                        } else if element
-                            .has_class("header-asset", CaseSensitivity::AsciiCaseInsensitive)
+                            result.push(self.parse_account_note(&table_row, with_account_field)?);
+                        } else if table_row
+                            .first_child()
+                            .map(|x| x.value())
+                            .unwrap()
+                            .as_element()
+                            .map(|x| has_class(x))
+                            == Some(true)
                         {
                             state = NoteState::Invalid;
                         }
@@ -164,7 +192,7 @@ impl IBParser {
         log::debug!("parse companies info");
         let mut result: HashMap<String, CompanyInfo> = HashMap::new();
 
-        if let Some(table_contract_info) = dom.select(&CONTRACT_INFO_SELECTOR).next() {
+        for table_contract_info in dom.select(&CONTRACT_INFO_SELECTOR) {
             let mut start_parsing_symbols = false;
 
             for table_row in table_contract_info.select(&TR_SELECTOR) {
@@ -183,6 +211,9 @@ impl IBParser {
 
                 if start_parsing_symbols {
                     let field_values = table_row.text().filter(|x| *x != "\n").collect::<Vec<_>>();
+                    if field_values.is_empty() {
+                        continue;
+                    }
                     log::debug!("field values: {:?}", field_values);
                     let ticker = field_values
                         .get(0)
@@ -203,8 +234,6 @@ impl IBParser {
                     );
                 }
             }
-        } else {
-            bail!("Unable to parse contract info");
         }
 
         Ok(result)
@@ -309,6 +338,9 @@ impl IBParser {
                         if table_row
                             .value()
                             .has_class("total", CaseSensitivity::AsciiCaseInsensitive)
+                            || table_row
+                                .value()
+                                .has_class("subtotal", CaseSensitivity::AsciiCaseInsensitive)
                         {
                             if currency == Some(IBParser::EUR_CURRENCY_STR) {
                                 state = NoteState::Stocks;
@@ -317,7 +349,14 @@ impl IBParser {
                                 state = NoteState::Total;
                             }
                         } else {
-                            current_notes.push(self.parse_balance_note(&table_row, currency)?);
+                            let balance_note_result = self.parse_balance_note(&table_row, currency);
+                            match balance_note_result {
+                                Ok(balance_note) => current_notes.push(balance_note),
+                                Err(msg) => {
+                                    log::error!("Error parsing balance note: {}", msg);
+                                    return Err(msg);
+                                }
+                            }
                         }
                     }
                     NoteState::Total => {
