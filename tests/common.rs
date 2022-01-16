@@ -9,7 +9,7 @@ pub fn setup() {
     let _ = env_logger::builder().is_test(true).try_init();
 }
 
-pub async fn get_file_content_chrome(
+pub async fn get_file_content(
     driver: &GenericWebDriver<ReqwestDriverAsync>,
     uri: &str,
 ) -> Result<String> {

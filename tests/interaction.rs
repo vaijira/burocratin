@@ -42,7 +42,7 @@ async fn fill_all_fields(driver: &GenericWebDriver<ReqwestDriverAsync>) -> WebDr
         .expect("href for form should have been generated");
 
     log::info!("href aeat 720 form: ->{}<-", href_aeat_720_form);
-    let aeat_720_form = common::get_file_content_chrome(driver, &href_aeat_720_form)
+    let aeat_720_form = common::get_file_content(driver, &href_aeat_720_form)
         .await
         .expect("blob string");
 
