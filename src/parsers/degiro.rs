@@ -137,14 +137,26 @@ impl DegiroParser {
                     char('\n'),
                     take(0usize),
                     take(0usize),
-                    terminated(DegiroParser::isin, char('\n')),
+                    terminated(DegiroParser::isin, opt(char('\n'))),
                 )),
                 tuple((
                     take_until("\n"),
                     char('\n'),
                     take_until("\n"),
                     take(1usize),
-                    terminated(DegiroParser::isin, char('\n')),
+                    terminated(DegiroParser::isin, opt(char('\n'))),
+                )),
+                tuple((
+                    take_until("\n"),
+                    char('\n'),
+                    recognize(tuple((
+                        take_until("\n"),
+                        char('\n'),
+                        take_until("\n"),
+                        char('\n'),
+                    ))),
+                    take(0usize),
+                    terminated(DegiroParser::isin, opt(char('\n'))),
                 )),
             )),
         )(input)
@@ -154,7 +166,7 @@ impl DegiroParser {
 
             if !extra.is_empty() {
                 name.push(' ');
-                name.push_str(extra);
+                name.push_str(&str::replace(extra, "\n", ""));
             }
 
             (next_input, CompanyInfo { name, isin })
@@ -225,20 +237,37 @@ impl DegiroParser {
         context(
             "balance note",
             tuple((
-                DegiroParser::company_info,
-                take_until("\n"),
+                DegiroParser::decimal_value, // value in euro
                 char('\n'),
-                DegiroParser::decimal_value,
+                DegiroParser::decimal_value, // price
                 char('\n'),
-                DegiroParser::decimal_value,
+                take(3usize), // currency
                 char('\n'),
-                DegiroParser::decimal_value,
+                DegiroParser::decimal_value, // quantity
                 char('\n'),
-                take(3usize),
+                take_until("\n"), // market
+                char('\n'),
+                take_until("\n"), // product type: Stock
+                char('\n'),
+                DegiroParser::company_info, // company info
             )),
         )(input)
         .map(|(next_input, res)| {
-            let (company, market, _, quantity, _, price, _, value_in_euro, _, currency) = res;
+            let (
+                value_in_euro,
+                _,
+                price,
+                _,
+                currency,
+                _,
+                quantity,
+                _,
+                market,
+                _,
+                _product_type,
+                _,
+                company,
+            ) = res;
 
             (
                 next_input,
@@ -273,14 +302,9 @@ impl DegiroParser {
     ) -> Res<&'a str, BalanceNotes> {
         context(
             "balance notes",
-            tuple((
-                take_until("\n"),
-                many0(preceded(char('\n'), |x| {
-                    DegiroParser::balance_note(x, broker)
-                })),
-            )),
+            many0(|x| DegiroParser::balance_note(x, broker)),
         )(input)
-        .map(|(next_input, res)| (next_input, res.1))
+        .map(|(next_input, res)| (next_input, res))
     }
 
     fn parse_account_notes(&self, notes: &str) -> Result<AccountNotes> {
@@ -298,8 +322,12 @@ impl DegiroParser {
     fn parse_balance_notes(&self, notes: &str) -> Result<BalanceNotes> {
         log::debug!("balance notes:-{}-", notes);
         let notes = match DegiroParser::balance_notes(notes, &self.broker) {
-            Ok((_, notes)) => notes,
+            Ok((_, notes)) => {
+                log::debug!("Ok parsing {} balance notes", notes.len());
+                notes
+            }
             Err(err) => {
+                log::debug!("Unable to parse balance notes:-{}-", err);
                 bail!("Unable to parse balance notes: {}", err);
             }
         };
@@ -445,6 +473,41 @@ mod tests {
     }
 
     #[test]
+    fn company_info_test() {
+        let compmany_info_burford: &str = r#"BURFORD CAP LD
+GG00B4L84979
+"#;
+
+        assert_eq!(
+            DegiroParser::company_info(compmany_info_burford),
+            Ok((
+                "",
+                CompanyInfo {
+                    name: String::from("BURFORD CAP LD"),
+                    isin: String::from("GG00B4L84979"),
+                }
+            ))
+        );
+
+        let compmany_info_gxo: &str = r#"GXO LOGISTICS INC.
+COMMON STOCK WHEN-
+ISSUED
+US36262G1013
+"#;
+
+        assert_eq!(
+            DegiroParser::company_info(compmany_info_gxo),
+            Ok((
+                "",
+                CompanyInfo {
+                    name: String::from("GXO LOGISTICS INC. COMMON STOCK WHEN-ISSUED"),
+                    isin: String::from("US36262G1013"),
+                }
+            ))
+        );
+    }
+
+    #[test]
     fn decimal_value_test() {
         assert_eq!(
             DegiroParser::decimal_value("1.000,03\n"),
@@ -501,13 +564,15 @@ mod tests {
             String::from("Degiro"),
             String::from("NL"),
         ));
-        const BURFORD_NOTE: &str = r#"BURFORD CAP LD
-GG00B4L84979
-LSE
-463
+
+        const BURFORD_NOTE: &str = r#"3.889,94
 712,0000
-3.889,94
-GBX"#;
+GBX
+463
+LSE
+Stock
+BURFORD CAP LD
+GG00B4L84979"#;
 
         assert_eq!(
             DegiroParser::balance_note(BURFORD_NOTE, &degiro_broker),
@@ -565,10 +630,6 @@ C
             ))
         );
 
-        let degiro_broker: Rc<BrokerInformation> = Rc::new(BrokerInformation::new(
-            String::from("Degiro"),
-            String::from("NL"),
-        ));
         const BURFORD_LONG_NOTE: &str = r#"31/10/2018
 BURFORD
 CAP LD
@@ -580,6 +641,7 @@ C
 2.247,93
 5,28
 0,0114"#;
+
         assert_eq!(
             DegiroParser::account_note(BURFORD_LONG_NOTE, &degiro_broker),
             Ok((
@@ -595,6 +657,39 @@ C
                     Decimal::new(1_616_0000, 4),
                     Decimal::new(197_152_00, 2),
                     Decimal::new(5_28, 2),
+                    &degiro_broker,
+                )
+            ))
+        );
+
+        const GXO_LONG_NOTE: &str = r#"02/08/2021
+GXO LOGISTICS INC.
+COMMON STOCK WHEN-
+ISSUED
+US36262G1013
+C
+69
+0,0000
+0,00
+0,00
+0,00
+0,8423"#;
+
+        assert_eq!(
+            DegiroParser::account_note(GXO_LONG_NOTE, &degiro_broker),
+            Ok((
+                "",
+                AccountNote::new(
+                    NaiveDate::from_ymd(2021, 8, 2),
+                    CompanyInfo {
+                        name: String::from("GXO LOGISTICS INC. COMMON STOCK WHEN-ISSUED"),
+                        isin: String::from("US36262G1013")
+                    },
+                    BrokerOperation::Buy,
+                    Decimal::new(69, 0),
+                    Decimal::new(0, 4),
+                    Decimal::new(0, 2),
+                    Decimal::new(0, 2),
                     &degiro_broker,
                 )
             ))
@@ -776,632 +871,6 @@ C
                 Decimal::new(56_6000, 4),
                 Decimal::new(2_320_60, 2),
                 Decimal::new(64, 2),
-                &degiro_broker,
-            ),
-        ];
-        assert_eq!(acc_notes, account_notes);
-    }
-
-    #[test]
-    fn degiro_2020_parse_content_test() {
-        let degiro_broker: Rc<BrokerInformation> = Rc::new(BrokerInformation::new(
-            String::from("Degiro"),
-            String::from("NL"),
-        ));
-        let parser = DegiroParser::new(INPUT_2020.to_string(), &degiro_broker);
-        let (balance_notes, account_notes) = parser.parse_pdf_content().unwrap();
-
-        let bal_notes = vec![
-            BalanceNote::new(
-                CompanyInfo {
-                    name: String::from("ANGI HOMESERVICES INC- A"),
-                    isin: String::from("US00183L1026"),
-                },
-                String::from("NDQ"),
-                Decimal::new(300, 0),
-                String::from("USD"),
-                Decimal::new(13_1950, 4),
-                Decimal::new(3240_43, 2),
-                &degiro_broker,
-            ),
-            BalanceNote::new(
-                CompanyInfo {
-                    name: String::from("BURFORD CAP LD"),
-                    isin: String::from("GG00BMGYLN96"),
-                },
-                String::from("LSE"),
-                Decimal::new(463, 0),
-                String::from("GBX"),
-                Decimal::new(711_0000, 4),
-                Decimal::new(3686_96, 2),
-                &degiro_broker,
-            ),
-            BalanceNote::new(
-                CompanyInfo {
-                    name: String::from("CTT SYSTEMS"),
-                    isin: String::from("SE0000418923"),
-                },
-                String::from("OMX"),
-                Decimal::new(205, 0),
-                String::from("SEK"),
-                Decimal::new(152_2000, 4),
-                Decimal::new(3104_50, 2),
-                &degiro_broker,
-            ),
-            BalanceNote::new(
-                CompanyInfo {
-                    name: String::from("CVD EQUIPMENT CORPORAT"),
-                    isin: String::from("US1266011030"),
-                },
-                String::from("NDQ"),
-                Decimal::new(1000, 0),
-                String::from("USD"),
-                Decimal::new(3_6300, 4),
-                Decimal::new(2971_52, 2),
-                &degiro_broker,
-            ),
-            BalanceNote::new(
-                CompanyInfo {
-                    name: String::from("EVI INDUSTRIES INC"),
-                    isin: String::from("US26929N1028"),
-                },
-                String::from("ASE"),
-                Decimal::new(618, 0),
-                String::from("USD"),
-                Decimal::new(30_3600, 4),
-                Decimal::new(15358_97, 2),
-                &degiro_broker,
-            ),
-            BalanceNote::new(
-                CompanyInfo {
-                    name: String::from("FACEBOOK INC. - CLASS"),
-                    isin: String::from("US30303M1027"),
-                },
-                String::from("NDQ"),
-                Decimal::new(21, 0),
-                String::from("USD"),
-                Decimal::new(273_1600, 4),
-                Decimal::new(4695_78, 2),
-                &degiro_broker,
-            ),
-            BalanceNote::new(
-                CompanyInfo {
-                    name: String::from("FINANCIERE ODET"),
-                    isin: String::from("FR0000062234"),
-                },
-                String::from("EPA"),
-                Decimal::new(3, 0),
-                String::from("EUR"),
-                Decimal::new(786_0000, 4),
-                Decimal::new(2358_00, 2),
-                &degiro_broker,
-            ),
-            BalanceNote::new(
-                CompanyInfo {
-                    name: String::from("GENUS"),
-                    isin: String::from("GB0002074580"),
-                },
-                String::from("LSE"),
-                Decimal::new(50, 0),
-                String::from("GBX"),
-                Decimal::new(4196_0000, 4),
-                Decimal::new(2349_76, 2),
-                &degiro_broker,
-            ),
-            BalanceNote::new(
-                CompanyInfo {
-                    name: String::from("GEORGIA CAPITAL"),
-                    isin: String::from("GB00BF4HYV08"),
-                },
-                String::from("LSE"),
-                Decimal::new(800, 0),
-                String::from("GBX"),
-                Decimal::new(540_0000, 4),
-                Decimal::new(4838_40, 2),
-                &degiro_broker,
-            ),
-            BalanceNote::new(
-                CompanyInfo {
-                    name: String::from("INTER RAO LIETUVA AB"),
-                    isin: String::from("LT0000128621"),
-                },
-                String::from("WSE"),
-                Decimal::new(1000, 0),
-                String::from("PLN"),
-                Decimal::new(18_8000, 4),
-                Decimal::new(4122_84, 2),
-                &degiro_broker,
-            ),
-            BalanceNote::new(
-                CompanyInfo {
-                    name: String::from("JD.COM INC. - AMERICA"),
-                    isin: String::from("US47215P1066"),
-                },
-                String::from("NDQ"),
-                Decimal::new(140, 0),
-                String::from("USD"),
-                Decimal::new(87_9000, 4),
-                Decimal::new(10073_69, 2),
-                &degiro_broker,
-            ),
-            BalanceNote::new(
-                CompanyInfo {
-                    name: String::from("JUDGES SCIENTFC"),
-                    isin: String::from("GB0032398678"),
-                },
-                String::from("LSE"),
-                Decimal::new(145, 0),
-                String::from("GBX"),
-                Decimal::new(6380_0000, 4),
-                Decimal::new(10361_12, 2),
-                &degiro_broker,
-            ),
-            BalanceNote::new(
-                CompanyInfo {
-                    name: String::from("KEYWORDS STUDIO"),
-                    isin: String::from("GB00BBQ38507"),
-                },
-                String::from("LSE"),
-                Decimal::new(130, 0),
-                String::from("GBX"),
-                Decimal::new(2860_0000, 4),
-                Decimal::new(4164_16, 2),
-                &degiro_broker,
-            ),
-            BalanceNote::new(
-                CompanyInfo {
-                    name: String::from("Okeanis Eco Tankers Corp"),
-                    isin: String::from("MHY641771016"),
-                },
-                String::from("OSL"),
-                Decimal::new(430, 0),
-                String::from("NOK"),
-                Decimal::new(54_6000, 4),
-                Decimal::new(2239_80, 2),
-                &degiro_broker,
-            ),
-            BalanceNote::new(
-                CompanyInfo {
-                    name: String::from("SHAKE SHACK INC. CLAS"),
-                    isin: String::from("US8190471016"),
-                },
-                String::from("NSY"),
-                Decimal::new(34, 0),
-                String::from("USD"),
-                Decimal::new(84_7900, 4),
-                Decimal::new(2359_91, 2),
-                &degiro_broker,
-            ),
-            BalanceNote::new(
-                CompanyInfo {
-                    name: String::from("XPO LOGISTICS INC."),
-                    isin: String::from("US9837931008"),
-                },
-                String::from("NSY"),
-                Decimal::new(69, 0),
-                String::from("USD"),
-                Decimal::new(119_1950, 4),
-                Decimal::new(6732_54, 2),
-                &degiro_broker,
-            ),
-        ];
-        assert_eq!(bal_notes, balance_notes);
-
-        let acc_notes = vec![
-            AccountNote::new(
-                NaiveDate::from_ymd(2020, 9, 15),
-                CompanyInfo {
-                    name: String::from("CTT SYSTEMS"),
-                    isin: String::from("SE0000418923"),
-                },
-                BrokerOperation::Buy,
-                Decimal::new(50, 0),
-                Decimal::new(128_8000, 4),
-                Decimal::new(6440_00, 2),
-                Decimal::new(4_31, 2),
-                &degiro_broker,
-            ),
-            AccountNote::new(
-                NaiveDate::from_ymd(2020, 9, 15),
-                CompanyInfo {
-                    name: String::from("CTT SYSTEMS"),
-                    isin: String::from("SE0000418923"),
-                },
-                BrokerOperation::Buy,
-                Decimal::new(13, 0),
-                Decimal::new(129_0000, 4),
-                Decimal::new(1677_00, 2),
-                Decimal::new(8, 2),
-                &degiro_broker,
-            ),
-            AccountNote::new(
-                NaiveDate::from_ymd(2020, 9, 24),
-                CompanyInfo {
-                    name: String::from("CTT SYSTEMS"),
-                    isin: String::from("SE0000418923"),
-                },
-                BrokerOperation::Buy,
-                Decimal::new(142, 0),
-                Decimal::new(118_8000, 4),
-                Decimal::new(16869_60, 2),
-                Decimal::new(4_79, 2),
-                &degiro_broker,
-            ),
-            AccountNote::new(
-                NaiveDate::from_ymd(2020, 6, 11),
-                CompanyInfo {
-                    name: String::from("CVD EQUIPMENT CORPORAT"),
-                    isin: String::from("US1266011030"),
-                },
-                BrokerOperation::Buy,
-                Decimal::new(700, 0),
-                Decimal::new(3_4800, 4),
-                Decimal::new(2436_00, 2),
-                Decimal::new(2_97, 2),
-                &degiro_broker,
-            ),
-            AccountNote::new(
-                NaiveDate::from_ymd(2020, 6, 11),
-                CompanyInfo {
-                    name: String::from("CVD EQUIPMENT CORPORAT"),
-                    isin: String::from("US1266011030"),
-                },
-                BrokerOperation::Buy,
-                Decimal::new(300, 0),
-                Decimal::new(3_4800, 4),
-                Decimal::new(1044_00, 2),
-                Decimal::new(1_06, 2),
-                &degiro_broker,
-            ),
-            AccountNote::new(
-                NaiveDate::from_ymd(2020, 1, 13),
-                CompanyInfo {
-                    name: String::from("EVI INDUSTRIES INC"),
-                    isin: String::from("US26929N1028"),
-                },
-                BrokerOperation::Buy,
-                Decimal::new(100, 0),
-                Decimal::new(25_3300, 4),
-                Decimal::new(2533_00, 2),
-                Decimal::new(86, 2),
-                &degiro_broker,
-            ),
-            AccountNote::new(
-                NaiveDate::from_ymd(2020, 1, 13),
-                CompanyInfo {
-                    name: String::from("EVI INDUSTRIES INC"),
-                    isin: String::from("US26929N1028"),
-                },
-                BrokerOperation::Buy,
-                Decimal::new(40, 0),
-                Decimal::new(25_3700, 4),
-                Decimal::new(1014_80, 2),
-                Decimal::new(14, 2),
-                &degiro_broker,
-            ),
-            AccountNote::new(
-                NaiveDate::from_ymd(2020, 2, 12),
-                CompanyInfo {
-                    name: String::from("EVI INDUSTRIES INC"),
-                    isin: String::from("US26929N1028"),
-                },
-                BrokerOperation::Buy,
-                Decimal::new(100, 0),
-                Decimal::new(24_3550, 4),
-                Decimal::new(2435_50, 2),
-                Decimal::new(87, 2),
-                &degiro_broker,
-            ),
-            AccountNote::new(
-                NaiveDate::from_ymd(2020, 2, 12),
-                CompanyInfo {
-                    name: String::from("EVI INDUSTRIES INC"),
-                    isin: String::from("US26929N1028"),
-                },
-                BrokerOperation::Buy,
-                Decimal::new(38, 0),
-                Decimal::new(24_4150, 4),
-                Decimal::new(927_77, 2),
-                Decimal::new(14, 2),
-                &degiro_broker,
-            ),
-            AccountNote::new(
-                NaiveDate::from_ymd(2020, 3, 5),
-                CompanyInfo {
-                    name: String::from("EVI INDUSTRIES INC"),
-                    isin: String::from("US26929N1028"),
-                },
-                BrokerOperation::Buy,
-                Decimal::new(40, 0),
-                Decimal::new(21_0000, 4),
-                Decimal::new(840_00, 2),
-                Decimal::new(64, 2),
-                &degiro_broker,
-            ),
-            AccountNote::new(
-                NaiveDate::from_ymd(2020, 3, 5),
-                CompanyInfo {
-                    name: String::from("EVI INDUSTRIES INC"),
-                    isin: String::from("US26929N1028"),
-                },
-                BrokerOperation::Buy,
-                Decimal::new(40, 0),
-                Decimal::new(21_0000, 4),
-                Decimal::new(840_00, 2),
-                Decimal::new(14, 2),
-                &degiro_broker,
-            ),
-            AccountNote::new(
-                NaiveDate::from_ymd(2020, 8, 11),
-                CompanyInfo {
-                    name: String::from("FINANCIERE ODET"),
-                    isin: String::from("FR0000062234"),
-                },
-                BrokerOperation::Buy,
-                Decimal::new(3, 0),
-                Decimal::new(680_0000, 4),
-                Decimal::new(2040_00, 2),
-                Decimal::new(5_02, 2),
-                &degiro_broker,
-            ),
-            AccountNote::new(
-                NaiveDate::from_ymd(2020, 3, 6),
-                CompanyInfo {
-                    name: String::from("FLOWTRADERS"),
-                    isin: String::from("NL0011279492"),
-                },
-                BrokerOperation::Buy,
-                Decimal::new(70, 0),
-                Decimal::new(21_4400, 4),
-                Decimal::new(1500_80, 2),
-                Decimal::new(4_75, 2),
-                &degiro_broker,
-            ),
-            AccountNote::new(
-                NaiveDate::from_ymd(2020, 6, 11),
-                CompanyInfo {
-                    name: String::from("FLOWTRADERS"),
-                    isin: String::from("NL0011279492"),
-                },
-                BrokerOperation::Sell,
-                Decimal::new(70, 0),
-                Decimal::new(30_9400, 4),
-                Decimal::new(2165_80, 2),
-                Decimal::new(5_08, 2),
-                &degiro_broker,
-            ),
-            AccountNote::new(
-                NaiveDate::from_ymd(2020, 7, 7),
-                CompanyInfo {
-                    name: String::from("GENUS"),
-                    isin: String::from("GB0002074580"),
-                },
-                BrokerOperation::Buy,
-                Decimal::new(50, 0),
-                Decimal::new(3520_0000, 4),
-                Decimal::new(176000_00, 2),
-                Decimal::new(4_97, 2),
-                &degiro_broker,
-            ),
-            AccountNote::new(
-                NaiveDate::from_ymd(2020, 5, 20),
-                CompanyInfo {
-                    name: String::from("GEORGIA CAPITAL"),
-                    isin: String::from("GB00BF4HYV08"),
-                },
-                BrokerOperation::Buy,
-                Decimal::new(355, 0),
-                Decimal::new(447_5000, 4),
-                Decimal::new(158862_50, 2),
-                Decimal::new(4_89, 2),
-                &degiro_broker,
-            ),
-            AccountNote::new(
-                NaiveDate::from_ymd(2020, 5, 20),
-                CompanyInfo {
-                    name: String::from("GEORGIA CAPITAL"),
-                    isin: String::from("GB00BF4HYV08"),
-                },
-                BrokerOperation::Buy,
-                Decimal::new(434, 0),
-                Decimal::new(447_5000, 4),
-                Decimal::new(194215_00, 2),
-                Decimal::new(1_09, 2),
-                &degiro_broker,
-            ),
-            AccountNote::new(
-                NaiveDate::from_ymd(2020, 5, 20),
-                CompanyInfo {
-                    name: String::from("GEORGIA CAPITAL"),
-                    isin: String::from("GB00BF4HYV08"),
-                },
-                BrokerOperation::Buy,
-                Decimal::new(10, 0),
-                Decimal::new(447_5000, 4),
-                Decimal::new(4475_00, 2),
-                Decimal::new(3, 2),
-                &degiro_broker,
-            ),
-            AccountNote::new(
-                NaiveDate::from_ymd(2020, 5, 20),
-                CompanyInfo {
-                    name: String::from("GEORGIA CAPITAL"),
-                    isin: String::from("GB00BF4HYV08"),
-                },
-                BrokerOperation::Buy,
-                Decimal::new(1, 0),
-                Decimal::new(447_5000, 4),
-                Decimal::new(447_50, 2),
-                Decimal::new(0_00, 2),
-                &degiro_broker,
-            ),
-            AccountNote::new(
-                NaiveDate::from_ymd(2020, 5, 19),
-                CompanyInfo {
-                    name: String::from("GRAVITY CO. LTD. - AM"),
-                    isin: String::from("US38911N2062"),
-                },
-                BrokerOperation::Sell,
-                Decimal::new(100, 0),
-                Decimal::new(42_0400, 4),
-                Decimal::new(4204_00, 2),
-                Decimal::new(87, 2),
-                &degiro_broker,
-            ),
-            AccountNote::new(
-                NaiveDate::from_ymd(2020, 5, 19),
-                CompanyInfo {
-                    name: String::from("GRAVITY CO. LTD. - AM"),
-                    isin: String::from("US38911N2062"),
-                },
-                BrokerOperation::Sell,
-                Decimal::new(2, 0),
-                Decimal::new(42_0100, 4),
-                Decimal::new(84_02, 2),
-                Decimal::new(1, 2),
-                &degiro_broker,
-            ),
-            AccountNote::new(
-                NaiveDate::from_ymd(2020, 2, 18),
-                CompanyInfo {
-                    name: String::from("INTER RAO LIETUVA AB"),
-                    isin: String::from("LT0000128621"),
-                },
-                BrokerOperation::Buy,
-                Decimal::new(695, 0),
-                Decimal::new(20_6000, 4),
-                Decimal::new(14317_00, 2),
-                Decimal::new(10_37, 2),
-                &degiro_broker,
-            ),
-            AccountNote::new(
-                NaiveDate::from_ymd(2020, 2, 18),
-                CompanyInfo {
-                    name: String::from("INTER RAO LIETUVA AB"),
-                    isin: String::from("LT0000128621"),
-                },
-                BrokerOperation::Buy,
-                Decimal::new(49, 0),
-                Decimal::new(20_7000, 4),
-                Decimal::new(1014_30, 2),
-                Decimal::new(38, 2),
-                &degiro_broker,
-            ),
-            AccountNote::new(
-                NaiveDate::from_ymd(2020, 2, 18),
-                CompanyInfo {
-                    name: String::from("INTER RAO LIETUVA AB"),
-                    isin: String::from("LT0000128621"),
-                },
-                BrokerOperation::Buy,
-                Decimal::new(256, 0),
-                Decimal::new(20_7000, 4),
-                Decimal::new(5299_20, 2),
-                Decimal::new(1_99, 2),
-                &degiro_broker,
-            ),
-            AccountNote::new(
-                NaiveDate::from_ymd(2020, 1, 17),
-                CompanyInfo {
-                    name: String::from("KEYWORDS STUDIO"),
-                    isin: String::from("GB00BBQ38507"),
-                },
-                BrokerOperation::Buy,
-                Decimal::new(25, 0),
-                Decimal::new(1544_0000, 4),
-                Decimal::new(38600_00, 2),
-                Decimal::new(4_26, 2),
-                &degiro_broker,
-            ),
-            AccountNote::new(
-                NaiveDate::from_ymd(2020, 1, 17),
-                CompanyInfo {
-                    name: String::from("KEYWORDS STUDIO"),
-                    isin: String::from("GB00BBQ38507"),
-                },
-                BrokerOperation::Buy,
-                Decimal::new(105, 0),
-                Decimal::new(1544_0000, 4),
-                Decimal::new(162120_00, 2),
-                Decimal::new(1_11, 2),
-                &degiro_broker,
-            ),
-            AccountNote::new(
-                NaiveDate::from_ymd(2020, 1, 17),
-                CompanyInfo {
-                    name: String::from("MONDO TV"),
-                    isin: String::from("IT0001447785"),
-                },
-                BrokerOperation::Sell,
-                Decimal::new(1105, 0),
-                Decimal::new(2_2560, 4),
-                Decimal::new(2492_88, 2),
-                Decimal::new(5_45, 2),
-                &degiro_broker,
-            ),
-            AccountNote::new(
-                NaiveDate::from_ymd(2020, 4, 1),
-                CompanyInfo {
-                    name: String::from("Okeanis Eco Tankers Corp"),
-                    isin: String::from("MHY641771016"),
-                },
-                BrokerOperation::Buy,
-                Decimal::new(59, 0),
-                Decimal::new(74_0000, 4),
-                Decimal::new(4366_00, 2),
-                Decimal::new(4_19, 2),
-                &degiro_broker,
-            ),
-            AccountNote::new(
-                NaiveDate::from_ymd(2020, 4, 1),
-                CompanyInfo {
-                    name: String::from("Okeanis Eco Tankers Corp"),
-                    isin: String::from("MHY641771016"),
-                },
-                BrokerOperation::Buy,
-                Decimal::new(25, 0),
-                Decimal::new(74_0000, 4),
-                Decimal::new(1850_00, 2),
-                Decimal::new(8, 2),
-                &degiro_broker,
-            ),
-            AccountNote::new(
-                NaiveDate::from_ymd(2020, 4, 1),
-                CompanyInfo {
-                    name: String::from("Okeanis Eco Tankers Corp"),
-                    isin: String::from("MHY641771016"),
-                },
-                BrokerOperation::Buy,
-                Decimal::new(346, 0),
-                Decimal::new(74_0000, 4),
-                Decimal::new(25604_00, 2),
-                Decimal::new(1_11, 2),
-                &degiro_broker,
-            ),
-            AccountNote::new(
-                NaiveDate::from_ymd(2020, 7, 6),
-                CompanyInfo {
-                    name: String::from("ROCKROSE ENERGY"),
-                    isin: String::from("GB00BYNFCH09"),
-                },
-                BrokerOperation::Sell,
-                Decimal::new(216, 0),
-                Decimal::new(1830_0000, 4),
-                Decimal::new(395280_00, 2),
-                Decimal::new(6_19, 2),
-                &degiro_broker,
-            ),
-            AccountNote::new(
-                NaiveDate::from_ymd(2020, 1, 13),
-                CompanyInfo {
-                    name: String::from("SHAKE SHACK INC. CLAS"),
-                    isin: String::from("US8190471016"),
-                },
-                BrokerOperation::Buy,
-                Decimal::new(34, 0),
-                Decimal::new(60_6300, 4),
-                Decimal::new(2061_42, 2),
-                Decimal::new(62, 2),
                 &degiro_broker,
             ),
         ];
@@ -1633,49 +1102,57 @@ Moneda
 Precio
 Valor (EUR)
 CASH & CASH FUND (EUR)
-109.63
+2.247,00
+1.656,0000
+GBX
+122
+LSE
+Stock
 BURFORD CAP LD
 GG00B4L84979
-LSE
-122
-1.656,0000
-2.247,00
-GBX
+2.401,07
+131,0900
+USD
+21
+NDQ
+Stock
 FACEBOOK INC. - CLASS
 US30303M1027
-NDQ
-21
-131,0900
-2.401,07
+2.555,72
+20,9300
 USD
+140
+NDQ
+Stock
 JD.COM INC. - AMERICA
 US47215P1066
-NDQ
-140
-20,9300
-2.555,72
-USD
+1.319,37
+1,1940
+EUR
+1105
+MIL
+Stock
 MONDO TV
 IT0001447785
-MIL
-1105
-1,1940
-1.319,37
-EUR
+1.005,43
+160,0000
+GBX
+565
+LSE
+Stock
 TAPTICA INT LTD
 IL0011320343
-LSE
-565
-160,0000
-1.005,43
-GBX
+2.039,76
+57,0400
+USD
+41
+NSY
+Stock
 XPO LOGISTICS INC.
 US9837931008
-NSY
-41
-57,0400
-2.039,76
-USD
+
+
+
 Amsterdam, 28/01/2019
 Este certificado está expedido en la fecha y hora exacta indicadas. Ni Degiro ni Stichting Degiro asumen
 ninguna responsabilidad en la expedición o corrección del presente documento.
@@ -1766,866 +1243,4 @@ C
 2.024,03
 0,64
 0,8722"#;
-
-    const INPUT_2020: &str = r#" 
-Sr. John Doe
-neverwhere 8
-8888 neverland
-
-
-Nombre de usuario: 
-******aaa
-DEGIRO B.V.
-Rembrandt Tower - 9th floor
-Amstelplein 1
-1096 HA Amsterdam
-
-
-E
- 
-clientes@degiro.es
-I
- 
-www.degiro.es
-
-Estimado señor Doe,
-
-Encuentre en el adjunto el Informe Fiscal para el año 2020, con los datos que puede utilizar para realizar su declaración
-tributaria. DEGIRO está registrada en la Cámara de Comercio holandesa bajo el número 34342820 y el número de
-identificación fiscal (TIN) es 820866933. DEGIRO B.V tiene domicilio social en Rembrandt Tower - 9th floor, Amstelplein 1, 1096
-HA Amsterdam.
-
-Le recomendamos contactar con la Agencia Tributaria o con su asesor fiscal si necesita ayuda o asistencia a la hora de rellenar
-su declaración. El Informe Fiscal se compone de:
-
-Valor de la Cartera
-En el apartado “Valor de la Cartera” podrá encontrar el valor de su cartera a fecha 1 de enero de 2020 y a 31 de diciembre de
-2020. Con los datos a 1 de enero puede determinar los rendimientos sobre el capital durante el año 2020.
-
-Dividendos y otras remuneraciones al accionista
-Dividendos y otras remuneraciones recibidas junto a su correspondiente retención.
-
-Relación de ganancias y pérdidas por producto
-Contiene la relación de ganancias y pérdidas netas obtenidas de las posiciones cerradas durante el año 2020. El cambio de
-divisa utilizado para los cálculos es el tipo de cambio a final del día de la fecha de cada transacción.
-
-Certificado de Beneficiario Último Económico
-Extracto de posiciones a fecha: 31/12/2020.
-
-Beneficios y pérdidas derivados de la transmisión de elementos patrimoniales
-Contiene la relación de transacciones realizadas durante el año 2020, así como las comisiones asociadas a dichas operaciones
-y las ganancias o pérdidas derivadas de las posiciones cerradas durante el año.
-
-Tenga en cuenta que el cambio de divisa utilizado en este informe es el cambio a final del día, por lo que difiere con el utilizado
-en su cuenta de DEGIRO.
-
-Informe anual de su Cuenta de Efectivo en flatex
-En este apartado encontrará toda la información relativa a su Cuenta de Efectivo de flatex Bank.
-
-DEGIRO realiza el Informe Fiscal de la manera más rigurosa posible pero no asume responsabilidad por cualquier posible
-inexactitud en el mismo. Este informe no es vinculante y de tener cualquier duda al respecto, le rogamos se ponga en contacto
-con el Servicio de Atención al Cliente de DEGIRO en 
-clientes@degiro.es
-.
-
-Atentamente,
-
-DEGIRO
-
-
-DEGIRO B.V. es una empresa de servicios de inversión regulada por la Autoridad Financiera de los Mercados
-Holandeses.
-Informe Anual 2020 - 
-www.degiro.es
-1
-/ 4
-
-Sr. John Doe
-neverwhere 8
-8888 neverland
-
-
-Nombre de usuario: 
-******aaa
-DEGIRO B.V.
-Rembrandt Tower - 9th floor
-Amstelplein 1
-1096 HA Amsterdam
-
-
-E
- 
-clientes@degiro.es
-I
- 
-www.degiro.es
-Valor de la Cartera
-01-01-2020
-31-12-2020
-Fondos del Mercado Monetario
-564,19 EUR
-0,00 EUR
-Valor en cartera
-46.075,43 EUR
-82.624,36 EUR
-Valor total
-46.639,63 EUR
-82.624,36 EUR
-Total de comisiones por transacción pagadas en el año 2020 *
-Total de comisiones por transacción de las posiciones cerradas *
-39,04 EUR
-Comisiones
-78,46 EUR
-Comisión de conectividad con el mercado
-25,00 EUR
-EUR
-83,38
-Pérdidas por la venta de ETFs
-Ganancias patrimoniales totales
-0,00
-1.907,59
-Pérdidas totales
-Ganancia en venta de derivados
-0,00
-Ganancias por la venta de bonos
-Otras ganancias
-Pérdidas por la venta de otros productos
-EUR
-EUR
-EUR
-EUR
-Ganancias / Pérdidas Realizadas
-EUR
-1.907,59
-Pérdidas por la venta de acciones
-3,07
-0,00
-EUR
-Ganancias por la venta de acciones
-EUR
-EUR
-0,00
-Ganancias por la venta de ETFs
-0,00
-EUR
-3,07
-EUR
-Otras pérdidas
-Ganancias por la venta de otros productos
-EUR
-0,00
-Pérdida en venta de derivados
-0,00
-Pérdidas por la venta de bonos
-0,00
-80,31
-EUR
-EUR
-* Incluye la comisión fija de cambio de divisa cuando se haya realizado de forma manual
-
-
-DEGIRO B.V. es una empresa de servicios de inversión regulada por la Autoridad Financiera de los Mercados
-Holandeses.
-Informe Anual 2020 - 
-www.degiro.es
-2
-/ 4
-
-Sr. John Doe
-neverwhere 8
-8888 neverland
-
-
-Nombre de usuario: 
-******aaa
-DEGIRO B.V.
-Rembrandt Tower - 9th floor
-Amstelplein 1
-1096 HA Amsterdam
-
-
-E
- 
-clientes@degiro.es
-I
- 
-www.degiro.es
-Interés
-Total interés recibido
-0,00 EUR
-Total interés pagado
-0,00 EUR
-Total interés pagado por venta en corto
-0,00 EUR
-
-
-DEGIRO B.V. es una empresa de servicios de inversión regulada por la Autoridad Financiera de los Mercados
-Holandeses.
-Informe Anual 2020 - 
-www.degiro.es
-3
-/ 4
-
-Sr. John Doe
-neverwhere 8
-8888 neverland
-
-
-Nombre de usuario: 
-******aaa
-DEGIRO B.V.
-Rembrandt Tower - 9th floor
-Amstelplein 1
-1096 HA Amsterdam
-
-
-E
- 
-clientes@degiro.es
-I
- 
-www.degiro.es
-Dividendos, Cupones y otras remuneraciones
-País
-Producto
-Ingreso bruto
-Retenciones a cuenta
-Ingreso neto
-GB
-0,00 EUR
-10,75 EUR
-10,75 EUR
-GENUS
-GB
-0,00 EUR
-56,34 EUR
-56,34 EUR
-JUDGES SCIENTFC
-GB
-0,00 EUR
-26,49 EUR
-26,49 EUR
-JUDGES SCIENTFC
-GB
-0,00 EUR
-61,62 EUR
-61,62 EUR
-ROCKROSE ENERGY
-LT
--105,00 EUR
-700,00 EUR
-595,00 EUR
-INTER RAO LIETUVA AB
-MH
-0,00 EUR
-198,08 EUR
-198,08 EUR
-Okeanis Eco Tankers Corp
-MH
-0,00 EUR
-270,42 EUR
-270,42 EUR
-Okeanis Eco Tankers Corp
-MH
-0,00 EUR
-35,45 EUR
-35,45 EUR
-Okeanis Eco Tankers Corp
-NL
--5,78 EUR
-38,50 EUR
-32,72 EUR
-FLOWTRADERS
-1.286,87 EUR
--110,78 EUR
-1.397,65 EUR
-Distribuciones Fondos del Mercado Monetario
-Producto
-Ingreso neto
-No se han abonado distribuciones
-Relación de ganancias y pérdidas por producto
-Por favor, tenga en cuenta que el resultado de "Ganancias/Pérdidas" no incluye las comisiones de compra/venta. Las
-Ganancias y Pérdidas (G/P) se calculan usando el cambio de divisa al final del día como se expone en la primera página de
-este informe.
-Producto
-Symbol/ISIN
-Ganancias / Pérdidas
-Comisión pagada
-FLOWTRADERS
-NL0011279492
-665,00
-9,83
-EUR
-EUR
-GRAVITY CO. LTD. - AM
-US38911N2062
-849,21
-1,75
-EUR
-EUR
-MONDO TV
-IT0001447785
-393,38
-10,67
-EUR
-EUR
-Morgan Stanley EUR Liquidity Fund
-LU1959429272
--3,07
-0,00
-EUR
-EUR
-ROCKROSE ENERGY
-GB00BYNFCH09
--80,31
-16,79
-EUR
-EUR
-
-
-DEGIRO B.V. es una empresa de servicios de inversión regulada por la Autoridad Financiera de los Mercados
-Holandeses.
-Informe Anual 2020 - 
-www.degiro.es
-4
-/ 4
-
-
-
-Certificado de Beneficiario Último Económico.
-Cliente:
-Sr. John Doe
-******aaa (56234543)
-Nombre de usuario:
-Dirección:
-neverwhere
-País:
-España
-31/12/2020
-Fecha del extracto:
-Producto
-ISIN
-Bolsa
-Cantidad
-Moneda
-Precio
-Valor (EUR)
-CASH & CASH FUND (EUR)
-114,63
-ANGI HOMESERVICES INC- A
-US00183L1026
-NDQ
-300
-13,1950
-3.240,43
-USD
-BURFORD CAP LD
-GG00BMGYLN96
-LSE
-463
-711,0000
-3.686,96
-GBX
-CTT SYSTEMS
-SE0000418923
-OMX
-205
-152,2000
-3.104,50
-SEK
-CVD EQUIPMENT CORPORAT
-US1266011030
-NDQ
-1000
-3,6300
-2.971,52
-USD
-EVI INDUSTRIES INC
-US26929N1028
-ASE
-618
-30,3600
-15.358,97
-USD
-FACEBOOK INC. - CLASS
-US30303M1027
-NDQ
-21
-273,1600
-4.695,78
-USD
-FINANCIERE ODET
-FR0000062234
-EPA
-3
-786,0000
-2.358,00
-EUR
-GENUS
-GB0002074580
-LSE
-50
-4.196,0000
-2.349,76
-GBX
-GEORGIA CAPITAL
-GB00BF4HYV08
-LSE
-800
-540,0000
-4.838,40
-GBX
-INTER RAO LIETUVA AB
-LT0000128621
-WSE
-1000
-18,8000
-4.122,84
-PLN
-JD.COM INC. - AMERICA
-US47215P1066
-NDQ
-140
-87,9000
-10.073,69
-USD
-JUDGES SCIENTFC
-GB0032398678
-LSE
-145
-6.380,0000
-10.361,12
-GBX
-KEYWORDS STUDIO
-GB00BBQ38507
-LSE
-130
-2.860,0000
-4.164,16
-GBX
-Okeanis Eco Tankers Corp
-MHY641771016
-OSL
-430
-54,6000
-2.239,80
-NOK
-SHAKE SHACK INC. CLAS
-US8190471016
-NSY
-34
-84,7900
-2.359,91
-USD
-XPO LOGISTICS INC.
-US9837931008
-NSY
-69
-119,1950
-6.732,54
-USD
-Amsterdam, 18/01/2021
-
-Este certificado está expedido en la fecha y hora exacta indicadas. Ni Degiro ni Stichting Degiro asumen
-ninguna responsabilidad en la expedición o corrección del presente documento.
-
-Beneficios y pérdidas derivadas de la transmisión de elementos patrimoniales
-Por favor, tenga en cuenta que el resultado de "Beneficios y pérdidas" no incluye las comisiones de compra/venta.
-Fecha
-Producto
-Symbol/ISIN
-Tipo de
-orden
-Cantidad
-Precio
-Valor local
-Valor en EUR
-Comisión
-Tipo de
-cambio
-Beneficios y
-pérdidas
-15/09/2020
-CTT SYSTEMS
-SE0000418923
-C
-50
-128,8000
-6.440,00
-618,24
-4,31
-0,0960
-15/09/2020
-CTT SYSTEMS
-SE0000418923
-C
-13
-129,0000
-1.677,00
-160,99
-0,08
-0,0960
-24/09/2020
-CTT SYSTEMS
-SE0000418923
-C
-142
-118,8000
-16.869,60
-1.589,12
-4,79
-0,0942
-11/06/2020
-CVD EQUIPMENT
-CORPORAT
-US1266011030
-C
-700
-3,4800
-2.436,00
-2.156,10
-2,97
-0,8851
-11/06/2020
-CVD EQUIPMENT
-CORPORAT
-US1266011030
-C
-300
-3,4800
-1.044,00
-924,04
-1,06
-0,8851
-13/01/2020
-EVI INDUSTRIES INC
-US26929N1028
-C
-100
-25,3300
-2.533,00
-2.274,89
-0,86
-0,8981
-13/01/2020
-EVI INDUSTRIES INC
-US26929N1028
-C
-40
-25,3700
-1.014,80
-911,39
-0,14
-0,8981
-12/02/2020
-EVI INDUSTRIES INC
-US26929N1028
-C
-100
-24,3550
-2.435,50
-2.239,69
-0,87
-0,9196
-12/02/2020
-EVI INDUSTRIES INC
-US26929N1028
-C
-38
-24,4150
-927,77
-853,18
-0,14
-0,9196
-05/03/2020
-EVI INDUSTRIES INC
-US26929N1028
-C
-40
-21,0000
-840,00
-747,60
-0,64
-0,8900
-05/03/2020
-EVI INDUSTRIES INC
-US26929N1028
-C
-40
-21,0000
-840,00
-747,60
-0,14
-0,8900
-11/08/2020
-FINANCIERE ODET
-FR0000062234
-C
-3
-680,0000
-2.040,00
-2.040,00
-5,02
-1,0000
-06/03/2020
-FLOWTRADERS
-NL0011279492
-C
-70
-21,4400
-1.500,80
-1.500,80
-4,75
-1,0000
-11/06/2020
-FLOWTRADERS
-NL0011279492
-V
-70
-30,9400
-2.165,80
-2.165,80
-5,08
-1,0000
-665,0000
-07/07/2020
-GENUS
-GB0002074580
-C
-50
-3.520,0000
-176.000,00
-1.958,00
-4,97
-0,0111
-20/05/2020
-GEORGIA CAPITAL
-GB00BF4HYV08
-C
-355
-447,5000
-158.862,50
-1.771,63
-4,89
-0,0112
-20/05/2020
-GEORGIA CAPITAL
-GB00BF4HYV08
-C
-434
-447,5000
-194.215,00
-2.165,89
-1,09
-0,0112
-20/05/2020
-GEORGIA CAPITAL
-GB00BF4HYV08
-C
-10
-447,5000
-4.475,00
-49,91
-0,03
-0,0112
-20/05/2020
-GEORGIA CAPITAL
-GB00BF4HYV08
-C
-1
-447,5000
-447,50
-4,99
-0,00
-0,0112
-19/05/2020
-GRAVITY CO. LTD. - AM
-US38911N2062
-V
-100
-42,0400
-4.204,00
-3.848,76
-0,87
-0,9155
-832,6120
-19/05/2020
-GRAVITY CO. LTD. - AM
-US38911N2062
-V
-2
-42,0100
-84,02
-76,92
-0,01
-0,9155
-16,5973
-18/02/2020
-INTER RAO LIETUVA AB
-LT0000128621
-C
-695
-20,6000
-14.317,00
-3.354,47
-10,37
-0,2343
-18/02/2020
-INTER RAO LIETUVA AB
-LT0000128621
-C
-49
-20,7000
-1.014,30
-237,65
-0,38
-0,2343
-18/02/2020
-INTER RAO LIETUVA AB
-LT0000128621
-C
-256
-20,7000
-5.299,20
-1.241,60
-1,99
-0,2343
-17/01/2020
-KEYWORDS STUDIO
-GB00BBQ38507
-C
-25
-1.544,0000
-38.600,00
-452,86
-4,26
-0,0117
-17/01/2020
-KEYWORDS STUDIO
-GB00BBQ38507
-C
-105
-1.544,0000
-162.120,00
-1.901,99
-1,11
-0,0117
-17/01/2020
-MONDO TV
-IT0001447785
-V
-1105
-2,2560
-2.492,88
-2.492,88
-5,45
-1,0000
-393,3800
-01/04/2020
-Okeanis Eco Tankers Corp
-MHY641771016
-C
-59
-74,0000
-4.366,00
-380,72
-4,19
-0,0872
-
-Fecha
-Producto
-Symbol/ISIN
-Tipo de
-orden
-Cantidad
-Precio
-Valor local
-Valor en EUR
-Comisión
-Tipo de
-cambio
-Beneficios y
-pérdidas
-01/04/2020
-Okeanis Eco Tankers Corp
-MHY641771016
-C
-25
-74,0000
-1.850,00
-161,32
-0,08
-0,0872
-01/04/2020
-Okeanis Eco Tankers Corp
-MHY641771016
-C
-346
-74,0000
-25.604,00
-2.232,67
-1,11
-0,0872
-06/07/2020
-ROCKROSE ENERGY
-GB00BYNFCH09
-V
-216
-1.830,0000
-395.280,00
-4.366,26
-6,19
-0,0110
--80,3072
-13/01/2020
-SHAKE SHACK INC. CLAS
-US8190471016
-C
-34
-60,6300
-2.061,42
-1.851,36
-0,62
-0,8981
-
-Informe anual de flatex
-Para ayudarle a realizar su declaración de la renta le proveemos con este informe anual ya que dispone de una Cuenta de
-Efectivo en flatex asociada a su cuenta de DEGIRO.
-
-Tenga en cuenta que es su responsabilidad el notificar a las autoridades locales sobre su Cuenta de Efectivo en flatex, lo
-cual incluye declararlo en su declaración de la renta. Le informamos de que su cuenta en DEGIRO es independiente de su
-Cuenta de Efectivo, ya que, la primera está mantenida por DEGIRO B.V. en Holanda y la segunda por flatex Bank AG en
-Alemania.
-
-Este reporte refleja la siguiente información:
-
-
-    •  El balance total de su Cuenta de Efectivo en flatex durante el periodo reportado.
-
-    •  Los depósitos y retiradas a su cuenta de flatex durante el mismo periodo. Se incluye, en dicha información, el valor total
-de los depósitos que haya realizado desde su cuenta de contrapartida a su cuenta de flatex, las retiradas realizadas desde
-su Cuenta de Efectivo a su cuenta de contrapartida y la suma de los depósitos y retiradas entre su Cuenta de Efectivo y su
-cuenta de valores de DEGIRO.
-
-    •  El interés pagado y recibido en su Cuenta de Efectivo durante el periodo señalado.
-Cuenta de Efectivo en flatex
-December 31, 2019
-December 31, 2020
-Balance total
-0,00 EUR
-114,63 EUR
-Depósitos y retiradas
-1.600,00 EUR
-Valor total de los depósitos *
-0,00 EUR
-Valor total de las retiradas realizadas *
-0,00 EUR
-Intereses totales recibidos
-Intereses flatex
-Intereses totales pagados
-0,10 EUR
-* Esta sección refleja los depósitos realizados desde su cuenta de contrapartida a su Cuenta de Efectivo en flatex y las retiradas realizadas
-desde su Cuenta de Efectivo a su cuenta vinculada
--1.485,27 EUR
-Valor total de los depósitos y retiradas desde y a DEGIRO"#;
 }

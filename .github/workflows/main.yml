@@ -13,7 +13,6 @@ jobs:
       matrix:
         toolchain:
           - 1.56.1 # MSRV
-          - stable
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -53,7 +52,6 @@ jobs:
       matrix:
         toolchain:
           - 1.56.1 # MSRV
-          - stable
 
     steps:
       - uses: actions/checkout@v2
@@ -118,14 +116,14 @@ jobs:
         run: npm install yew-styles --prefix tmp
       - name: Build app
         run: trunk -v build --release
-      - uses: isbang/compose-action@v1.0.0
-        with:
-          compose-file: ./docker-compose.yml
-      - name: Run Integration tests
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --test interaction -- --ignored --test-threads=1
+#      - uses: isbang/compose-action@v1.0.0
+#        with:
+#          compose-file: ./docker-compose.yml
+#      - name: Run Integration tests
+#        uses: actions-rs/cargo@v1
+#        with:
+#          command: test
+#          args: --test interaction -- --ignored --test-threads=1
 
   site:
     name: Deploy site

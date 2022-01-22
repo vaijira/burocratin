@@ -99,9 +99,12 @@ impl Aeat720Field {
                 let result = ISO_8859_15.encode(value);
                 if result.2 {
                     bail!("Unable to encode to ISO-8859-15")
+                } else if result.0.len() > size {
+                    slice.write_all(&result.0[0..size])?;
                 } else {
                     let remainder = size - result.0.len();
                     slice.write_all(&result.0)?;
+
                     if remainder > 0 {
                         slice.write_all(" ".repeat(remainder).as_bytes())?;
                     }
