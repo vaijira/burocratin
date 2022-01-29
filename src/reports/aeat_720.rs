@@ -228,7 +228,7 @@ impl Default for SummaryRegister {
 }
 
 impl SummaryRegister {
-    fn new(notes: &[BalanceNote], year: usize, nif: &str, name: &str) -> Result<Self> {
+    fn new(notes: &[BalanceNote], year: usize, nif: &str, name: &str, phone: &str) -> Result<Self> {
         let mut fields = Self::default().fields;
 
         Aeat720Field::write_field(&mut fields, Self::NIF_FIELD, nif)?;
@@ -236,6 +236,10 @@ impl SummaryRegister {
         Aeat720Field::write_numeric_field(&mut fields, Self::YEAR_FIELD, year)?;
 
         Aeat720Field::write_field(&mut fields, Self::NAME_FIELD, name)?;
+
+        if !phone.is_empty() {
+            Aeat720Field::write_field(&mut fields, Self::TELEPHONE_FIELD, phone)?;
+        }
 
         Aeat720Field::write_field(&mut fields, Self::CONTACT_NAME_FIELD, name)?;
 
@@ -560,7 +564,7 @@ impl Aeat720Report {
         }
 
         Ok(Aeat720Report {
-            summary: SummaryRegister::new(&info.balance_notes, info.year, &info.nif, &full_name)?,
+            summary: SummaryRegister::new(&info.balance_notes, info.year, &info.nif, &full_name, &info.phone)?,
             details,
         })
     }

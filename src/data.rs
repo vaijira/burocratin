@@ -122,6 +122,7 @@ pub struct FinancialInformation {
     pub surname: String,
     pub nif: String,
     pub year: usize,
+    pub phone: String,
 }
 
 impl FinancialInformation {
@@ -133,6 +134,7 @@ impl FinancialInformation {
             surname: String::from(""),
             nif: String::from(""),
             year: 0,
+            phone: String::from(""),
         }
     }
 

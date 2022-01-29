@@ -42,6 +42,7 @@ pub enum Msg {
     ChangeSurname(String),
     ChangeNif(String),
     ChangeYear(String),
+    ChangePhone(String),
     GenerateAeat720,
     UploadDegiroFile(File),
     UploadDegiroCSVFile(File),
@@ -101,6 +102,12 @@ impl Component for App {
             Msg::ChangeYear(year) => {
                 log::debug!("change year to: {}", year);
                 self.financial_information.year = year.parse::<usize>().unwrap_or(DEFAULT_YEAR);
+                self.link.send_message(Msg::GenerateAeat720);
+                true
+            }
+            Msg::ChangePhone(phone) => {
+                log::debug!("change phone to: {}", phone);
+                self.financial_information.phone = phone;
                 self.link.send_message(Msg::GenerateAeat720);
                 true
             }
@@ -506,7 +513,7 @@ impl App {
             />
             <Container wrap=Wrap::Wrap direction=Direction::Row>
 
-              <Item layouts=vec!(ItemLayout::ItM(3), ItemLayout::ItXs(12))>
+              <Item layouts=vec!(ItemLayout::ItM(3), ItemLayout::ItXs(15))>
                 <FormGroup orientation=Orientation::Horizontal>
                 <FormLabel text="Nombre: " />
                 <FormInput
@@ -518,7 +525,7 @@ impl App {
                 </FormGroup>
               </Item>
 
-              <Item layouts=vec!(ItemLayout::ItM(3), ItemLayout::ItXs(12))>
+              <Item layouts=vec!(ItemLayout::ItM(3), ItemLayout::ItXs(15))>
                 <FormGroup orientation=Orientation::Horizontal>
                 <FormLabel text="Apellidos: " />
                 <FormInput
@@ -530,7 +537,7 @@ impl App {
                 </FormGroup>
               </Item>
 
-              <Item layouts=vec!(ItemLayout::ItM(3), ItemLayout::ItXs(12))>
+              <Item layouts=vec!(ItemLayout::ItM(3), ItemLayout::ItXs(15))>
                 <FormGroup orientation=Orientation::Horizontal>
                 <FormLabel text="NIF: " />
                 <FormInput
@@ -542,7 +549,7 @@ impl App {
                 </FormGroup>
               </Item>
 
-              <Item layouts=vec!(ItemLayout::ItM(3), ItemLayout::ItXs(12))>
+              <Item layouts=vec!(ItemLayout::ItM(3), ItemLayout::ItXs(15))>
                 <FormGroup orientation=Orientation::Horizontal>
                 <FormLabel text="Año: " />
                 <FormInput
@@ -554,6 +561,20 @@ impl App {
                 />
                 </FormGroup>
               </Item>
+
+              <Item layouts=vec!(ItemLayout::ItM(3), ItemLayout::ItXs(15))>
+              <FormGroup orientation=Orientation::Horizontal>
+              <FormLabel text="Teléfono: " />
+              <FormInput
+                id={"phone"}
+                alt={"Teléfono"}
+                input_type=InputType::Text
+                oninput_signal=self.link.callback(|e: InputData| Msg::ChangePhone(e.value))
+              />
+
+              </FormGroup>
+            </Item>
+
 
             </Container>
             </>
