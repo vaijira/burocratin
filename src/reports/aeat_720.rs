@@ -564,7 +564,13 @@ impl Aeat720Report {
         }
 
         Ok(Aeat720Report {
-            summary: SummaryRegister::new(&info.balance_notes, info.year, &info.nif, &full_name, &info.phone)?,
+            summary: SummaryRegister::new(
+                &info.balance_notes,
+                info.year,
+                &info.nif,
+                &full_name,
+                &info.phone,
+            )?,
             details,
         })
     }
