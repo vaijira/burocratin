@@ -270,7 +270,6 @@ impl Component for App {
         log::debug!("Render App");
         html! {
           <>
-            {self.greetings()}
             <hr/>
             {self.get_form_file()}
             <hr/>
@@ -297,38 +296,6 @@ impl Component for App {
 }
 
 impl App {
-    fn greetings(&self) -> Html {
-        html! {
-          <>
-            <h2>{"Burocratin te ayuda a rellenar los formularios D6 y 720 a partir de los informes de tus brokers."}</h2>
-            <p>
-              {"Burocratin utiliza la tecnología "} <a href="https://en.wikipedia.org/wiki/WebAssembly" alt="WebAssembly">{"WebAssembly"}</a>
-              {" con lo cual una vez la página realiza la carga inicial toda acción es local y ningún dato viaja por la red."}
-            </p>
-            <p>
-            {"A efectos prácticos (a menos que controles más del 10% de una empresa) el D-6 ha quedado "}<a href="https://www.boe.es/boe/dias/2021/12/17/pdfs/BOE-A-2021-20816.pdf" alt="cambio condiciones D-6">{"obsoleto"}</a>{" por lo que se desactiva."}
-            </p>
-            <p>
-              {"Para cualquier mejora, duda, sugerencia o error puedes crear un "}
-              <a href="https://github.com/vaijira/burocratin/issues" alt="github issue">{"ticket"}</a>
-              {" o mandar un "}<a href="mailto:contacto@burocratin.com" alt="contacto">{"mail"}</a>{"."}
-            </p>
-            <p>
-              {"El modelo 720 generado se puede presentar si es la primera declaración o "}
-              <a href="https://www.agenciatributaria.es/AEAT.internet/Inicio/Ayuda/Modelos__Procedimientos_y_Servicios/Ayuda_Modelo_720/Informacion_general/Preguntas_frecuentes__actualizadas_a_marzo_de_2014_/Nuevas_preguntas_frecuentes/Si_se_procede_a_la_venta_de_valores__articulo_42_ter_del_Reglamento_General_aprobado_por_el_RD_1065_2007___respecto_de_los_qu__on_de_informar_.shtml" alt="720 FAQ">
-              {"si se ha realizado alguna venta y reinvertido el importe"}</a>{"."}
-            </p>
-            <ul>{"Limitaciones:"}
-            <li>{"Sólo rellena información de acciones, no líquidez del broker."}</li>
-            <li>{"El código de país que usará para Degiro será NL y para interactive brokers IE."}</li>
-            <li>{"Modelo 720:Revisar el código de domiciliación del país, por defecto cogerá el del ISIN, pero esto no siempre es correcto."}</li>
-            <li>{"Modelo 720: Revisar la fecha de primera incorporación si tu primera transacción fue antes del año a declarar."}</li>
-            </ul>
-            <p>{"El autor no se hace responsable del uso resultante de esta aplicación."}</p>
-          </>
-        }
-    }
-
     fn help_degiro_pdf(&self) -> Html {
         html! {
             <ul>
@@ -399,7 +366,7 @@ impl App {
 
                     <FormGroup orientation=Orientation::Horizontal>
                     <img src="img/degiro.svg" alt="logo broker Degiro" width="70" height="70" />
-                        <FormLabel text="Informe anual broker Degiro (PDF):" />
+                        <FormLabel label_for="degiro_report" text="Informe anual broker Degiro (PDF):" />
                         <FormFile
                             id={"degiro_report"}
                             alt="Fichero PDF informe broker Degiro"
@@ -433,7 +400,7 @@ impl App {
                 <Item layouts=vec!(ItemLayout::ItM(4), ItemLayout::ItXs(12))>
                     <FormGroup orientation=Orientation::Horizontal>
                     <img src="img/degiro.svg" alt="logo broker Degiro" width="70" height="70" />
-                    <FormLabel text="Informe anual broker Degiro (CSV):" />
+                    <FormLabel label_for="degiro_csv_report" text="Informe anual broker Degiro (CSV):" />
                     <FormFile
                         id={"degiro_csv_report"}
                         alt="Fichero CSV informe broker Degiro"
@@ -467,7 +434,7 @@ impl App {
                 <Item layouts=vec!(ItemLayout::ItM(4), ItemLayout::ItXs(12))>
                 <FormGroup orientation=Orientation::Horizontal>
                     <img src="img/interactive_brokers.svg" alt="logo interactive brokers" width="70" height="70" />
-                    <FormLabel text="Informe anual Interactive Brokers (ZIP):" />
+                    <FormLabel label_for="ib_report" text="Informe anual Interactive Brokers (ZIP):" />
                     <FormFile
                         id={"ib_report"}
                         alt="Fichero informe Interactive Brokers"
@@ -515,7 +482,7 @@ impl App {
 
               <Item layouts=vec!(ItemLayout::ItM(3), ItemLayout::ItXs(15))>
                 <FormGroup orientation=Orientation::Horizontal>
-                <FormLabel text="Nombre: " />
+                <FormLabel label_for="name" text="Nombre: " />
                 <FormInput
                   id={"name"}
                   alt={"Nombre"}
@@ -527,7 +494,7 @@ impl App {
 
               <Item layouts=vec!(ItemLayout::ItM(3), ItemLayout::ItXs(15))>
                 <FormGroup orientation=Orientation::Horizontal>
-                <FormLabel text="Apellidos: " />
+                <FormLabel label_for="surname" text="Apellidos: " />
                 <FormInput
                   id={"surname"}
                   alt={"Apellidos"}
@@ -539,7 +506,7 @@ impl App {
 
               <Item layouts=vec!(ItemLayout::ItM(3), ItemLayout::ItXs(15))>
                 <FormGroup orientation=Orientation::Horizontal>
-                <FormLabel text="NIF: " />
+                <FormLabel label_for="nif" text="NIF: " />
                 <FormInput
                   id={"nif"}
                   alt={"NIF"}
@@ -551,7 +518,7 @@ impl App {
 
               <Item layouts=vec!(ItemLayout::ItM(3), ItemLayout::ItXs(15))>
                 <FormGroup orientation=Orientation::Horizontal>
-                <FormLabel text="Año: " />
+                <FormLabel label_for="year" text="Año: " />
                 <FormInput
                   id={"year"}
                   alt={"Año"}
@@ -564,7 +531,7 @@ impl App {
 
               <Item layouts=vec!(ItemLayout::ItM(3), ItemLayout::ItXs(15))>
               <FormGroup orientation=Orientation::Horizontal>
-              <FormLabel text="Teléfono: " />
+              <FormLabel label_for="phone" text="Teléfono: " />
               <FormInput
                 id={"phone"}
                 alt={"Teléfono"}

@@ -2,23 +2,55 @@
 <html lang="es">
   <head>
     <meta charset="utf-8" />
-    <title>..:: BUROCRATIN te ayuda con informes D6 y 720::..</title>
-    <meta name="description" content="burocratin te ayuda con los informes D6 del ministerio de economía D6 y el 720 de la agencia tributaria">
-    <meta name="keywords" content="720,D6,hacienda,aeat,rellenar,modelo,D-6,informes">
+    <title>..:: BUROCRATIN te ayuda con el modelo 720::..</title>
+    <meta name="description" content="burocratin te ayuda el modelo 720 de la agencia tributaria">
+    <meta name="keywords" content="720,hacienda,aeat,rellenar,modelo,informe">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="canonical" href="https://www.burocratin.com" />
     <script async defer data-domain="burocratin.com" src="https://stats.burocratin.com/js/index.js"></script>
     <base data-trunk-public-url />
+    <style>
+      .alert-warning {
+        padding: 5px;
+        color: #664d03;
+        background-color: #fff3cd;
+        border-color: #ffecb5;
+        display: inline-block;
+    }
+    </style>
     <link rel="shortcut icon" href="#" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro&display=swap" />
-    <link
+    <link async defer rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro&display=swap" />
+    <link async defer
       rel="stylesheet"
       type="text/css"
       href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" />
     <link data-trunk rel="sass" href="tmp/node_modules/yew-styles/main.sass" />
     <link data-trunk rel="copy-dir" href="static/img"/>
   </head>
-  <body>
-    <p>Cargando...</p>
+  <body style="padding: 5px; font-family: Roboto, sans-serif;">
+    <h2>Burocratin te ayuda a rellenar el modelo 720 a partir de los informes de tus brokers.</h2>
+    <p>
+      Burocratin utiliza la tecnología <a href="https://en.wikipedia.org/wiki/WebAssembly" alt="WebAssembly" target="_blank" rel="noopener external nofollow">WebAssembly</a>
+      con lo cual una vez la página realiza la carga inicial toda acción es local y ningún dato viaja por la red.
+    </p>
+    <p>
+      Para cualquier mejora, duda, sugerencia o error puedes crear un
+      <a href="https://github.com/vaijira/burocratin/issues" alt="github issue" target="_blank" rel="noopener external nofollow">ticket</a>
+    </p>
+    <p>
+      El modelo 720 generado se puede presentar si es la primera declaración o
+      <a href="https://www.agenciatributaria.es/AEAT.internet/Inicio/Ayuda/Modelos__Procedimientos_y_Servicios/Ayuda_Modelo_720/Informacion_general/Preguntas_frecuentes__actualizadas_a_marzo_de_2014_/Nuevas_preguntas_frecuentes/Si_se_procede_a_la_venta_de_valores__articulo_42_ter_del_Reglamento_General_aprobado_por_el_RD_1065_2007___respecto_de_los_qu__on_de_informar_.shtml" target="_blank" rel="noopener external nofollow" alt="720 FAQ">
+      si se ha realizado alguna venta y reinvertido el importe</a>.
+    </p>
+    <div class="alert-warning"><strong>Limitaciones:</strong>
+      <ul>
+        <li>Sólo rellena información de acciones, no líquidez del broker.</li>
+        <li>El código de país que usará para Degiro será NL y para interactive brokers IE.</li>
+        <li>Modelo 720: Revisar el código de domiciliación del país, por defecto cogerá el del ISIN, pero esto no siempre es correcto.</li>
+        <li>Modelo 720: Revisar la fecha de primera incorporación si tu primera transacción fue antes del año a declarar.</li>
+      </ul>
+    </div>
+    <p>El autor no se hace responsable del uso resultante de esta aplicación.</p>
+    <div id="burocratinApp" >Cargando...<link data-trunk rel="rust" href="Cargo.toml" data-wasm-opt="z"/></div>
   </body>
 </html>
