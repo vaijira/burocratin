@@ -7,16 +7,20 @@
     <meta name="keywords" content="720,hacienda,aeat,rellenar,modelo,informe">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="canonical" href="https://www.burocratin.com" />
-    <script async defer data-domain="burocratin.com" src="https://stats.burocratin.com/js/index.js"></script>
+    <script defer data-api="/api/event" data-domain="burocratin.com" src="/js/script.js"></script>
     <base data-trunk-public-url />
     <style>
+      body {
+        padding: 5px;
+        font-family: Roboto, sans-serif;
+      }
       .alert-warning {
         padding: 5px;
         color: #664d03;
         background-color: #fff3cd;
         border-color: #ffecb5;
         display: inline-block;
-    }
+      }
     </style>
     <link rel="shortcut icon" href="#" />
     <link async defer rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro&display=swap" />
@@ -27,15 +31,15 @@
     <link data-trunk rel="sass" href="tmp/node_modules/yew-styles/main.sass" />
     <link data-trunk rel="copy-dir" href="static/img"/>
   </head>
-  <body style="padding: 5px; font-family: Roboto, sans-serif;">
-    <h2>Burocratin te ayuda a rellenar el modelo 720 a partir de los informes de tus brokers.</h2>
+  <body>
+    <h1>Burocratin te ayuda a rellenar el modelo 720 a partir de los informes de Interactivebrokers y Degiro.</h1>
     <p>
       Burocratin utiliza la tecnología <a href="https://en.wikipedia.org/wiki/WebAssembly" alt="WebAssembly" target="_blank" rel="noopener external nofollow">WebAssembly</a>
       con lo cual una vez la página realiza la carga inicial toda acción es local y ningún dato viaja por la red.
     </p>
     <p>
       Para cualquier mejora, duda, sugerencia o error puedes crear un
-      <a href="https://github.com/vaijira/burocratin/issues" alt="github issue" target="_blank" rel="noopener external nofollow">ticket</a>
+      <a href="https://github.com/vaijira/burocratin/issues" alt="github issue" target="_blank" rel="noopener external nofollow">ticket</a>.
     </p>
     <p>
       El modelo 720 generado se puede presentar si es la primera declaración o
