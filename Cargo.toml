@@ -5,7 +5,7 @@ authors = ["Jorge Perez Burgos <vaijira@gmail.com>"]
 edition = "2021"
 
 [lib]
-crate-type = ["cdylib"]
+crate-type = ["cdylib", "rlib"]
 
 [dependencies.web-sys]
 version = "0.3"
@@ -58,7 +58,6 @@ codegen-units = 1
 opt-level = "z"  # 3 => fast, s/z => small
 # link time optimization using using whole-program analysis
 lto = true
-
 
 [package.metadata.wasm-pack.profile.release]
 wasm-opt = ["-Oz"]  # O4 => fast, Oz/Os => small
