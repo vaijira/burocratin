@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Result};
 use rust_decimal::Decimal;
-use std::{rc::Rc, str::FromStr};
+use std::{str::FromStr, sync::Arc};
 
 use crate::{
     data::{BalanceNote, BalanceNotes, BrokerInformation, CompanyInfo},
@@ -9,7 +9,7 @@ use crate::{
 
 pub struct DegiroCSVParser {
     content: String,
-    broker: Rc<BrokerInformation>,
+    broker: Arc<BrokerInformation>,
 }
 
 impl DegiroCSVParser {
@@ -66,10 +66,10 @@ impl DegiroCSVParser {
         Ok(balance_notes)
     }
 
-    pub fn new(content: String, broker: &Rc<BrokerInformation>) -> Self {
+    pub fn new(content: String, broker: &Arc<BrokerInformation>) -> Self {
         Self {
             content,
-            broker: Rc::clone(broker),
+            broker: Arc::clone(broker),
         }
     }
 }
@@ -98,7 +98,7 @@ mod tests {
     #[test]
     #[allow(clippy::mistyped_literal_suffixes)]
     fn test_parse_csv() {
-        let degiro_broker: Rc<BrokerInformation> = Rc::new(BrokerInformation::new(
+        let degiro_broker: Arc<BrokerInformation> = Arc::new(BrokerInformation::new(
             String::from("Degiro"),
             String::from("NL"),
         ));

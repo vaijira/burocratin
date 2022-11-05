@@ -1,4 +1,4 @@
-use std::{collections::HashMap, rc::Rc, str::FromStr};
+use std::{collections::HashMap, str::FromStr, sync::Arc};
 
 use crate::{
     data::{
@@ -36,7 +36,7 @@ enum NoteState {
 
 pub struct IBParser {
     dom: Html,
-    broker: Rc<BrokerInformation>,
+    broker: Arc<BrokerInformation>,
     companies_info: HashMap<String, CompanyInfo>,
 }
 
@@ -44,13 +44,13 @@ impl IBParser {
     const STOCKS_STR: &'static str = "Stocks";
     const EUR_CURRENCY_STR: &'static str = "EUR";
 
-    pub fn new(data: &str, broker: &Rc<BrokerInformation>) -> Result<Self> {
+    pub fn new(data: &str, broker: &Arc<BrokerInformation>) -> Result<Self> {
         let dom = Html::parse_document(data);
         let companies_info = IBParser::parse_companies_info(&dom)?;
 
         Ok(Self {
             dom,
-            broker: Rc::clone(broker),
+            broker: Arc::clone(broker),
             companies_info,
         })
     }
@@ -402,7 +402,7 @@ mod tests {
     #[test]
     #[allow(clippy::mistyped_literal_suffixes)]
     fn ibparser_parse_account_notes_test() {
-        let ib_broker: Rc<BrokerInformation> = Rc::new(BrokerInformation::new(
+        let ib_broker: Arc<BrokerInformation> = Arc::new(BrokerInformation::new(
             String::from("Interactive Brokers"),
             String::from("IE"),
         ));
@@ -470,7 +470,7 @@ mod tests {
     #[test]
     #[allow(clippy::mistyped_literal_suffixes)]
     fn ibparser_parse_balance_notes_test() {
-        let ib_broker: Rc<BrokerInformation> = Rc::new(BrokerInformation::new(
+        let ib_broker: Arc<BrokerInformation> = Arc::new(BrokerInformation::new(
             String::from("Interactive Brokers"),
             String::from("IE"),
         ));

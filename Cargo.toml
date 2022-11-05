@@ -5,16 +5,12 @@ authors = ["Jorge Perez Burgos <vaijira@gmail.com>"]
 edition = "2021"
 
 [lib]
-crate-type = ["cdylib", "rlib"]
+crate-type = ["cdylib"]
 
 [dependencies.web-sys]
 version = "0.3"
 features = [
-  "Blob",
-  "File",
-  "FileReader",
-  "FileReaderSync",
-  "Url",
+  "HtmlInputElement",
 ]
 
 [dependencies]
@@ -24,7 +20,11 @@ byteorder = "1.2"
 chrono = { version = "0.4", features = ["serde"] }
 console_error_panic_hook = "0.1"
 csv = "1.1"
+dominator = "0.5"
 encoding_rs = "0.8"
+futures = "0.3"
+futures-signals = "0.3"
+gloo-file = { version = "0.2", features = [ "futures" ] }
 html5ever = "0.25"
 instant = { version = "0.1", features =  [ "wasm-bindgen", "inaccurate" ] }
 js-sys = "0.3"
@@ -37,9 +37,6 @@ scraper = "0.12"
 selectors = "0.22"
 serde = { version = "1.0", features = ["derive", "rc"] }
 xml-rs = "0.8"
-yew = "0.18"
-yew_assets= {version = "0.1", features = ["full"]}
-yew_styles = { version="0.11", features=["full"] }
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"
 wasm-logger = "0.2"
@@ -54,12 +51,14 @@ tokio = { version = "1.0", features = ["fs", "macros", "rt-multi-thread", "io-ut
 
 [profile.release]
 # less code to include into binary
-panic = 'abort'
+# panic = 'abort'
 # optimization over all codebase ( better optimization, slower build )
 codegen-units = 1
 # optimization for size ( more aggressive )
-opt-level = 'z'
-# optimization for size
-# opt-level = 's'
+opt-level = "z"  # 3 => fast, s/z => small
 # link time optimization using using whole-program analysis
 lto = true
+
+
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = ["-Oz"]  # O4 => fast, Oz/Os => small

@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::sync::Arc;
 
 use crate::data::{
     AccountNote, AccountNotes, BalanceNote, BalanceNotes, BrokerInformation, BrokerOperation,
@@ -34,7 +34,7 @@ type Res<T, U> = IResult<T, U, VerboseError<T>>;
 
 pub struct DegiroParser {
     content: String,
-    broker: Rc<BrokerInformation>,
+    broker: Arc<BrokerInformation>,
 }
 
 const DEGIRO_BALANCE_HEADER_BEGIN: &str = "\nCASH & CASH FUND (EUR)\n";
@@ -175,7 +175,7 @@ impl DegiroParser {
 
     fn account_note<'a>(
         input: &'a str,
-        broker: &Rc<BrokerInformation>,
+        broker: &Arc<BrokerInformation>,
     ) -> Res<&'a str, AccountNote> {
         context(
             "account note",
@@ -232,7 +232,7 @@ impl DegiroParser {
 
     fn balance_note<'a>(
         input: &'a str,
-        broker: &Rc<BrokerInformation>,
+        broker: &Arc<BrokerInformation>,
     ) -> Res<&'a str, BalanceNote> {
         context(
             "balance note",
@@ -286,7 +286,7 @@ impl DegiroParser {
 
     fn account_notes<'a>(
         input: &'a str,
-        broker: &Rc<BrokerInformation>,
+        broker: &Arc<BrokerInformation>,
     ) -> Res<&'a str, AccountNotes> {
         context(
             "account notes",
@@ -298,7 +298,7 @@ impl DegiroParser {
 
     fn balance_notes<'a>(
         input: &'a str,
-        broker: &Rc<BrokerInformation>,
+        broker: &Arc<BrokerInformation>,
     ) -> Res<&'a str, BalanceNotes> {
         context(
             "balance notes",
@@ -383,10 +383,10 @@ impl DegiroParser {
         Ok(result)
     }
 
-    pub fn new(content: String, broker: &Rc<BrokerInformation>) -> Self {
+    pub fn new(content: String, broker: &Arc<BrokerInformation>) -> Self {
         Self {
             content,
-            broker: Rc::clone(broker),
+            broker: Arc::clone(broker),
         }
     }
 
@@ -560,7 +560,7 @@ US36262G1013
 
     #[test]
     fn balance_note_test() {
-        let degiro_broker: Rc<BrokerInformation> = Rc::new(BrokerInformation::new(
+        let degiro_broker: Arc<BrokerInformation> = Arc::new(BrokerInformation::new(
             String::from("Degiro"),
             String::from("NL"),
         ));
@@ -596,7 +596,7 @@ GG00B4L84979"#;
 
     #[test]
     fn account_note_test() {
-        let degiro_broker: Rc<BrokerInformation> = Rc::new(BrokerInformation::new(
+        let degiro_broker: Arc<BrokerInformation> = Arc::new(BrokerInformation::new(
             String::from("Degiro"),
             String::from("NL"),
         ));
@@ -698,7 +698,7 @@ C
 
     #[test]
     fn degiro_2018_parse_content_test() {
-        let degiro_broker: Rc<BrokerInformation> = Rc::new(BrokerInformation::new(
+        let degiro_broker: Arc<BrokerInformation> = Arc::new(BrokerInformation::new(
             String::from("Degiro"),
             String::from("NL"),
         ));
@@ -902,7 +902,7 @@ www.degiro.es
 Estimado señor Doe,
 
 Encuentre en el adjunto el Informe Fiscal para el año 2018, con los datos que puede utilizar para
-realizar su declaración tributaria. DEGIRO está registrada en la Cámara de Comercio holandesa bajo
+realizar su declaración tributaria. DEGIRO está registrada en la Cámara de ComeArcio holandesa bajo
 el número 34342820 y el número de identificación fiscal (TIN) es 820866933. DEGIRO B.V tiene
 domicilio social en Rembrandt Tower - 9th floor, Amstelplein 1, 1096 HA Amsterdam.
 
@@ -929,13 +929,13 @@ Contiene la relación de transacciones realizadas durante el año 2018, así com
 asociadas a dichas operaciones y las ganancias o pérdidas derivadas de las posiciones cerradas
 durante el año.
 
-Fondos del mercado monetario
+Fondos del meArcado monetario
 Tenga en cuenta que las tablas de este informe tienen en cuenta las ganancias o pérdidas derivadas
-de los movimientos en los fondos del mercado monetario (FMM). Por ejemplo, en el caso de tener una
+de los movimientos en los fondos del meArcado monetario (FMM). Por ejemplo, en el caso de tener una
 ganancia o pérdida en una posición en un FMM, esto se tendrá en cuenta en la tabla
-“Ganancias/Comisiones” y/o en la tabla “Distribuciones Fondos del Mercado Monetario”. En caso de
+“Ganancias/Comisiones” y/o en la tabla “Distribuciones Fondos del MeArcado Monetario”. En caso de
 que recibiera una compensación por parte de DEGIRO por una pérdida de una posición de FMM, esto
-se informará en la tabla 'Compensación Fondos del Mercado Monetario (FMM)'
+se informará en la tabla 'Compensación Fondos del MeArcado Monetario (FMM)'
 Las transacciones de FMM se excluyen de la tabla "Beneficios y pérdidas derivadas de la transmisión
 de elementos patrimoniales". Esta información se puede encontrar en la pestaña Cuenta de su
 Webtrader.
@@ -951,7 +951,7 @@ Atentamente,
 DEGIRO
 
 
-DEGIRO B.V. es una empresa de servicios de inversión regulada por la Autoridad Financiera de los Mercados
+DEGIRO B.V. es una empresa de servicios de inversión regulada por la Autoridad Financiera de los MeArcados
 Holandeses.
 Informe Anual 2018 - 
 www.degiro.es
@@ -981,7 +981,7 @@ www.degiro.es
 Valor de la Cartera
 01-01-2018
 31-12-2018
-Fondos del Mercado Monetario
+Fondos del MeArcado Monetario
 0.00 EUR
 109.63 EUR
 Valor en cartera
@@ -1000,7 +1000,7 @@ Total de comisiones por transacción de las posiciones cerradas
 0.00 EUR
 Comisiones
 17.85 EUR
-Comisión de conectividad con el mercado
+Comisión de conectividad con el meArcado
 10.00 EUR
 Interés
 Total interés pagado por venta en corto
@@ -1009,13 +1009,13 @@ Total interés recibido
 0.00 EUR
 Total interés pagado
 0.00 EUR
-Compensación Fondos del Mercado Monetario (FMM)
+Compensación Fondos del MeArcado Monetario (FMM)
 Compensación total recibida 2018
 0.18
 EUR
 
 
-DEGIRO B.V. es una empresa de servicios de inversión regulada por la Autoridad Financiera de los Mercados
+DEGIRO B.V. es una empresa de servicios de inversión regulada por la Autoridad Financiera de los MeArcados
 Holandeses.
 Informe Anual 2018 - 
 www.degiro.es
@@ -1056,7 +1056,7 @@ BURFORD CAP LD
 3.86 EUR
 0.00 EUR
 3.86 EUR
-Distribuciones Fondos del Mercado Monetario
+Distribuciones Fondos del MeArcado Monetario
 Producto
 Ingreso neto
 No se han abonado distribuciones
@@ -1074,7 +1074,7 @@ EUR
 EUR
 
 
-DEGIRO B.V. es una empresa de servicios de inversión regulada por la Autoridad Financiera de los Mercados
+DEGIRO B.V. es una empresa de servicios de inversión regulada por la Autoridad Financiera de los MeArcados
 Holandeses.
 Informe Anual 2018 - 
 www.degiro.es

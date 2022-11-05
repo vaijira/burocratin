@@ -1,630 +1,599 @@
-use std::rc::Rc;
-use std::vec;
+use std::sync::Arc;
 
-use crate::data::{BrokerInformation, FinancialInformation};
+use dominator::{clone, events, html, stylesheet, with_node, Dom};
+use futures_signals::signal::{Mutable, SignalExt};
+use futures_signals::signal_vec::{MutableVec, SignalVecExt};
+use gloo_file::{futures::read_as_bytes, Blob};
+use wasm_bindgen_futures::spawn_local;
+use web_sys::HtmlInputElement;
+
+use crate::css::{
+    FLEX_CONTAINER_CLASS, FLEX_CONTAINER_ITEM_20_CLASS, FLEX_CONTAINER_ITEM_40_CLASS, ROOT_CLASS,
+    SECTION_HEADER,
+};
+use crate::data::{AccountNote, BalanceNote, BrokerInformation, FinancialInformation};
 use crate::parsers::degiro_csv::DegiroCSVParser;
+use crate::parsers::ib::IBParser;
+use crate::parsers::{degiro::DegiroParser, pdf::read_pdf};
 use crate::utils::web;
-use crate::{parsers::degiro::DegiroParser, parsers::ib::IBParser};
-use crate::{parsers::pdf::read_pdf, utils::zip::read_zip_str};
+use crate::utils::zip::read_zip_str;
 
-use yew::prelude::*;
-use yew::services::reader::{File, FileData, ReaderService, ReaderTask};
-use yew_assets::info_assets::{InfoAssets, InfoIcon};
-use yew_styles::forms::{
-    form_file::FormFile,
-    form_group::{FormGroup, Orientation},
-    form_input::{FormInput, InputType},
-    form_label::FormLabel,
-};
-use yew_styles::layouts::{
-    container::{Container, Direction, Wrap},
-    item::{AlignSelf, Item, ItemLayout},
-};
-use yew_styles::styles::{Palette, Position, Size, Style};
-use yew_styles::text::{Text, TextType};
-use yew_styles::tooltip::Tooltip;
-
-const DEFAULT_YEAR: usize = 2021;
-const DEFAULT_UX_COLOR: &str = "#FFFFFF";
-const DEFAULT_UX_SIZE: &str = "30";
+const DEFAULT_YEAR: usize = 2022;
 
 pub struct App {
-    degiro_broker: Rc<BrokerInformation>,
-    ib_broker: Rc<BrokerInformation>,
-    tasks: Vec<ReaderTask>,
-    financial_information: FinancialInformation,
-    aeat720_form_path: String,
-    link: ComponentLink<Self>,
-}
-
-pub enum Msg {
-    ChangeName(String),
-    ChangeSurname(String),
-    ChangeNif(String),
-    ChangeYear(String),
-    ChangePhone(String),
-    GenerateAeat720,
-    UploadDegiroFile(File),
-    UploadDegiroCSVFile(File),
-    UploadIBFile(File),
-    UploadedDegiroFile(FileData),
-    UploadedDegiroCSVFile(FileData),
-    UploadedIBFile(FileData),
-    ErrorUploadPdf,
-    ErrorUploadCSV,
-    ErrorUploadZip,
-}
-
-impl Component for App {
-    type Message = Msg;
-    type Properties = ();
-
-    fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
-        log::debug!("App created");
-        let mut info = FinancialInformation::new();
-        info.year = DEFAULT_YEAR;
-        Self {
-            degiro_broker: Rc::new(BrokerInformation::new(
-                String::from("Degiro"),
-                String::from("NL"),
-            )),
-            ib_broker: Rc::new(BrokerInformation::new(
-                String::from("Interactive Brokers"),
-                String::from("IE"),
-            )),
-            tasks: vec![],
-            financial_information: info,
-            aeat720_form_path: "".to_string(),
-            link,
-        }
-    }
-
-    fn update(&mut self, message: Self::Message) -> ShouldRender {
-        match message {
-            Msg::ChangeName(name) => {
-                log::debug!("change name to: {}", name);
-                self.financial_information.name = name.to_uppercase();
-                self.link.send_message(Msg::GenerateAeat720);
-                true
-            }
-            Msg::ChangeSurname(surname) => {
-                log::debug!("change surname to: {}", surname);
-                self.financial_information.surname = surname.to_uppercase();
-                self.link.send_message(Msg::GenerateAeat720);
-                true
-            }
-            Msg::ChangeNif(nif) => {
-                log::debug!("change nif to: {}", nif);
-                self.financial_information.nif = nif.to_uppercase();
-                self.link.send_message(Msg::GenerateAeat720);
-                true
-            }
-            Msg::ChangeYear(year) => {
-                log::debug!("change year to: {}", year);
-                self.financial_information.year = year.parse::<usize>().unwrap_or(DEFAULT_YEAR);
-                self.link.send_message(Msg::GenerateAeat720);
-                true
-            }
-            Msg::ChangePhone(phone) => {
-                log::debug!("change phone to: {}", phone);
-                self.financial_information.phone = phone;
-                self.link.send_message(Msg::GenerateAeat720);
-                true
-            }
-            Msg::GenerateAeat720 => {
-                log::debug!("generate AEAT 720 form");
-                if let Ok(path) =
-                    web::generate_720(&self.financial_information, &self.aeat720_form_path)
-                {
-                    self.aeat720_form_path = path;
-                }
-                true
-            }
-            Msg::UploadedDegiroFile(file) => {
-                log::debug!(
-                    "pdf file: {} len: {}, content: {:X?}",
-                    file.name,
-                    file.content.len(),
-                    file.content.get(0..16)
-                );
-
-                if let Ok(data) = read_pdf(file.content) {
-                    let parser = DegiroParser::new(data, &self.degiro_broker);
-                    let pdf_content = parser.parse_pdf_content();
-                    if let Ok((mut balance_notes, mut account_notes)) = pdf_content {
-                        self.financial_information
-                            .account_notes
-                            .retain(|note| note.broker != self.degiro_broker);
-                        self.financial_information
-                            .balance_notes
-                            .retain(|note| note.broker != self.degiro_broker);
-                        self.financial_information
-                            .account_notes
-                            .append(&mut account_notes);
-                        self.financial_information
-                            .balance_notes
-                            .append(&mut balance_notes);
-                    } else {
-                        log::error!(
-                            "Error loading degiro pdf notes: {}",
-                            pdf_content.err().unwrap()
-                        );
-                    }
-                } else {
-                    log::error!("Unable to read pdf content");
-                }
-                self.tasks.clear();
-                self.link.send_message(Msg::GenerateAeat720);
-                true
-            }
-            Msg::UploadedDegiroCSVFile(file) => {
-                log::debug!(
-                    "pdf file: {} len: {}, content: {:X?}",
-                    file.name,
-                    file.content.len(),
-                    file.content.get(0..16)
-                );
-
-                if let Ok(data) = String::from_utf8(file.content) {
-                    let parser = DegiroCSVParser::new(data, &self.degiro_broker);
-                    let csv_content = parser.parse_csv();
-                    if let Ok(mut balance_notes) = csv_content {
-                        self.financial_information
-                            .account_notes
-                            .retain(|note| note.broker != self.degiro_broker);
-                        self.financial_information
-                            .balance_notes
-                            .retain(|note| note.broker != self.degiro_broker);
-                        self.financial_information
-                            .balance_notes
-                            .append(&mut balance_notes);
-                    } else {
-                        log::error!(
-                            "Error loading degiro csv notes: {}",
-                            csv_content.err().unwrap()
-                        );
-                    }
-                } else {
-                    log::error!("Unable to read csv content");
-                }
-                self.tasks.clear();
-                self.link.send_message(Msg::GenerateAeat720);
-                true
-            }
-            Msg::UploadedIBFile(file) => {
-                log::debug!(
-                    "zip file: {} len: {}, content: {:X?}",
-                    file.name,
-                    file.content.len(),
-                    file.content.get(0..16)
-                );
-
-                if let Ok(data) = read_zip_str(file.content) {
-                    if let Ok(parser) = IBParser::new(&data, &self.ib_broker) {
-                        let account_notes = parser.parse_account_notes();
-                        let balance_notes = parser.parse_balance_notes();
-                        if let (Ok(mut account_notes), Ok(mut balance_notes)) =
-                            (account_notes, balance_notes)
-                        {
-                            self.financial_information
-                                .account_notes
-                                .retain(|note| note.broker != self.ib_broker);
-                            self.financial_information
-                                .balance_notes
-                                .retain(|note| note.broker != self.ib_broker);
-                            self.financial_information
-                                .account_notes
-                                .append(&mut account_notes);
-                            self.financial_information
-                                .balance_notes
-                                .append(&mut balance_notes);
-                        } else {
-                            log::error!("Unable to read interactive brokers info");
-                        }
-                    }
-                } else {
-                    log::error!("Unable to read zip content");
-                }
-                self.tasks.clear();
-                self.link.send_message(Msg::GenerateAeat720);
-                true
-            }
-            Msg::UploadDegiroFile(file) => {
-                let callback = self.link.callback(Msg::UploadedDegiroFile);
-                self.tasks
-                    .push(ReaderService::read_file(file, callback).unwrap());
-                false
-            }
-            Msg::UploadDegiroCSVFile(file) => {
-                let callback = self.link.callback(Msg::UploadedDegiroCSVFile);
-                self.tasks
-                    .push(ReaderService::read_file(file, callback).unwrap());
-                false
-            }
-            Msg::UploadIBFile(file) => {
-                let callback = self.link.callback(Msg::UploadedIBFile);
-                self.tasks
-                    .push(ReaderService::read_file(file, callback).unwrap());
-                false
-            }
-            Msg::ErrorUploadPdf => {
-                log::error!("Error uploading Degiro pdf");
-                false
-            }
-            Msg::ErrorUploadCSV => {
-                log::error!("Error uploading Degiro CSV");
-                false
-            }
-            Msg::ErrorUploadZip => {
-                log::error!("Error uploading InteractiveBrokers zip file");
-                false
-            }
-        }
-    }
-
-    fn change(&mut self, _: Self::Properties) -> ShouldRender {
-        false
-    }
-
-    fn view(&self) -> Html {
-        log::debug!("Render App");
-        html! {
-          <>
-            <hr/>
-            {self.get_form_file()}
-            <hr/>
-            {self.get_personal_information()}
-            <hr/>
-            <Container wrap=Wrap::Wrap direction=Direction::Row>
-              <Item layouts=vec!(ItemLayout::ItM(6), ItemLayout::ItXs(12))>
-                {self.get_balance_notes()}
-              </Item>
-              <Item layouts=vec!(ItemLayout::ItM(6), ItemLayout::ItXs(12))>
-                {self.get_account_notes()}
-              </Item>
-            </Container>
-            <hr/>
-            <Container wrap=Wrap::Wrap direction=Direction::Row>
-              <Item layouts=vec!(ItemLayout::ItM(12), ItemLayout::ItXs(12)) align_self=AlignSelf::Center>
-                <center>{self.get_aeat720_button()}</center>
-              </Item>
-            </Container>
-
-          </>
-        }
-    }
+    current_error: Mutable<Option<String>>,
+    degiro_broker: Arc<BrokerInformation>,
+    ib_broker: Arc<BrokerInformation>,
+    account_notes: MutableVec<AccountNote>,
+    balance_notes: MutableVec<BalanceNote>,
+    aeat720_form_path: Mutable<Option<String>>,
+    name: Mutable<String>,
+    surname: Mutable<String>,
+    nif: Mutable<String>,
+    year: Mutable<usize>,
+    phone: Mutable<String>,
 }
 
 impl App {
-    fn help_degiro_pdf(&self) -> Html {
-        html! {
-            <ul>
-                {"Para descargar el informe anual de degiro en pdf: "}
-                <li>
-                {"Entre en la página de degiro con su usuario."}
-                </li>
-                <li>
-                {"En el menú izquierdo pulse Actividad y seguidamente informes."}
-                </li>
-                <li>
-                {"En informes seleccione el informe anual del año a declarar y  pulse descargar."}
-                </li>
-            </ul>
+    pub fn new() -> Arc<Self> {
+        Arc::new(Self {
+            current_error: Mutable::new(None),
+            degiro_broker: Arc::new(BrokerInformation::new(
+                String::from("Degiro"),
+                String::from("NL"),
+            )),
+            ib_broker: Arc::new(BrokerInformation::new(
+                String::from("Interactive Brokers"),
+                String::from("IE"),
+            )),
+            account_notes: MutableVec::new(),
+            balance_notes: MutableVec::new(),
+            aeat720_form_path: Mutable::new(None),
+            name: Mutable::new("".to_owned()),
+            surname: Mutable::new("".to_owned()),
+            nif: Mutable::new("".to_owned()),
+            year: Mutable::new(DEFAULT_YEAR),
+            phone: Mutable::new("".to_owned()),
+        })
+    }
+
+    fn generate_720_file(app: Arc<Self>) {
+        let old_path = (*app.aeat720_form_path.lock_ref()).clone();
+        let old_path = old_path.map_or("".to_owned(), |x| x);
+        if let Ok(path) = web::generate_720(
+            &FinancialInformation {
+                account_notes: app.account_notes.lock_ref().to_vec(),
+                balance_notes: app.balance_notes.lock_ref().to_vec(),
+                name: app.name.lock_ref().clone(),
+                surname: app.surname.lock_ref().clone(),
+                nif: app.nif.lock_ref().clone(),
+                year: app.year.lock_ref().clone(),
+                phone: app.phone.lock_ref().clone(),
+            },
+            &old_path,
+        ) {
+            *app.aeat720_form_path.lock_mut() = Some(path);
         }
     }
 
-    fn help_degiro_csv(&self) -> Html {
-        html! {
-            <ul>
-                {"Para descargar las posiciones de degiro en csv: "}
-                <li>
-                {"Entre en la página de degiro con su usuario."}
-                </li>
-                <li>
-                {"En el menú izquierdo pulse Cartera."}
-                </li>
-                <li>
-                {"Arriba a la derecha pulse el botón exportar."}
-                </li>
-                <li>
-                {"Seleccione la fecha de 31 de Diciembre del año a declarar y pulse CSV."}
-                </li>
-            </ul>
-        }
-    }
-
-    fn help_ib_report(&self) -> Html {
-        html! {
-            <ul>
-                {"Para descargar el informe anual de interactive brokers: "}
-                <li>
-                {"Entre en la página de interactive brokers con su usuario."}
-                </li>
-                <li>
-                {"En el menú superior seleccione informes y seguidamente extractos."}
-                </li>
-                <li>
-                {"Si ha tenido más de 1 cuenta seleccione todas pulsando en el identificador de usuario al lado de informes y seleccionando todos."}
-                </li>
-                <li>
-                {"En extractos predeterminados pulse en actividad, seleccione el período anual, el formato HTML/descargar y en opciones zip."}
-                </li>
-                <li>
-                {"Pulse ejecutar."}
-                </li>
-                <li>
-                {"Si tuvo más de una cuenta en el año tendrá que modificar el zip para dejar sólo el html de la cuenta actual."}
-                </li>
-            </ul>
-        }
-    }
-
-    fn get_form_file(&self) -> Html {
-        html! {
-            <Container wrap=Wrap::Wrap direction=Direction::Row>
-                <Item layouts=vec!(ItemLayout::ItM(4), ItemLayout::ItXs(12))>
-
-                    <FormGroup orientation=Orientation::Horizontal>
-                    <img src="img/degiro.svg" alt="logo broker Degiro" width="70" height="70" />
-                        <FormLabel label_for="degiro_report" text="Informe anual broker Degiro (PDF):" />
-                        <FormFile
-                            id={"degiro_report"}
-                            alt="Fichero PDF informe broker Degiro"
-                            accept=vec!["application/pdf".to_string()]
-                            underline=false
-                            onchange_signal = self.link.callback(|data: ChangeData | {
-                                if let ChangeData::Files(files) = data {
-                                    let file = files.get(0).unwrap();
-                                    Msg::UploadDegiroFile(file)
-                                } else {
-                                    Msg::ErrorUploadPdf
-                                }
-                            })
-                        />
-                        <Tooltip
-                          tooltip_palette=Palette::Clean
-                          tooltip_style=Style::Outline
-                          tooltip_position=Position::Above
-                          tooltip_size=Size::Medium
-                          content=self.help_degiro_pdf()
-                          class_name="tooltip-page">
-
-                          <div class="tooltip-content">
-                            <InfoAssets
-                              icon=InfoIcon::HelpCircle
-                              fill=DEFAULT_UX_COLOR
-                              size=(DEFAULT_UX_SIZE.to_string(), DEFAULT_UX_SIZE.to_string())/></div>
-                        </Tooltip>
-                    </FormGroup>
-                </Item>
-                <Item layouts=vec!(ItemLayout::ItM(4), ItemLayout::ItXs(12))>
-                    <FormGroup orientation=Orientation::Horizontal>
-                    <img src="img/degiro.svg" alt="logo broker Degiro" width="70" height="70" />
-                    <FormLabel label_for="degiro_csv_report" text="Informe anual broker Degiro (CSV):" />
-                    <FormFile
-                        id={"degiro_csv_report"}
-                        alt="Fichero CSV informe broker Degiro"
-                        accept=vec!["text/csv".to_string()]
-                        underline=false
-                        onchange_signal = self.link.callback(|data: ChangeData | {
-                            if let ChangeData::Files(files) = data {
-                                let file = files.get(0).unwrap();
-                                Msg::UploadDegiroCSVFile(file)
-                            } else {
-                                Msg::ErrorUploadCSV
-                            }
-                        })
-                    />
-                    <Tooltip
-                    tooltip_palette=Palette::Clean
-                    tooltip_style=Style::Outline
-                    tooltip_position=Position::Above
-                    tooltip_size=Size::Medium
-                    content=self.help_degiro_csv()
-                    class_name="tooltip-page">
-
-                    <div class="tooltip-content">
-                      <InfoAssets
-                        icon=InfoIcon::HelpCircle
-                        fill=DEFAULT_UX_COLOR
-                        size=(DEFAULT_UX_SIZE.to_string(), DEFAULT_UX_SIZE.to_string())/></div>
-                    </Tooltip>
-                </FormGroup>
-                </Item>
-                <Item layouts=vec!(ItemLayout::ItM(4), ItemLayout::ItXs(12))>
-                <FormGroup orientation=Orientation::Horizontal>
-                    <img src="img/interactive_brokers.svg" alt="logo interactive brokers" width="70" height="70" />
-                    <FormLabel label_for="ib_report" text="Informe anual Interactive Brokers (ZIP):" />
-                    <FormFile
-                        id={"ib_report"}
-                        alt="Fichero informe Interactive Brokers"
-                        accept=vec!["application/zip".to_string()]
-                        underline=false
-                        onchange_signal = self.link.callback(|data: ChangeData | {
-                            if let ChangeData::Files(files) = data {
-                                let file = files.get(0).unwrap();
-                                Msg::UploadIBFile(file)
-                            } else {
-                                Msg::ErrorUploadZip
-                            }
-                        })
-                    />
-                    <Tooltip
-                    tooltip_palette=Palette::Clean
-                    tooltip_style=Style::Outline
-                    tooltip_position=Position::Left
-                    tooltip_size=Size::Medium
-                    content=self.help_ib_report()
-                    class_name="tooltip-page">
-
-                    <div class="tooltip-content">
-                      <InfoAssets
-                        icon=InfoIcon::HelpCircle
-                        fill=DEFAULT_UX_COLOR
-                        size=(DEFAULT_UX_SIZE.to_string(), DEFAULT_UX_SIZE.to_string())/></div>
-                    </Tooltip>
-                </FormGroup>
-            </Item>
-            </Container>
-        }
-    }
-
-    fn get_personal_information(&self) -> Html {
-        html! {
-            <>
-             <Text
-              text_type=TextType::Plain
-              text_size=Size::Medium
-              plain_text="Rellena los siguientes campos si quieres que los informes se generen con ellos:"
-              html_text=None
-            />
-            <Container wrap=Wrap::Wrap direction=Direction::Row>
-
-              <Item layouts=vec!(ItemLayout::ItM(3), ItemLayout::ItXs(15))>
-                <FormGroup orientation=Orientation::Horizontal>
-                <FormLabel label_for="name" text="Nombre: " />
-                <FormInput
-                  id={"name"}
-                  alt={"Nombre"}
-                  input_type=InputType::Text
-                  oninput_signal=self.link.callback(|e: InputData| Msg::ChangeName(e.value))
-                />
-                </FormGroup>
-              </Item>
-
-              <Item layouts=vec!(ItemLayout::ItM(3), ItemLayout::ItXs(15))>
-                <FormGroup orientation=Orientation::Horizontal>
-                <FormLabel label_for="surname" text="Apellidos: " />
-                <FormInput
-                  id={"surname"}
-                  alt={"Apellidos"}
-                  input_type=InputType::Text
-                  oninput_signal=self.link.callback(|e: InputData| Msg::ChangeSurname(e.value))
-                />
-                </FormGroup>
-              </Item>
-
-              <Item layouts=vec!(ItemLayout::ItM(3), ItemLayout::ItXs(15))>
-                <FormGroup orientation=Orientation::Horizontal>
-                <FormLabel label_for="nif" text="NIF: " />
-                <FormInput
-                  id={"nif"}
-                  alt={"NIF"}
-                  input_type=InputType::Text
-                  oninput_signal=self.link.callback(|e: InputData| Msg::ChangeNif(e.value))
-                />
-                </FormGroup>
-              </Item>
-
-              <Item layouts=vec!(ItemLayout::ItM(3), ItemLayout::ItXs(15))>
-                <FormGroup orientation=Orientation::Horizontal>
-                <FormLabel label_for="year" text="Año: " />
-                <FormInput
-                  id={"year"}
-                  alt={"Año"}
-                  placeholder=self.financial_information.year.to_string()
-                  input_type=InputType::Text
-                  oninput_signal=self.link.callback(|e: InputData| Msg::ChangeYear(e.value))
-                />
-                </FormGroup>
-              </Item>
-
-              <Item layouts=vec!(ItemLayout::ItM(3), ItemLayout::ItXs(15))>
-              <FormGroup orientation=Orientation::Horizontal>
-              <FormLabel label_for="phone" text="Teléfono: " />
-              <FormInput
-                id={"phone"}
-                alt={"Teléfono"}
-                input_type=InputType::Text
-                oninput_signal=self.link.callback(|e: InputData| Msg::ChangePhone(e.value))
-              />
-
-              </FormGroup>
-            </Item>
-
-
-            </Container>
-            </>
-        }
-    }
-
-    fn get_account_notes(&self) -> Html {
-        let notes = self
-            .financial_information
-            .account_notes
-            .iter()
-            .map(|note| {
-                html! {
-                <tr>
-                  <td>{&note.broker.name}</td>
-                  <td>{&note.company.name}</td>
-                  <td>{&note.company.isin}</td>
-                  <td>{&note.value}</td>
-                </tr>}
-            })
-            .collect::<Html>();
-
-        html! {
-            <table>
-            <caption>{"Movimientos brokers"}</caption>
-            <thead>
-              <tr>
-                <th>{"Broker"}</th>
-                <th>{"Acción"}</th>
-                <th>{"ISIN"}</th>
-                <th>{"Valor (€)"}</th>
-              </tr>
-            </thead>
-            <tbody>
-            {notes}
-            </tbody>
-            </table>
-        }
-    }
-
-    fn get_balance_notes(&self) -> Html {
-        let notes = self
-            .financial_information
-            .balance_notes
-            .iter()
-            .map(|note| {
-                html! {
-                <tr>
-                  <td>{&note.broker.name}</td>
-                  <td>{&note.company.name}</td>
-                  <td>{&note.company.isin}</td>
-                  <td>{&note.value_in_euro}</td>
-                </tr>}
-            })
-            .collect::<Html>();
-
-        html! {
-            <table>
-            <caption>{"Balance brokers"}</caption>
-            <thead>
-              <tr>
-                <th>{"Broker"}</th>
-                <th>{"Acción"}</th>
-                <th>{"ISIN"}</th>
-                <th>{"Valor (€)"}</th>
-              </tr>
-            </thead>
-            <tbody>
-            {notes}
-            </tbody>
-            </table>
-        }
-    }
-
-    fn get_aeat720_button(&self) -> Html {
-        if !self.aeat720_form_path.is_empty() {
-            html! {
-              <a id={"aeat_720_form"} href={self.aeat720_form_path.clone()} alt="Informe D6 generado" download="fichero-720.txt"><button type={"button"}>{"Descargar informe AEAT 720"}</button></a>
+    fn read_degiro_pdf(app: Arc<Self>, content: Vec<u8>) {
+        if let Ok(data) = read_pdf(content) {
+            let parser = DegiroParser::new(data, &app.degiro_broker);
+            let pdf_content = parser.parse_pdf_content();
+            if let Ok((balance_notes, account_notes)) = pdf_content {
+                app.account_notes
+                    .lock_mut()
+                    .retain(|note| note.broker != app.degiro_broker);
+                app.balance_notes
+                    .lock_mut()
+                    .retain(|note| note.broker != app.degiro_broker);
+                app.account_notes.lock_mut().extend(account_notes);
+                app.balance_notes.lock_mut().extend(balance_notes);
+            } else {
+                *app.current_error.lock_mut() = Some(format!(
+                    "Error cargando los apuntes del pdf de Degiro: {}",
+                    pdf_content.err().unwrap()
+                ));
             }
         } else {
-            html! {
-                <button disabled=true type={"button"}>{"Descargar informe AEAT 720"}</button>
-            }
+            *app.current_error.lock_mut() = Some(format!("Error parseando el pdf de Degiro"));
         }
+
+        App::generate_720_file(app)
+    }
+
+    fn read_degiro_csv(app: Arc<Self>, content: Vec<u8>) {
+        if let Ok(data) = String::from_utf8(content) {
+            let parser = DegiroCSVParser::new(data, &app.degiro_broker);
+            let csv_content = parser.parse_csv();
+            if let Ok(balance_notes) = csv_content {
+                app.account_notes
+                    .lock_mut()
+                    .retain(|note| note.broker != app.degiro_broker);
+                app.balance_notes
+                    .lock_mut()
+                    .retain(|note| note.broker != app.degiro_broker);
+                app.balance_notes.lock_mut().extend(balance_notes);
+            } else {
+                *app.current_error.lock_mut() = Some(format!(
+                    "Error cargando los apuntes del csv de Degiro: {}",
+                    csv_content.err().unwrap()
+                ));
+            }
+        } else {
+            *app.current_error.lock_mut() = Some(format!("Error parseando el csv de Degiro"));
+        }
+
+        App::generate_720_file(app)
+    }
+
+    fn read_ib_pdf_zipped(app: Arc<Self>, content: Vec<u8>) {
+        if let Ok(data) = read_zip_str(content) {
+            if let Ok(parser) = IBParser::new(&data, &app.ib_broker) {
+                let account_notes = parser.parse_account_notes();
+                let balance_notes = parser.parse_balance_notes();
+                if let (Ok(account_notes), Ok(balance_notes)) = (account_notes, balance_notes) {
+                    app.account_notes
+                        .lock_mut()
+                        .retain(|note| note.broker != app.ib_broker);
+                    app.balance_notes
+                        .lock_mut()
+                        .retain(|note| note.broker != app.ib_broker);
+                    app.account_notes.lock_mut().extend(account_notes);
+                    app.balance_notes.lock_mut().extend(balance_notes);
+                } else {
+                    *app.current_error.lock_mut() = Some(
+                        format!("Error cargando los apuntes del pdf comprimido con zip de interactive brokers"));
+                }
+            }
+        } else {
+            *app.current_error.lock_mut() = Some(format!(
+                "Error parseando el pdf comprimido con zip de interactive brokes"
+            ));
+        }
+
+        App::generate_720_file(app)
+    }
+
+    fn render_degiro_pdf_input(app: Arc<Self>) -> Dom {
+        html!("input" => HtmlInputElement, {
+            .class(&*FLEX_CONTAINER_ITEM_20_CLASS)
+            .attr("id", "degiro_pdf_report")
+            .attr("alt", "Fichero PDF informe broker Degiro")
+            .attr("accept", "application/pdf")
+            .attr("type", "file")
+            .with_node!(element => {
+                .event(clone!(app => move |_: events::Change| {
+                    let file_list = match element.files() {
+                        Some(file_list) => file_list,
+                        None => {
+                            *app.current_error.lock_mut() = Some(
+                            format!("Error subiendo fichero pdf degiro"));
+                            return;
+                        }
+                    };
+                    let degiro_pdf_data = match file_list.get(0) {
+                        Some(data) => data,
+                        None => {
+                            *app.current_error.lock_mut() = Some(
+                            format!("Error obteniendo pdf degiro"));
+                            return;
+                        }
+                    };
+                    let blob = Blob::from(degiro_pdf_data);
+                    spawn_local(clone!(app => async move {
+                        App::read_degiro_pdf(app, read_as_bytes(&blob).await.unwrap());
+                    }));
+                 }))
+            })
+        })
+    }
+
+    fn render_degiro_csv_input(app: Arc<Self>) -> Dom {
+        html!("input" => HtmlInputElement, {
+            .class(&*FLEX_CONTAINER_ITEM_20_CLASS)
+            .attr("id", "degiro_csv_report")
+            .attr("alt", "Fichero CSV informe broker Degiro")
+            .attr("accept", "text/csv")
+            .attr("type", "file")
+            .with_node!(element => {
+                .event(clone!(app => move |_: events::Change| {
+                    let file_list = match element.files() {
+                        Some(file_list) => file_list,
+                        None => {
+                            *app.current_error.lock_mut() = Some(
+                            format!("Error subiendo fichero csv degiro"));
+                            return;
+                        }
+                    };
+                    let degiro_csv_data = match file_list.get(0) {
+                        Some(data) => data,
+                        None => {
+                            *app.current_error.lock_mut() = Some(
+                            format!("Error obteniendo csv degiro"));
+                            return;
+                        }
+                    };
+                    let blob = Blob::from(degiro_csv_data);
+                    spawn_local(clone!(app => async move {
+                        App::read_degiro_csv(app, read_as_bytes(&blob).await.unwrap());
+                    }));
+                 }))
+            })
+        })
+    }
+
+    fn render_ib_pdf_input(app: Arc<Self>) -> Dom {
+        html!("input" => HtmlInputElement, {
+            .class(&*FLEX_CONTAINER_ITEM_20_CLASS)
+            .attr("id", "ib_pdf_report")
+            .attr("alt", "Fichero pdf comprimido informe Interactive Brokers")
+            .attr("accept", "application/zip")
+            .attr("type", "file")
+            .with_node!(element => {
+                .event(clone!(app => move |_: events::Change| {
+                    let file_list = match element.files() {
+                        Some(file_list) => file_list,
+                        None => {
+                            *app.current_error.lock_mut() = Some(
+                            format!("Error subiendo fichero pdf comprimido de interactive brokers"));
+                            return;
+                        }
+                    };
+                    let degiro_pdf_data = match file_list.get(0) {
+                        Some(data) => data,
+                        None => {
+                            *app.current_error.lock_mut() = Some(
+                            format!("Error obteniendo pdf comprimido de interactive brokers"));
+                            return;
+                        }
+                    };
+                    let blob = Blob::from(degiro_pdf_data);
+                    spawn_local(clone!(app => async move {
+                        App::read_ib_pdf_zipped(app, read_as_bytes(&blob).await.unwrap());
+                    }));
+                 }))
+            })
+        })
+    }
+
+    fn render_brokers_form(app: Arc<Self>) -> Dom {
+        html!("section", {
+            .class(&*FLEX_CONTAINER_CLASS)
+            .children(&mut [
+                html!("img", {
+                    .class(&*FLEX_CONTAINER_ITEM_20_CLASS)
+                    .attr("src", "img/degiro.svg")
+                    .attr("alt", "logo broker Degiro")
+                    .attr("width", "70")
+                    .attr("height", "70")
+                }),
+                html!("label", {
+                    .class(&*FLEX_CONTAINER_ITEM_20_CLASS)
+                    .attr("label_for", "degiro_pdf_report")
+                    .text("Informe anual broker Degiro (PDF):")
+                }),
+                App::render_degiro_pdf_input(app.clone()),
+                html!("label", {
+                    .class(&*FLEX_CONTAINER_ITEM_20_CLASS)
+                    .attr("label_for", "degiro_csv_report")
+                    .text("Informe anual broker Degiro (CSV):")
+                }),
+                App::render_degiro_csv_input(app.clone()),
+                html!("img", {
+                    .class(&*FLEX_CONTAINER_ITEM_20_CLASS)
+                    .attr("src", "img/interactive_brokers.svg")
+                    .attr("alt", "logo interactive brokers")
+                    .attr("width", "70")
+                    .attr("height", "70")
+                }),
+                html!("label", {
+                    .class(&*FLEX_CONTAINER_ITEM_20_CLASS)
+                    .attr("label_for", "ib_pdf_report")
+                    .text("Informe anual Interactive Brokers (PDF comprimido con ZIP):")
+                }),
+                App::render_ib_pdf_input(app.clone()),
+            ])
+        })
+    }
+
+    fn render_account_note(note: &AccountNote) -> Dom {
+        html!("tr", {
+            .children(& mut[
+                html!("td", {
+                    .text(&note.broker.name)
+                }),
+                html!("td", {
+                    .text(&note.company.name)
+                }),
+                html!("td", {
+                    .text(&note.company.isin)
+                }),
+                html!("td", {
+                    .text(&note.value.to_string())
+                }),
+            ])
+        })
+    }
+
+    fn render_account_notes(app: Arc<Self>) -> Dom {
+        html!("table", {
+            .class(&*FLEX_CONTAINER_ITEM_40_CLASS)
+            .children(&mut [
+                html!("caption", {
+                    .text("Movimientos brokers")
+                }),
+                html!("thead", {
+                    .child(
+                        html!("tr", {
+                            .children(&mut [
+                                html!("th", {
+                                    .text("Broker")
+                                }),
+                                html!("th", {
+                                    .text("Acción")
+                                }),
+                                html!("th", {
+                                    .text("ISIN")
+                                }),
+                                html!("th", {
+                                    .text("Valor (€)")
+                                }),
+                            ])
+                    }))
+                }),
+            ])
+            .child(html!("tbody", {
+                .children_signal_vec(app.account_notes.signal_vec_cloned()
+                    .map(|note| {
+                        App::render_account_note(&note)
+                    })
+                )
+            }))
+        })
+    }
+
+    fn render_balance_note(note: &BalanceNote) -> Dom {
+        html!("tr", {
+            .children(& mut[
+                html!("td", {
+                    .text(&note.broker.name)
+                }),
+                html!("td", {
+                    .text(&note.company.name)
+                }),
+                html!("td", {
+                    .text(&note.company.isin)
+                }),
+                html!("td", {
+                    .text(&note.value_in_euro.to_string())
+                }),
+            ])
+        })
+    }
+
+    fn render_balance_notes(app: Arc<Self>) -> Dom {
+        html!("table", {
+            .class(&*FLEX_CONTAINER_ITEM_40_CLASS)
+            .children(&mut [
+                html!("caption", {
+                    .text("Balance brokers")
+                }),
+                html!("thead", {
+                    .child(
+                        html!("tr", {
+                            .children(&mut [
+                                html!("th", {
+                                    .text("Broker")
+                                }),
+                                html!("th", {
+                                    .text("Acción")
+                                }),
+                                html!("th", {
+                                    .text("ISIN")
+                                }),
+                                html!("th", {
+                                    .text("Valor (€)")
+                                }),
+                            ])
+                    }))
+                }),
+            ])
+            .child(html!("tbody", {
+                .children_signal_vec(app.balance_notes.signal_vec_cloned()
+                    .map(|note| {
+                        App::render_balance_note(&note)
+                    })
+                )
+            }))
+        })
+    }
+
+    fn render_personal_info(app: Arc<Self>) -> Dom {
+        html!("section", {
+            .class(&*FLEX_CONTAINER_CLASS)
+            .child(html!("span", {
+                .class(&*FLEX_CONTAINER_ITEM_20_CLASS)
+                .children(&mut [
+                    html!("label", {
+                        .attr("label_for", "name")
+                        .text("Nombre:")
+                    }),
+                    html!("input" => HtmlInputElement, {
+                        .attr("id", "name")
+                        .attr("alt", "Nombre")
+                        .attr("type", "text")
+                        .with_node!(element => {
+                            .event(clone!(app => move |_: events::Input| {
+                                *app.name.lock_mut() = element.value().to_uppercase();
+                                App::generate_720_file(app.clone());
+                            }))
+                        })
+                    }),
+                ])
+            }))
+            .child(html!("span", {
+                .class(&*FLEX_CONTAINER_ITEM_20_CLASS)
+                .children(&mut [
+                    html!("label", {
+                        .attr("label_for", "surname")
+                        .text("Apellidos:")
+                    }),
+                    html!("input" => HtmlInputElement, {
+                        .attr("id", "surname")
+                        .attr("alt", "Apellidos")
+                        .attr("type", "text")
+                        .with_node!(element => {
+                            .event(clone!(app => move |_: events::Input| {
+                                *app.surname.lock_mut() = element.value().to_uppercase();
+                                App::generate_720_file(app.clone());
+                            }))
+                        })
+                    }),
+                ])
+            }))
+            .child(html!("span", {
+                .class(&*FLEX_CONTAINER_ITEM_20_CLASS)
+                .children(&mut [
+                    html!("label", {
+                        .attr("label_for", "nif")
+                        .text("NIF:")
+                    }),
+                    html!("input" => HtmlInputElement, {
+                        .attr("id", "nif")
+                        .attr("alt", "NIF")
+                        .attr("type", "text")
+                        .with_node!(element => {
+                            .event(clone!(app => move |_: events::Input| {
+                                *app.nif.lock_mut() = element.value().to_uppercase();
+                                App::generate_720_file(app.clone());
+                            }))
+                        })
+                    }),
+                ])
+            }))
+            .child(html!("span", {
+                .class(&*FLEX_CONTAINER_ITEM_20_CLASS)
+                .children(&mut [
+                    html!("label", {
+                        .attr("label_for", "year")
+                        .text("Año:")
+                    }),
+                    html!("input" => HtmlInputElement, {
+                        .attr("id", "year")
+                        .attr("alt", "Año")
+                        .attr("type", "text")
+                        .attr("placeholder", &DEFAULT_YEAR.to_string())
+                        .with_node!(element => {
+                            .event(clone!(app => move |_: events::Input| {
+                                *app.year.lock_mut() = element.value().parse::<usize>().unwrap_or(DEFAULT_YEAR);
+                                App::generate_720_file(app.clone());
+                            }))
+                        })
+                    }),
+                 ])
+            }))
+            .child(html!("span", {
+                .class(&*FLEX_CONTAINER_ITEM_20_CLASS)
+                .children(&mut [
+                    html!("label", {
+                        .attr("label_for", "phone")
+                        .text("Teléfono:")
+                    }),
+                    html!("input" => HtmlInputElement, {
+                        .attr("id", "phone")
+                        .attr("alt", "Teléfono")
+                        .attr("type", "text")
+                        .with_node!(element => {
+                            .event(clone!(app => move |_: events::Input| {
+                                *app.phone.lock_mut() = element.value().to_uppercase();
+                                App::generate_720_file(app.clone());
+                            }))
+                        })
+                    }),
+                ])
+            }))
+        })
+    }
+
+    fn render_financial_information(app: Arc<Self>) -> Dom {
+        html!("section", {
+            .class(&*FLEX_CONTAINER_CLASS)
+            .child(
+                App::render_balance_notes(app.clone())
+            )
+            .child(html!("p", {
+                .class(&*FLEX_CONTAINER_ITEM_20_CLASS)
+            }))
+            .child(
+                App::render_account_notes(app.clone())
+            )
+        })
+    }
+
+    fn render_download_button(app: Arc<Self>) -> Dom {
+        html!("section", {
+            .style("text-align", "center")
+            .child_signal(app.aeat720_form_path.signal_ref(|x| x.clone()).map(move |url| {
+                match url {
+                    Some(path) => Some(html!("a",{
+                        .attr("id", "aeat_720_form")
+                        .attr("href", &path)
+                        .attr("alt", "Informe 720 generado")
+                        .attr("download", "fichero-720.txt")
+                        .child(html!("button", {
+                            .attr("type", "button")
+                            .text("Descargar informe AEAT 720")
+                        }))
+                    })),
+                    None => Some(html!("button", {
+                        .attr("type", "button")
+                        .attr("disabled", "true")
+                        .text("Descargar informe AEAT 720")
+                    })),
+                }
+            }))
+        })
+    }
+
+    pub fn render(app: Arc<Self>) -> Dom {
+        stylesheet!("html", {
+            .style("font-family", "arial")
+        });
+
+        html!("div", {
+            .class(&*ROOT_CLASS)
+            .child_signal(app.current_error.signal_ref(|x| x.clone()).map(|text| {
+                match text {
+                    Some(txt) => Some(html!("p", {
+                        .text(&txt)
+                    })),
+                    None => None,
+                }
+            }))
+            .children(&mut [
+                html!("h3", {
+                    .class(&*SECTION_HEADER)
+                    .text(" Información brokers ")
+                }),
+                App::render_brokers_form(app.clone()),
+                html!("h3", {
+                    .class(&*SECTION_HEADER)
+                    .text(" Información personal ")
+                }),
+                App::render_personal_info(app.clone()),
+                html!("h3", {
+                    .class(&*SECTION_HEADER)
+                    .text(" Movimientos importados ")
+                }),
+                App::render_financial_information(app.clone()),
+                html!("h3", {
+                    .class(&*SECTION_HEADER)
+                    .text(" Descarga de formulario 720 ")
+                }),
+                App::render_download_button(app),
+            ])
+
+        })
     }
 }

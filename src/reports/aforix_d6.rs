@@ -228,7 +228,7 @@ mod tests {
 
     use super::*;
     use crate::data::{BalanceNotes, BrokerInformation, CompanyInfo};
-    use std::rc::Rc;
+    use std::sync::Arc;
 
     fn compare_strs_by_line(file1: &str, file2: &str) {
         let mut line_number = 1;
@@ -246,7 +246,7 @@ mod tests {
 
     #[test]
     fn create_d6_form_test() {
-        let degiro_broker: Rc<BrokerInformation> = Rc::new(BrokerInformation::new(
+        let degiro_broker: Arc<BrokerInformation> = Arc::new(BrokerInformation::new(
             String::from("Degiro"),
             String::from("NL"),
         ));

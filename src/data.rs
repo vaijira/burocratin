@@ -1,14 +1,14 @@
 use chrono::NaiveDate;
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
-use std::{convert::From, rc::Rc};
+use std::{convert::From, sync::Arc};
 
 pub type AccountNotes = Vec<AccountNote>;
 pub type BalanceNotes = Vec<BalanceNote>;
 
 pub const SPAIN_COUNTRY_CODE: &str = "ES";
 
-#[derive(Debug, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub enum BrokerOperation {
     Buy,
     Sell,
@@ -31,7 +31,7 @@ pub struct CompanyInfo {
     pub isin: String,
 }
 
-#[derive(Debug, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub struct AccountNote {
     pub date: NaiveDate,
     pub company: CompanyInfo,
@@ -40,7 +40,7 @@ pub struct AccountNote {
     pub price: Decimal,
     pub value: Decimal,
     pub commision: Decimal,
-    pub broker: Rc<BrokerInformation>,
+    pub broker: Arc<BrokerInformation>,
 }
 
 impl AccountNote {
@@ -53,7 +53,7 @@ impl AccountNote {
         price: Decimal,
         value: Decimal,
         commision: Decimal,
-        broker: &Rc<BrokerInformation>,
+        broker: &Arc<BrokerInformation>,
     ) -> AccountNote {
         AccountNote {
             date,
@@ -63,12 +63,12 @@ impl AccountNote {
             price,
             value,
             commision,
-            broker: Rc::clone(broker),
+            broker: Arc::clone(broker),
         }
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub struct BalanceNote {
     pub company: CompanyInfo,
     pub market: String,
@@ -76,7 +76,7 @@ pub struct BalanceNote {
     pub currency: String,
     pub price: Decimal,
     pub value_in_euro: Decimal,
-    pub broker: Rc<BrokerInformation>,
+    pub broker: Arc<BrokerInformation>,
 }
 
 impl BalanceNote {
@@ -87,7 +87,7 @@ impl BalanceNote {
         currency: String,
         price: Decimal,
         value_in_euro: Decimal,
-        broker: &Rc<BrokerInformation>,
+        broker: &Arc<BrokerInformation>,
     ) -> BalanceNote {
         BalanceNote {
             company,
@@ -96,7 +96,7 @@ impl BalanceNote {
             currency,
             price,
             value_in_euro,
-            broker: Rc::clone(broker),
+            broker: Arc::clone(broker),
         }
     }
 }
