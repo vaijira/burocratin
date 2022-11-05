@@ -8,10 +8,11 @@ use wasm_bindgen_futures::spawn_local;
 use web_sys::HtmlInputElement;
 
 use crate::css::{
-    FLEX_CONTAINER_CLASS, FLEX_CONTAINER_ITEM_20_CLASS, FLEX_CONTAINER_ITEM_40_CLASS, ROOT_CLASS,
-    SECTION_HEADER,
+    DEFAULT_ICON_COLOR, DEFAULT_ICON_SIZE, FLEX_CONTAINER_CLASS, FLEX_CONTAINER_ITEM_20_CLASS,
+    FLEX_CONTAINER_ITEM_40_CLASS, ROOT_CLASS, SECTION_HEADER, TOOLTIP_CONTAINER, TOOLTIP_ITEM,
 };
 use crate::data::{AccountNote, BalanceNote, BrokerInformation, FinancialInformation};
+use crate::feathers::render_svg_help_icon;
 use crate::parsers::degiro_csv::DegiroCSVParser;
 use crate::parsers::ib::IBParser;
 use crate::parsers::{degiro::DegiroParser, pdf::read_pdf};
@@ -32,6 +33,9 @@ pub struct App {
     nif: Mutable<String>,
     year: Mutable<usize>,
     phone: Mutable<String>,
+    tooltip_degiro_pdf: Mutable<bool>,
+    tooltip_degiro_csv: Mutable<bool>,
+    tooltip_ib_pdf: Mutable<bool>,
 }
 
 impl App {
@@ -54,6 +58,9 @@ impl App {
             nif: Mutable::new("".to_owned()),
             year: Mutable::new(DEFAULT_YEAR),
             phone: Mutable::new("".to_owned()),
+            tooltip_degiro_pdf: Mutable::new(false),
+            tooltip_degiro_csv: Mutable::new(false),
+            tooltip_ib_pdf: Mutable::new(false),
         })
     }
 
@@ -155,104 +162,227 @@ impl App {
     }
 
     fn render_degiro_pdf_input(app: Arc<Self>) -> Dom {
-        html!("input" => HtmlInputElement, {
+        html!("span", {
             .class(&*FLEX_CONTAINER_ITEM_20_CLASS)
-            .attr("id", "degiro_pdf_report")
-            .attr("alt", "Fichero PDF informe broker Degiro")
-            .attr("accept", "application/pdf")
-            .attr("type", "file")
-            .with_node!(element => {
-                .event(clone!(app => move |_: events::Change| {
-                    let file_list = match element.files() {
-                        Some(file_list) => file_list,
-                        None => {
-                            *app.current_error.lock_mut() = Some(
-                            "Error subiendo fichero pdf degiro".to_string());
-                            return;
-                        }
-                    };
-                    let degiro_pdf_data = match file_list.get(0) {
-                        Some(data) => data,
-                        None => {
-                            *app.current_error.lock_mut() = Some(
-                            "Error obteniendo pdf degiro".to_string());
-                            return;
-                        }
-                    };
-                    let blob = Blob::from(degiro_pdf_data);
-                    spawn_local(clone!(app => async move {
-                        App::read_degiro_pdf(app, read_as_bytes(&blob).await.unwrap());
-                    }));
-                 }))
-            })
+            .child(html!("span", {
+                .class(&*TOOLTIP_CONTAINER)
+                .child(html!("p", {
+                    .class(&*TOOLTIP_ITEM)
+                    .style_signal("visibility",  app.tooltip_degiro_pdf.signal().map(|v| {
+                        if v { "visible" } else { "hidden" }
+                    }))
+                    .style_signal("opacity", app.tooltip_degiro_pdf.signal().map(|v| {
+                        if v { "1" } else { "0" }
+                    }))
+                    .text("Para descargar el informe anual de degiro en pdf: ")
+                    .child(html!("ul", {
+                        .children(&mut [
+                            html!("li", {
+                                .text("Entre en la página de degiro con su usuario.")
+                            }),
+                            html!("li", {
+                                .text("En el menú izquierdo pulse Actividad y seguidamente informes.")
+                            }),
+                            html!("li", {
+                                .text("En informes seleccione el informe anual del año a declarar y pulse descargar.")
+                            }),
+                        ])
+                    }))
+                }))
+                .child(render_svg_help_icon(DEFAULT_ICON_COLOR, DEFAULT_ICON_SIZE))
+                .event(clone!(app => move |_: events::MouseEnter| {
+                    *app.clone().tooltip_degiro_pdf.lock_mut() = true;
+                }))
+                .event(clone!(app => move |_: events::MouseLeave| {
+                    *app.clone().tooltip_degiro_pdf.lock_mut() = false;
+                }))
+            }))
+            .child(
+                html!("input" => HtmlInputElement, {
+                    .attr("id", "degiro_pdf_report")
+                    .attr("alt", "Fichero PDF informe broker Degiro")
+                    .attr("accept", "application/pdf")
+                    .attr("type", "file")
+                    .with_node!(element => {
+                        .event(clone!(app => move |_: events::Change| {
+                            let file_list = match element.files() {
+                                Some(file_list) => file_list,
+                                None => {
+                                    *app.current_error.lock_mut() = Some(
+                                    "Error subiendo fichero pdf degiro".to_string());
+                                    return;
+                                }
+                            };
+                            let degiro_pdf_data = match file_list.get(0) {
+                                Some(data) => data,
+                                None => {
+                                    *app.current_error.lock_mut() = Some(
+                                    "Error obteniendo pdf degiro".to_string());
+                                    return;
+                                }
+                            };
+                            let blob = Blob::from(degiro_pdf_data);
+                            spawn_local(clone!(app => async move {
+                                App::read_degiro_pdf(app, read_as_bytes(&blob).await.unwrap());
+                            }));
+                        }))
+                    })
+                })
+            )
         })
     }
 
     fn render_degiro_csv_input(app: Arc<Self>) -> Dom {
-        html!("input" => HtmlInputElement, {
+        html!("span", {
             .class(&*FLEX_CONTAINER_ITEM_20_CLASS)
-            .attr("id", "degiro_csv_report")
-            .attr("alt", "Fichero CSV informe broker Degiro")
-            .attr("accept", "text/csv")
-            .attr("type", "file")
-            .with_node!(element => {
-                .event(clone!(app => move |_: events::Change| {
-                    let file_list = match element.files() {
-                        Some(file_list) => file_list,
-                        None => {
-                            *app.current_error.lock_mut() = Some(
-                            "Error subiendo fichero csv degiro".to_string());
-                            return;
-                        }
-                    };
-                    let degiro_csv_data = match file_list.get(0) {
-                        Some(data) => data,
-                        None => {
-                            *app.current_error.lock_mut() = Some(
-                            "Error obteniendo csv degiro".to_string());
-                            return;
-                        }
-                    };
-                    let blob = Blob::from(degiro_csv_data);
-                    spawn_local(clone!(app => async move {
-                        App::read_degiro_csv(app, read_as_bytes(&blob).await.unwrap());
-                    }));
-                 }))
-            })
+            .child(html!("span", {
+                .class(&*TOOLTIP_CONTAINER)
+                .child(html!("p", {
+                    .class(&*TOOLTIP_ITEM)
+                    .style_signal("visibility",  app.tooltip_degiro_csv.signal().map(|v| {
+                        if v { "visible" } else { "hidden" }
+                    }))
+                    .style_signal("opacity", app.tooltip_degiro_csv.signal().map(|v| {
+                        if v { "1" } else { "0" }
+                    }))
+                    .text("Para descargar las posiciones de degiro en CSV: ")
+                    .child(html!("ul", {
+                        .children(&mut [
+                            html!("li", {
+                                .text("Entre en la página de degiro con su usuario.")
+                            }),
+                            html!("li", {
+                                .text("En el menú izquierdo pulse Cartera.")
+                            }),
+                            html!("li", {
+                                .text("Arriba a la derecha pulse el botón exportar.")
+                            }),
+                            html!("li", {
+                                .text("Seleccione la fecha de 31 de Diciembre del año a declarar y pulse CSV.")
+                            }),
+                        ])
+                    }))
+                }))
+                .child(render_svg_help_icon(DEFAULT_ICON_COLOR, DEFAULT_ICON_SIZE))
+                .event(clone!(app => move |_: events::MouseEnter| {
+                    *app.clone().tooltip_degiro_csv.lock_mut() = true;
+                }))
+                .event(clone!(app => move |_: events::MouseLeave| {
+                    *app.clone().tooltip_degiro_csv.lock_mut() = false;
+                }))
+            }))
+            .child(
+                html!("input" => HtmlInputElement, {
+                    .attr("id", "degiro_csv_report")
+                    .attr("alt", "Fichero CSV informe broker Degiro")
+                    .attr("accept", "text/csv")
+                    .attr("type", "file")
+                    .with_node!(element => {
+                        .event(clone!(app => move |_: events::Change| {
+                            let file_list = match element.files() {
+                                Some(file_list) => file_list,
+                                None => {
+                                    *app.current_error.lock_mut() = Some(
+                                    "Error subiendo fichero csv degiro".to_string());
+                                    return;
+                                }
+                            };
+                            let degiro_csv_data = match file_list.get(0) {
+                                Some(data) => data,
+                                None => {
+                                    *app.current_error.lock_mut() = Some(
+                                    "Error obteniendo csv degiro".to_string());
+                                    return;
+                                }
+                            };
+                            let blob = Blob::from(degiro_csv_data);
+                            spawn_local(clone!(app => async move {
+                                App::read_degiro_csv(app, read_as_bytes(&blob).await.unwrap());
+                            }));
+                        }))
+                    })
+                })
+            )
         })
     }
 
     fn render_ib_pdf_input(app: Arc<Self>) -> Dom {
-        html!("input" => HtmlInputElement, {
+        html!("span", {
             .class(&*FLEX_CONTAINER_ITEM_20_CLASS)
-            .attr("id", "ib_pdf_report")
-            .attr("alt", "Fichero pdf comprimido informe Interactive Brokers")
-            .attr("accept", "application/zip")
-            .attr("type", "file")
-            .with_node!(element => {
-                .event(clone!(app => move |_: events::Change| {
-                    let file_list = match element.files() {
-                        Some(file_list) => file_list,
-                        None => {
-                            *app.current_error.lock_mut() = Some(
-                            "Error subiendo fichero pdf comprimido de interactive brokers".to_string());
-                            return;
-                        }
-                    };
-                    let degiro_pdf_data = match file_list.get(0) {
-                        Some(data) => data,
-                        None => {
-                            *app.current_error.lock_mut() = Some(
-                            "Error obteniendo pdf comprimido de interactive brokers".to_string());
-                            return;
-                        }
-                    };
-                    let blob = Blob::from(degiro_pdf_data);
-                    spawn_local(clone!(app => async move {
-                        App::read_ib_pdf_zipped(app, read_as_bytes(&blob).await.unwrap());
-                    }));
-                 }))
-            })
+            .child(html!("span", {
+                .class(&*TOOLTIP_CONTAINER)
+                .child(html!("p", {
+                    .class(&*TOOLTIP_ITEM)
+                    .style_signal("visibility",  app.tooltip_ib_pdf.signal().map(|v| {
+                        if v { "visible" } else { "hidden" }
+                    }))
+                    .style_signal("opacity", app.tooltip_ib_pdf.signal().map(|v| {
+                        if v { "1" } else { "0" }
+                    }))
+                    .text("Para descargar el informe anual de interactive brokers: ")
+                    .child(html!("ul", {
+                        .children(&mut [
+                            html!("li", {
+                                .text("Entre en la página de interactive brokers con su usuario.")
+                            }),
+                            html!("li", {
+                                .text("En el menú superior seleccione informes y seguidamente extractos.")
+                            }),
+                            html!("li", {
+                                .text("Si ha tenido más de 1 cuenta seleccione todas pulsando en el identificador de usuario al lado de informes y seleccionando todos.")
+                            }),
+                            html!("li", {
+                                .text("En extractos predeterminados pulse en actividad, seleccione el período anual, el formato HTML/descargar y en opciones zip.")
+                            }),
+                            html!("li", {
+                                .text("Pulse ejecutar.")
+                            }),
+                            html!("li", {
+                                .text("Si tuvo más de una cuenta en el año tendrá que modificar el zip para dejar sólo el html de la cuenta actual.")
+                            }),
+                        ])
+                    }))
+                }))
+                .child(render_svg_help_icon(DEFAULT_ICON_COLOR, DEFAULT_ICON_SIZE))
+                .event(clone!(app => move |_: events::MouseEnter| {
+                    *app.clone().tooltip_ib_pdf.lock_mut() = true;
+                }))
+                .event(clone!(app => move |_: events::MouseLeave| {
+                    *app.clone().tooltip_ib_pdf.lock_mut() = false;
+                }))
+            }))
+            .child(
+                html!("input" => HtmlInputElement, {
+                    .attr("id", "ib_pdf_report")
+                    .attr("alt", "Fichero pdf comprimido informe Interactive Brokers")
+                    .attr("accept", "application/zip")
+                    .attr("type", "file")
+                    .with_node!(element => {
+                        .event(clone!(app => move |_: events::Change| {
+                            let file_list = match element.files() {
+                                Some(file_list) => file_list,
+                                None => {
+                                    *app.current_error.lock_mut() = Some(
+                                    "Error subiendo fichero pdf comprimido de interactive brokers".to_string());
+                                    return;
+                                }
+                            };
+                            let degiro_pdf_data = match file_list.get(0) {
+                                Some(data) => data,
+                                None => {
+                                    *app.current_error.lock_mut() = Some(
+                                    "Error obteniendo pdf comprimido de interactive brokers".to_string());
+                                    return;
+                                }
+                            };
+                            let blob = Blob::from(degiro_pdf_data);
+                            spawn_local(clone!(app => async move {
+                                App::read_ib_pdf_zipped(app, read_as_bytes(&blob).await.unwrap());
+                            }));
+                        }))
+                    })
+                })
+            )
         })
     }
 
@@ -416,7 +546,7 @@ impl App {
                 .children(&mut [
                     html!("label", {
                         .attr("label_for", "name")
-                        .text("Nombre:")
+                        .text("Nombre: ")
                     }),
                     html!("input" => HtmlInputElement, {
                         .attr("id", "name")
@@ -436,7 +566,7 @@ impl App {
                 .children(&mut [
                     html!("label", {
                         .attr("label_for", "surname")
-                        .text("Apellidos:")
+                        .text("Apellidos: ")
                     }),
                     html!("input" => HtmlInputElement, {
                         .attr("id", "surname")
@@ -456,7 +586,7 @@ impl App {
                 .children(&mut [
                     html!("label", {
                         .attr("label_for", "nif")
-                        .text("NIF:")
+                        .text("NIF: ")
                     }),
                     html!("input" => HtmlInputElement, {
                         .attr("id", "nif")
@@ -476,7 +606,7 @@ impl App {
                 .children(&mut [
                     html!("label", {
                         .attr("label_for", "year")
-                        .text("Año:")
+                        .text("Año: ")
                     }),
                     html!("input" => HtmlInputElement, {
                         .attr("id", "year")
@@ -497,7 +627,7 @@ impl App {
                 .children(&mut [
                     html!("label", {
                         .attr("label_for", "phone")
-                        .text("Teléfono:")
+                        .text("Teléfono: ")
                     }),
                     html!("input" => HtmlInputElement, {
                         .attr("id", "phone")

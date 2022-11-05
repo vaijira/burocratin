@@ -117,7 +117,7 @@ jobs:
     - name: Build app
       run: yarn run build
     - name: Deploy to Netlify
-      uses: nwtgck/actions-netlify@v1.1
+      uses: nwtgck/actions-netlify@v1.2
       with:
         publish-dir: './dist'
         github-token: ${{ secrets.GITHUB_TOKEN }}
