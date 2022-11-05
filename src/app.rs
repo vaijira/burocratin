@@ -67,7 +67,7 @@ impl App {
                 name: app.name.lock_ref().clone(),
                 surname: app.surname.lock_ref().clone(),
                 nif: app.nif.lock_ref().clone(),
-                year: app.year.lock_ref().clone(),
+                year: *app.year.lock_ref(),
                 phone: app.phone.lock_ref().clone(),
             },
             &old_path,
@@ -96,7 +96,7 @@ impl App {
                 ));
             }
         } else {
-            *app.current_error.lock_mut() = Some(format!("Error parseando el pdf de Degiro"));
+            *app.current_error.lock_mut() = Some("Error parseando el pdf de Degiro".to_string());
         }
 
         App::generate_720_file(app)
@@ -121,7 +121,7 @@ impl App {
                 ));
             }
         } else {
-            *app.current_error.lock_mut() = Some(format!("Error parseando el csv de Degiro"));
+            *app.current_error.lock_mut() = Some("Error parseando el csv de Degiro".to_string());
         }
 
         App::generate_720_file(app)
@@ -143,13 +143,12 @@ impl App {
                     app.balance_notes.lock_mut().extend(balance_notes);
                 } else {
                     *app.current_error.lock_mut() = Some(
-                        format!("Error cargando los apuntes del pdf comprimido con zip de interactive brokers"));
+                        "Error cargando los apuntes del pdf comprimido con zip de interactive brokers".to_string());
                 }
             }
         } else {
-            *app.current_error.lock_mut() = Some(format!(
-                "Error parseando el pdf comprimido con zip de interactive brokes"
-            ));
+            *app.current_error.lock_mut() =
+                Some("Error parseando el pdf comprimido con zip de interactive brokes".to_string());
         }
 
         App::generate_720_file(app)
@@ -168,7 +167,7 @@ impl App {
                         Some(file_list) => file_list,
                         None => {
                             *app.current_error.lock_mut() = Some(
-                            format!("Error subiendo fichero pdf degiro"));
+                            "Error subiendo fichero pdf degiro".to_string());
                             return;
                         }
                     };
@@ -176,7 +175,7 @@ impl App {
                         Some(data) => data,
                         None => {
                             *app.current_error.lock_mut() = Some(
-                            format!("Error obteniendo pdf degiro"));
+                            "Error obteniendo pdf degiro".to_string());
                             return;
                         }
                     };
@@ -202,7 +201,7 @@ impl App {
                         Some(file_list) => file_list,
                         None => {
                             *app.current_error.lock_mut() = Some(
-                            format!("Error subiendo fichero csv degiro"));
+                            "Error subiendo fichero csv degiro".to_string());
                             return;
                         }
                     };
@@ -210,7 +209,7 @@ impl App {
                         Some(data) => data,
                         None => {
                             *app.current_error.lock_mut() = Some(
-                            format!("Error obteniendo csv degiro"));
+                            "Error obteniendo csv degiro".to_string());
                             return;
                         }
                     };
@@ -236,7 +235,7 @@ impl App {
                         Some(file_list) => file_list,
                         None => {
                             *app.current_error.lock_mut() = Some(
-                            format!("Error subiendo fichero pdf comprimido de interactive brokers"));
+                            "Error subiendo fichero pdf comprimido de interactive brokers".to_string());
                             return;
                         }
                     };
@@ -244,7 +243,7 @@ impl App {
                         Some(data) => data,
                         None => {
                             *app.current_error.lock_mut() = Some(
-                            format!("Error obteniendo pdf comprimido de interactive brokers"));
+                            "Error obteniendo pdf comprimido de interactive brokers".to_string());
                             return;
                         }
                     };
@@ -292,7 +291,7 @@ impl App {
                     .attr("label_for", "ib_pdf_report")
                     .text("Informe anual Interactive Brokers (PDF comprimido con ZIP):")
                 }),
-                App::render_ib_pdf_input(app.clone()),
+                App::render_ib_pdf_input(app),
             ])
         })
     }
@@ -526,7 +525,7 @@ impl App {
                 .class(&*FLEX_CONTAINER_ITEM_20_CLASS)
             }))
             .child(
-                App::render_account_notes(app.clone())
+                App::render_account_notes(app)
             )
         })
     }
@@ -564,12 +563,11 @@ impl App {
         html!("div", {
             .class(&*ROOT_CLASS)
             .child_signal(app.current_error.signal_ref(|x| x.clone()).map(|text| {
-                match text {
-                    Some(txt) => Some(html!("p", {
+                text.map(|txt|
+                    html!("p", {
                         .text(&txt)
-                    })),
-                    None => None,
-                }
+                    })
+                )
             }))
             .children(&mut [
                 html!("h3", {

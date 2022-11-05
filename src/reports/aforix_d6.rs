@@ -113,7 +113,7 @@ fn write_page_footer<W: Write>(writer: &mut EventWriter<W>, context: &mut D6Cont
 }
 
 pub fn format_valuation(valuation: &Decimal) -> String {
-    valuation.to_string().replace(".", ",")
+    valuation.to_string().replace('.', ",")
 }
 
 fn write_company_note<W: Write>(

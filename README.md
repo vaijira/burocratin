@@ -15,10 +15,9 @@ You also need to install the wasm32-unknown-unknown target to compile Rust to Wa
 
 You need to install:
 
-* [trunk](https://trunkrs.dev/): cargo install trunk wasm-bindgen-cli.
-* [cargo make](https://sagiegurari.github.io/cargo-make/): cargo install --force cargo-make.
+* yarn: npm install yarn.
 
-Run cargo make, cargo make trunk and trunk serve and access [localhost](http://localhost:8080) to test the application.
+Run yarn install and yarn start and access [localhost](http://localhost:10001) to test the application.
 
 ## TESTS
 
@@ -28,7 +27,8 @@ To run doc tests execute: cargo test --doc
 
 To run integration test you'll need docker-compose to start a selenium container:
 
-* trunk build
+* yarn install
+* yarn run build
 * docker-compose up -d
 * cargo test --test interaction -- --ignored --test-threads=1
 * docker-compose down

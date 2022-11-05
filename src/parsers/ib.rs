@@ -275,7 +275,7 @@ impl IBParser {
             String::from(""),
             Decimal::from_str(&decimal::normalize_str(quantity))?
                 * Decimal::from_str(&decimal::normalize_str(mult))?,
-            String::from(currency.or(Some(IBParser::EUR_CURRENCY_STR)).unwrap()),
+            String::from(currency.unwrap_or(IBParser::EUR_CURRENCY_STR)),
             Decimal::from_str(&decimal::normalize_str(price))?,
             Decimal::from_str(&decimal::normalize_str(value_in_euro))?,
             &self.broker,

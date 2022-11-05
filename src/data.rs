@@ -126,6 +126,7 @@ pub struct FinancialInformation {
 }
 
 impl FinancialInformation {
+    #[allow(dead_code)]
     pub fn new() -> Self {
         Self {
             account_notes: vec![],
