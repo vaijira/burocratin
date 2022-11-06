@@ -24,6 +24,8 @@ export default {
             targets: [
                 { src: 'static/img/degiro.svg', dest: 'dist/img/' },
                 { src: 'static/img/interactive_brokers.svg', dest: 'dist/img/' },
+                { src: 'static/img/favicon.ico', dest: 'dist/img/' },
+                { src: 'static/img/burocratin.svg', dest: 'dist/img/' },
             ]
         }),
 
