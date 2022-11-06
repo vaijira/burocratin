@@ -358,13 +358,13 @@ impl App {
                 }),
                 html!("label", {
                     .class(&*FLEX_CONTAINER_ITEM_20_CLASS)
-                    .attr("label_for", "degiro_pdf_report")
+                    .attr("for", "degiro_pdf_report")
                     .text("Informe anual broker Degiro (PDF):")
                 }),
                 App::render_degiro_pdf_input(app.clone()),
                 html!("label", {
                     .class(&*FLEX_CONTAINER_ITEM_20_CLASS)
-                    .attr("label_for", "degiro_csv_report")
+                    .attr("for", "degiro_csv_report")
                     .text("Informe anual broker Degiro (CSV):")
                 }),
                 App::render_degiro_csv_input(app.clone()),
@@ -377,7 +377,7 @@ impl App {
                 }),
                 html!("label", {
                     .class(&*FLEX_CONTAINER_ITEM_20_CLASS)
-                    .attr("label_for", "ib_pdf_report")
+                    .attr("for", "ib_pdf_report")
                     .text("Informe anual Interactive Brokers (PDF comprimido con ZIP):")
                 }),
                 App::render_ib_pdf_input(app),
@@ -504,7 +504,7 @@ impl App {
                 .class(&*FLEX_CONTAINER_ITEM_20_CLASS)
                 .children(&mut [
                     html!("label", {
-                        .attr("label_for", "name")
+                        .attr("for", "name")
                         .text("Nombre: ")
                     }),
                     html!("input" => HtmlInputElement, {
@@ -524,7 +524,7 @@ impl App {
                 .class(&*FLEX_CONTAINER_ITEM_20_CLASS)
                 .children(&mut [
                     html!("label", {
-                        .attr("label_for", "surname")
+                        .attr("for", "surname")
                         .text("Apellidos: ")
                     }),
                     html!("input" => HtmlInputElement, {
@@ -544,7 +544,7 @@ impl App {
                 .class(&*FLEX_CONTAINER_ITEM_20_CLASS)
                 .children(&mut [
                     html!("label", {
-                        .attr("label_for", "nif")
+                        .attr("for", "nif")
                         .text("NIF: ")
                     }),
                     html!("input" => HtmlInputElement, {
@@ -564,7 +564,7 @@ impl App {
                 .class(&*FLEX_CONTAINER_ITEM_20_CLASS)
                 .children(&mut [
                     html!("label", {
-                        .attr("label_for", "year")
+                        .attr("for", "year")
                         .text("Año: ")
                     }),
                     html!("input" => HtmlInputElement, {
@@ -585,7 +585,7 @@ impl App {
                 .class(&*FLEX_CONTAINER_ITEM_20_CLASS)
                 .children(&mut [
                     html!("label", {
-                        .attr("label_for", "phone")
+                        .attr("for", "phone")
                         .text("Teléfono: ")
                     }),
                     html!("input" => HtmlInputElement, {
@@ -737,22 +737,22 @@ impl App {
                 )
             }))
             .children(&mut [
-                html!("h3", {
+                html!("h2", {
                     .class(&*SECTION_HEADER)
                     .text(" Información brokers ")
                 }),
                 App::render_brokers_form(app.clone()),
-                html!("h3", {
+                html!("h2", {
                     .class(&*SECTION_HEADER)
                     .text(" Información personal ")
                 }),
                 App::render_personal_info(app.clone()),
-                html!("h3", {
+                html!("h2", {
                     .class(&*SECTION_HEADER)
                     .text(" Movimientos importados ")
                 }),
                 App::render_financial_information(app.clone()),
-                html!("h3", {
+                html!("h2", {
                     .class(&*SECTION_HEADER)
                     .text(" Descarga de formulario 720 ")
                 }),

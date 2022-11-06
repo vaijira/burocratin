@@ -51,7 +51,7 @@ tokio = { version = "1.0", features = ["fs", "macros", "rt-multi-thread", "io-ut
 
 [profile.release]
 # less code to include into binary
-# panic = 'abort'
+panic = 'abort'
 # optimization over all codebase ( better optimization, slower build )
 codegen-units = 1
 # optimization for size ( more aggressive )

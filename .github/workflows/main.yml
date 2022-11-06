@@ -83,7 +83,7 @@ jobs:
       - uses: jetli/wasm-bindgen-action@v0.1.0
         with:
           version: 'latest'
-      - name: install yarn
+      - name: Install yarn
         run: npm install yarn
       - name: Build app
         run: yarn run build
@@ -112,7 +112,7 @@ jobs:
     - uses: jetli/wasm-bindgen-action@v0.1.0
       with:
         version: 'latest'
-    - name: install yarn
+    - name: Install yarn
       run: npm install yarn
     - name: Build app
       run: yarn run build
