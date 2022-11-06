@@ -17,6 +17,7 @@ mod data;
 mod feathers;
 mod parsers;
 mod reports;
+mod tooltip;
 mod utils;
 
 #[wasm_bindgen(start)]

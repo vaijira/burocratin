@@ -8,14 +8,14 @@ use wasm_bindgen_futures::spawn_local;
 use web_sys::HtmlInputElement;
 
 use crate::css::{
-    DEFAULT_ICON_COLOR, DEFAULT_ICON_SIZE, FLEX_CONTAINER_CLASS, FLEX_CONTAINER_ITEM_20_CLASS,
-    FLEX_CONTAINER_ITEM_40_CLASS, ROOT_CLASS, SECTION_HEADER, TOOLTIP_CONTAINER, TOOLTIP_ITEM,
+    FLEX_CONTAINER_CLASS, FLEX_CONTAINER_ITEM_20_CLASS, FLEX_CONTAINER_ITEM_40_CLASS, ROOT_CLASS,
+    SECTION_HEADER,
 };
 use crate::data::{AccountNote, BalanceNote, BrokerInformation, FinancialInformation};
-use crate::feathers::render_svg_help_icon;
 use crate::parsers::degiro_csv::DegiroCSVParser;
 use crate::parsers::ib::IBParser;
 use crate::parsers::{degiro::DegiroParser, pdf::read_pdf};
+use crate::tooltip::Tooltip;
 use crate::utils::web;
 use crate::utils::zip::read_zip_str;
 
@@ -33,9 +33,9 @@ pub struct App {
     nif: Mutable<String>,
     year: Mutable<usize>,
     phone: Mutable<String>,
-    tooltip_degiro_pdf: Mutable<bool>,
-    tooltip_degiro_csv: Mutable<bool>,
-    tooltip_ib_pdf: Mutable<bool>,
+    degiro_pdf_tooltip: Arc<Tooltip>,
+    degiro_csv_tooltip: Arc<Tooltip>,
+    ib_tooltip: Arc<Tooltip>,
 }
 
 impl App {
@@ -58,9 +58,9 @@ impl App {
             nif: Mutable::new("".to_owned()),
             year: Mutable::new(DEFAULT_YEAR),
             phone: Mutable::new("".to_owned()),
-            tooltip_degiro_pdf: Mutable::new(false),
-            tooltip_degiro_csv: Mutable::new(false),
-            tooltip_ib_pdf: Mutable::new(false),
+            degiro_pdf_tooltip: Tooltip::new(),
+            degiro_csv_tooltip: Tooltip::new(),
+            ib_tooltip: Tooltip::new(),
         })
     }
 
@@ -164,39 +164,24 @@ impl App {
     fn render_degiro_pdf_input(app: Arc<Self>) -> Dom {
         html!("span", {
             .class(&*FLEX_CONTAINER_ITEM_20_CLASS)
-            .child(html!("span", {
-                .class(&*TOOLTIP_CONTAINER)
-                .child(html!("p", {
-                    .class(&*TOOLTIP_ITEM)
-                    .style_signal("visibility",  app.tooltip_degiro_pdf.signal().map(|v| {
-                        if v { "visible" } else { "hidden" }
-                    }))
-                    .style_signal("opacity", app.tooltip_degiro_pdf.signal().map(|v| {
-                        if v { "1" } else { "0" }
-                    }))
-                    .text("Para descargar el informe anual de degiro en pdf: ")
-                    .child(html!("ul", {
-                        .children(&mut [
-                            html!("li", {
-                                .text("Entre en la página de degiro con su usuario.")
-                            }),
-                            html!("li", {
-                                .text("En el menú izquierdo pulse Actividad y seguidamente informes.")
-                            }),
-                            html!("li", {
-                                .text("En informes seleccione el informe anual del año a declarar y pulse descargar.")
-                            }),
-                        ])
-                    }))
+            .child(Tooltip::render(app.degiro_pdf_tooltip.clone(),
+                html!("p", {
+                    .text(" Para descargar las posiciones de degiro en PDF: ")
+                }),
+                html!("ul", {
+                    .children(&mut [
+                        html!("li", {
+                            .text("Entre en la página de degiro con su usuario.")
+                        }),
+                        html!("li", {
+                            .text("En el menú izquierdo pulse Actividad y seguidamente informes.")
+                        }),
+                        html!("li", {
+                            .text("En informes seleccione el informe anual del año a declarar y pulse descargar.")
+                        }),
+                    ])
                 }))
-                .child(render_svg_help_icon(DEFAULT_ICON_COLOR, DEFAULT_ICON_SIZE))
-                .event(clone!(app => move |_: events::MouseEnter| {
-                    *app.clone().tooltip_degiro_pdf.lock_mut() = true;
-                }))
-                .event(clone!(app => move |_: events::MouseLeave| {
-                    *app.clone().tooltip_degiro_pdf.lock_mut() = false;
-                }))
-            }))
+            )
             .child(
                 html!("input" => HtmlInputElement, {
                     .attr("id", "degiro_pdf_report")
@@ -235,42 +220,27 @@ impl App {
     fn render_degiro_csv_input(app: Arc<Self>) -> Dom {
         html!("span", {
             .class(&*FLEX_CONTAINER_ITEM_20_CLASS)
-            .child(html!("span", {
-                .class(&*TOOLTIP_CONTAINER)
-                .child(html!("p", {
-                    .class(&*TOOLTIP_ITEM)
-                    .style_signal("visibility",  app.tooltip_degiro_csv.signal().map(|v| {
-                        if v { "visible" } else { "hidden" }
-                    }))
-                    .style_signal("opacity", app.tooltip_degiro_csv.signal().map(|v| {
-                        if v { "1" } else { "0" }
-                    }))
-                    .text("Para descargar las posiciones de degiro en CSV: ")
-                    .child(html!("ul", {
-                        .children(&mut [
-                            html!("li", {
-                                .text("Entre en la página de degiro con su usuario.")
-                            }),
-                            html!("li", {
-                                .text("En el menú izquierdo pulse Cartera.")
-                            }),
-                            html!("li", {
-                                .text("Arriba a la derecha pulse el botón exportar.")
-                            }),
-                            html!("li", {
-                                .text("Seleccione la fecha de 31 de Diciembre del año a declarar y pulse CSV.")
-                            }),
-                        ])
-                    }))
+            .child(Tooltip::render(app.degiro_csv_tooltip.clone(),
+                html!("p", {
+                    .text(" Para descargar las posiciones de degiro en CSV: ")
+                }),
+                html!("ul", {
+                    .children(&mut [
+                        html!("li", {
+                            .text("Entre en la página de degiro con su usuario.")
+                        }),
+                        html!("li", {
+                            .text("En el menú izquierdo pulse Cartera.")
+                        }),
+                        html!("li", {
+                            .text("Arriba a la derecha pulse el botón exportar.")
+                        }),
+                        html!("li", {
+                            .text("Seleccione la fecha de 31 de Diciembre del año a declarar y pulse CSV.")
+                        }),
+                    ])
                 }))
-                .child(render_svg_help_icon(DEFAULT_ICON_COLOR, DEFAULT_ICON_SIZE))
-                .event(clone!(app => move |_: events::MouseEnter| {
-                    *app.clone().tooltip_degiro_csv.lock_mut() = true;
-                }))
-                .event(clone!(app => move |_: events::MouseLeave| {
-                    *app.clone().tooltip_degiro_csv.lock_mut() = false;
-                }))
-            }))
+            )
             .child(
                 html!("input" => HtmlInputElement, {
                     .attr("id", "degiro_csv_report")
@@ -309,48 +279,33 @@ impl App {
     fn render_ib_pdf_input(app: Arc<Self>) -> Dom {
         html!("span", {
             .class(&*FLEX_CONTAINER_ITEM_20_CLASS)
-            .child(html!("span", {
-                .class(&*TOOLTIP_CONTAINER)
-                .child(html!("p", {
-                    .class(&*TOOLTIP_ITEM)
-                    .style_signal("visibility",  app.tooltip_ib_pdf.signal().map(|v| {
-                        if v { "visible" } else { "hidden" }
-                    }))
-                    .style_signal("opacity", app.tooltip_ib_pdf.signal().map(|v| {
-                        if v { "1" } else { "0" }
-                    }))
-                    .text("Para descargar el informe anual de interactive brokers: ")
-                    .child(html!("ul", {
-                        .children(&mut [
-                            html!("li", {
-                                .text("Entre en la página de interactive brokers con su usuario.")
-                            }),
-                            html!("li", {
-                                .text("En el menú superior seleccione informes y seguidamente extractos.")
-                            }),
-                            html!("li", {
-                                .text("Si ha tenido más de 1 cuenta seleccione todas pulsando en el identificador de usuario al lado de informes y seleccionando todos.")
-                            }),
-                            html!("li", {
-                                .text("En extractos predeterminados pulse en actividad, seleccione el período anual, el formato HTML/descargar y en opciones zip.")
-                            }),
-                            html!("li", {
-                                .text("Pulse ejecutar.")
-                            }),
-                            html!("li", {
-                                .text("Si tuvo más de una cuenta en el año tendrá que modificar el zip para dejar sólo el html de la cuenta actual.")
-                            }),
-                        ])
-                    }))
+            .child(Tooltip::render(app.ib_tooltip.clone(),
+                html!("p", {
+                    .text(" Para descargar el informe anual de interactive brokers: ")
+                }),
+                html!("ul", {
+                    .children(&mut [
+                        html!("li", {
+                            .text("Entre en la página de interactive brokers con su usuario.")
+                        }),
+                        html!("li", {
+                            .text("En el menú superior seleccione informes y seguidamente extractos.")
+                        }),
+                        html!("li", {
+                            .text("Si ha tenido más de 1 cuenta seleccione todas pulsando en el identificador de usuario al lado de informes y seleccionando todos.")
+                        }),
+                        html!("li", {
+                            .text("En extractos predeterminados pulse en actividad, seleccione el período anual, el formato HTML/descargar y en opciones zip.")
+                        }),
+                        html!("li", {
+                            .text("Pulse ejecutar.")
+                        }),
+                        html!("li", {
+                            .text("Si tuvo más de una cuenta en el año tendrá que modificar el zip para dejar sólo el html de la cuenta actual.")
+                        }),
+                    ])
                 }))
-                .child(render_svg_help_icon(DEFAULT_ICON_COLOR, DEFAULT_ICON_SIZE))
-                .event(clone!(app => move |_: events::MouseEnter| {
-                    *app.clone().tooltip_ib_pdf.lock_mut() = true;
-                }))
-                .event(clone!(app => move |_: events::MouseLeave| {
-                    *app.clone().tooltip_ib_pdf.lock_mut() = false;
-                }))
-            }))
+            )
             .child(
                 html!("input" => HtmlInputElement, {
                     .attr("id", "ib_pdf_report")

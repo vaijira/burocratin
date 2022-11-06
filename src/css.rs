@@ -2,7 +2,7 @@ use dominator::{class, pseudo};
 use once_cell::sync::Lazy;
 
 pub const DEFAULT_ICON_COLOR: &str = "black";
-pub const DEFAULT_ICON_SIZE: &str = "24";
+pub const DEFAULT_ICON_SIZE: &str = "32";
 
 pub static ROOT_CLASS: Lazy<String> = Lazy::new(|| {
     class! {
