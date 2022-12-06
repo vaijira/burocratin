@@ -18,6 +18,7 @@ use crate::feathers::{
 };
 use crate::parsers::degiro_csv::DegiroCSVParser;
 use crate::parsers::ib::IBParser;
+use crate::parsers::ib_csv::IBCSVParser;
 use crate::parsers::{degiro::DegiroParser, pdf::read_pdf};
 use crate::tooltip::Tooltip;
 use crate::utils::web;
@@ -40,6 +41,7 @@ pub struct App {
     degiro_pdf_tooltip: Arc<Tooltip>,
     degiro_csv_tooltip: Arc<Tooltip>,
     ib_tooltip: Arc<Tooltip>,
+    ib_csv_tooltip: Arc<Tooltip>,
 }
 
 impl App {
@@ -65,6 +67,7 @@ impl App {
             degiro_pdf_tooltip: Tooltip::new(),
             degiro_csv_tooltip: Tooltip::new(),
             ib_tooltip: Tooltip::new(),
+            ib_csv_tooltip: Tooltip::new(),
         })
     }
 
@@ -138,7 +141,35 @@ impl App {
         App::generate_720_file(app)
     }
 
-    fn read_ib_pdf_zipped(app: Arc<Self>, content: Vec<u8>) {
+    fn read_ib_csv(app: Arc<Self>, content: Vec<u8>) {
+        if let Ok(data) = String::from_utf8(content) {
+            if let Ok(parser) = IBCSVParser::new(data, &app.ib_broker) {
+                let account_notes = parser.parse_account_notes();
+                let balance_notes = parser.parse_balance_notes();
+                if let (Ok(account_notes), Ok(balance_notes)) = (account_notes, balance_notes) {
+                    app.account_notes
+                        .lock_mut()
+                        .retain(|note| note.broker != app.ib_broker);
+                    app.balance_notes
+                        .lock_mut()
+                        .retain(|note| note.broker != app.ib_broker);
+                    app.account_notes.lock_mut().extend(account_notes);
+                    app.balance_notes.lock_mut().extend(balance_notes);
+                } else {
+                    *app.current_error.lock_mut() = Some(
+                        "Error cargando los apuntes del csv de interactive brokers".to_string(),
+                    );
+                }
+            }
+        } else {
+            *app.current_error.lock_mut() =
+                Some("Error parseando el csv de interactive brokes".to_string());
+        }
+
+        App::generate_720_file(app)
+    }
+
+    fn read_ib_html_zipped(app: Arc<Self>, content: Vec<u8>) {
         if let Ok(data) = read_zip_str(content) {
             if let Ok(parser) = IBParser::new(&data, &app.ib_broker) {
                 let account_notes = parser.parse_account_notes();
@@ -154,12 +185,13 @@ impl App {
                     app.balance_notes.lock_mut().extend(balance_notes);
                 } else {
                     *app.current_error.lock_mut() = Some(
-                        "Error cargando los apuntes del pdf comprimido con zip de interactive brokers".to_string());
+                        "Error cargando los apuntes del html comprimido con zip de interactive brokers".to_string());
                 }
             }
         } else {
-            *app.current_error.lock_mut() =
-                Some("Error parseando el pdf comprimido con zip de interactive brokes".to_string());
+            *app.current_error.lock_mut() = Some(
+                "Error parseando el html comprimido con zip de interactive brokes".to_string(),
+            );
         }
 
         App::generate_720_file(app)
@@ -280,7 +312,7 @@ impl App {
         })
     }
 
-    fn render_ib_pdf_input(app: Arc<Self>) -> Dom {
+    fn render_ib_html_input(app: Arc<Self>) -> Dom {
         html!("span", {
             .class(&*FLEX_CONTAINER_ITEM_20_CLASS)
             .child(Tooltip::render(app.ib_tooltip.clone(),
@@ -312,8 +344,8 @@ impl App {
             )
             .child(
                 html!("input" => HtmlInputElement, {
-                    .attr("id", "ib_pdf_report")
-                    .attr("alt", "Fichero pdf comprimido informe Interactive Brokers")
+                    .attr("id", "ib_html_report")
+                    .attr("alt", "Fichero HTML comprimido informe Interactive Brokers")
                     .attr("accept", "application/zip")
                     .attr("type", "file")
                     .with_node!(element => {
@@ -322,21 +354,80 @@ impl App {
                                 Some(file_list) => file_list,
                                 None => {
                                     *app.current_error.lock_mut() = Some(
-                                    "Error subiendo fichero pdf comprimido de interactive brokers".to_string());
+                                    "Error subiendo fichero HTML comprimido de interactive brokers".to_string());
                                     return;
                                 }
                             };
-                            let degiro_pdf_data = match file_list.get(0) {
+                            let ib_html_data = match file_list.get(0) {
                                 Some(data) => data,
                                 None => {
                                     *app.current_error.lock_mut() = Some(
-                                    "Error obteniendo pdf comprimido de interactive brokers".to_string());
+                                    "Error obteniendo HTML comprimido de interactive brokers".to_string());
                                     return;
                                 }
                             };
-                            let blob = Blob::from(degiro_pdf_data);
+                            let blob = Blob::from(ib_html_data);
                             spawn_local(clone!(app => async move {
-                                App::read_ib_pdf_zipped(app, read_as_bytes(&blob).await.unwrap());
+                                App::read_ib_html_zipped(app, read_as_bytes(&blob).await.unwrap());
+                            }));
+                        }))
+                    })
+                })
+            )
+        })
+    }
+
+    fn render_ib_csv_input(app: Arc<Self>) -> Dom {
+        html!("span", {
+            .class(&*FLEX_CONTAINER_ITEM_20_CLASS)
+            .child(Tooltip::render(app.ib_csv_tooltip.clone(),
+                html!("p", {
+                    .text(" Para descargar el informe anual en formato CSV de interactive brokers: ")
+                }),
+                html!("ul", {
+                    .children(&mut [
+                        html!("li", {
+                            .text("Entre en la página de interactive brokers con su usuario.")
+                        }),
+                        html!("li", {
+                            .text("En el menú superior seleccione informes y seguidamente extractos.")
+                        }),
+                        html!("li", {
+                            .text("En extractos predeterminados pulse en actividad, seleccione el período anual, el formato CSV.")
+                        }),
+                        html!("li", {
+                            .text("Pulse ejecutar.")
+                        }),
+                    ])
+                }))
+            )
+            .child(
+                html!("input" => HtmlInputElement, {
+                    .attr("id", "ib_csv_report")
+                    .attr("alt", "Fichero CSV informe Interactive Brokers")
+                    .attr("accept", "text/csv")
+                    .attr("type", "file")
+                    .with_node!(element => {
+                        .event(clone!(app => move |_: events::Change| {
+                            let file_list = match element.files() {
+                                Some(file_list) => file_list,
+                                None => {
+                                    *app.current_error.lock_mut() = Some(
+                                    "Error subiendo fichero HTML comprimido de interactive brokers".to_string());
+                                    return;
+                                }
+                            };
+                            let ib_csv_data = match file_list.get(0) {
+                                Some(data) => data,
+                                None => {
+                                    *app.current_error.lock_mut() = Some(
+                                    "Error obteniendo CSV de interactive brokers".to_string());
+                                    return;
+                                }
+                            };
+                            let blob = Blob::from(ib_csv_data);
+                            spawn_local(clone!(app => async move {
+                                App::read_ib_csv(app, read_as_bytes(&blob).await.unwrap());
                             }));
                         }))
                     })
@@ -377,10 +468,16 @@ impl App {
                 }),
                 html!("label", {
                     .class(&*FLEX_CONTAINER_ITEM_20_CLASS)
-                    .attr("for", "ib_pdf_report")
-                    .text("Informe anual Interactive Brokers (PDF comprimido con ZIP):")
+                    .attr("for", "ib_html_report")
+                    .text("Informe anual Interactive Brokers (HTML comprimido con ZIP):")
                 }),
-                App::render_ib_pdf_input(app),
+                App::render_ib_html_input(app.clone()),
+                html!("label", {
+                    .class(&*FLEX_CONTAINER_ITEM_20_CLASS)
+                    .attr("for", "ib_csv_report")
+                    .text("Informe anual Interactive Brokers (CSV):")
+                }),
+                App::render_ib_csv_input(app),
             ])
         })
     }

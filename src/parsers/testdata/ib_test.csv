@@ -1,0 +1,485 @@
+﻿Statement,Header,Field Name,Field Value
+Statement,Data,BrokerName,
+Statement,Data,BrokerAddress,
+Statement,Data,Title,Activity Summary
+Statement,Data,Period,"January 1, 2021 - December 31, 2021"
+Statement,Data,WhenGenerated,"2022-11-20, 03:36:26 EST"
+Disclaimer,Header,Field Name,Field Value
+Disclaimer,Data,Disclaimer,"This Activity Summary is provided as a convenience to customers who have accounts with multiple Interactive Brokers companies in multiple jurisdictions. Positions and cash shown on this Activity Summary may be held at different Interactive Brokers companies in different countries, subject to different regulatory rules and protections. This Activity Summary does not serve as your formal customer statement. Customer statements for each IB company are available under Account Management when you log in to the IB website."
+Account Information,Header,Field Name,Field Value
+Account Information,Data,Name,John Smith
+Account Information,Data,Account,U1111111 (Custom Consolidated)
+Account Information,Data,Accounts Included,"U1111111, U2111111"
+Account Information,Data,Account Type,Individual
+Account Information,Data,Customer Type,Individual
+Account Information,Data,Account Capabilities,Cash
+Account Information,Data,Base Currency,EUR
+Net Asset Value,Header,Asset Class,Prior Total,Current Long,Current Short,Current Total,Change
+Net Asset Value,Data,Cash ,382.410900721,123.183945929,-0.000043417,123.183902513,-259.226998208
+Net Asset Value,Data,Stock,53891.1236315,80383.3827676,0,80383.3827676,26492.2591361
+Net Asset Value,Data,Total,54273.534532221,80506.566713529,-0.000043417,80506.566670113,26233.032137892
+Net Asset Value,Header,Time Weighted Rate of Return
+Net Asset Value,Data,1.329259664%
+Change in Combined NAV,Header,Field Name,Field Value
+Change in NAV,Data,Starting Value,54273.534532221
+Change in NAV,Data,Mark-to-Market,-308.600317254
+Change in NAV,Data,Deposits & Withdrawals,27123.00000001
+Change in NAV,Data,Dividends,25.8905
+Change in NAV,Data,Withholding Tax,-3.0012646
+Change in NAV,Data,Change in Dividend Accruals,-0.288672
+Change in NAV,Data,Interest,-0.1237684
+Change in NAV,Data,Change in Interest Accruals,0.0000924
+Change in NAV,Data,Other Fees,-468.96407
+Change in NAV,Data,Commissions,-135.16897288
+Change in NAV,Data,Other FX Translations,0.2885796
+Change in NAV,Data,Ending Value,80506.566670113
+Mark-to-Market Performance Summary,Header,Asset Category,Symbol,Prior Quantity,Current Quantity,Prior Price,Current Price,Mark-to-Market P/L Position,Mark-to-Market P/L Transaction,Mark-to-Market P/L Commissions,Mark-to-Market P/L Other,Mark-to-Market P/L Total,Code
+Mark-to-Market Performance Summary,Data,Warrants,CRSAW,0,0,--,--,1694.88854,256.3558056,-18.52142,0,1932.7229256,
+Mark-to-Market Performance Summary,Data,Warrants,LVOXW,0,4400,--,0.6082,-3863.2021076,0,0,0,-3863.2021076,
+Mark-to-Market Performance Summary,Data,Total,,,,,,-2168.3135676,256.3558056,-18.52142,0,-1930.479182,
+Mark-to-Market Performance Summary,Data,Stocks,3328.T,100,100,"3,055.0000","2,500.0000",-462.15232,0,0,16.5892354,-445.5630846,
+Mark-to-Market Performance Summary,Data,Stocks,9618,0,400,--,274.0000,-2764.0888,15127.26,0,0,12363.1712,
+Mark-to-Market Performance Summary,Data,Stocks,ADYEN,1,1,"1,905.0000","2,311.5000",406.5,0,0,0,406.5,
+Mark-to-Market Performance Summary,Data,Stocks,ALUMS,300,0,8.9200,--,-6,43.2,-4,0,33.2,
+Mark-to-Market Performance Summary,Data,Stocks,AMZN,0,2,--,"3,334.3400",286.246421,20.379624,-0.82844,0,305.797605,
+Mark-to-Market Performance Summary,Data,Stocks,ANO,0,10330,--,3.3000,-3469.8531794,-329.3714626,-34.65426048,0,-3833.87890248,
+Mark-to-Market Performance Summary,Data,Stocks,ANO.SUB6,0,0,--,--,0,-11.99583,0,0,-11.99583,
+Mark-to-Market Performance Summary,Data,Stocks,CNNE,66.1549,0,44.2700,--,-446.08830654,5.99009465,-0.83967264,0,-440.93788453,
+Mark-to-Market Performance Summary,Data,Stocks,CTT,0,2500,--,3.5600,6177.9755,-175.80675,-7.71624,0,5994.45251,
+Mark-to-Market Performance Summary,Data,Stocks,EVOs,0,20,--,"1,286.2000",579.561496,3.12,-4.7775,0,577.903996,
+Mark-to-Market Performance Summary,Data,Stocks,GLNG,250,250,9.6400,12.3900,545.4301375,0,0,0,545.4301375,
+Mark-to-Market Performance Summary,Data,Stocks,IDN,0,0,--,--,-254.365898,35.53016625,-3.67198542,0,-222.50771717,
+Mark-to-Market Performance Summary,Data,Stocks,ILA,0,0,--,--,706.253085,-146.60172,-11.50630605,0,548.14505895,
+Mark-to-Market Performance Summary,Data,Stocks,ILMN,8,8,370.0000,380.4400,36.3357824,0,0,0,36.3357824,
+Mark-to-Market Performance Summary,Data,Stocks,JD,200,0,87.9000,--,-1002.0172,0,0,0,-1002.0172,
+Mark-to-Market Performance Summary,Data,Stocks,JD.CNV,0,0,--,--,0,-14373.20126,0,0,-14373.20126,
+Mark-to-Market Performance Summary,Data,Stocks,LILAK,100,0,11.0900,--,5.71841,12.34005,-0.85304067,0,17.20541933,
+Mark-to-Market Performance Summary,Data,Stocks,LPRO,250,250,34.9600,22.4800,-2793.4582,0,0,0,-2793.4582,
+Mark-to-Market Performance Summary,Data,Stocks,MIND,2000,2350,2.2400,1.6884,-1087.998008,-14.1083332,-1.44977,0,-1103.5561112,
+Mark-to-Market Performance Summary,Data,Stocks,PRX,45,45,88.3600,73.5300,-661.05,0,0,0,-661.05,
+Mark-to-Market Performance Summary,Data,Stocks,PRX.RTS,0,0,--,--,-6.3,0,0,6.3,0,
+Mark-to-Market Performance Summary,Data,Stocks,RBL,800,1800,5.5200,3.2700,-1295.04,69.9688,-3.81648,0,-1228.88768,
+Mark-to-Market Performance Summary,Data,Stocks,TDOC,10.656,0,199.9600,--,-532.40613277,5.82095082,-0.83582689,0,-527.42100884,
+Mark-to-Market Performance Summary,Data,Stocks,TFF,90,0,26.7000,--,171,-27,-4,0,140,
+Mark-to-Market Performance Summary,Data,Stocks,TK,1744,0,2.1500,--,2199.4475184,-179.2289312,-7.47831073,0,2012.74027647,
+Mark-to-Market Performance Summary,Data,Stocks,VXTR,0,5700,--,1.1900,1860.293895,0,0,0,1860.293895,
+Mark-to-Market Performance Summary,Data,Total,,,,,,-1806.05579941,66.29539872,-86.42783288,22.8892354,-1803.29899817,
+Mark-to-Market Performance Summary,Data,Forex,AUD,0.0000655,32.731068185,0.62976,0.63888,189.26515963,6.497867,-13.3331,0,182.42992663,
+Mark-to-Market Performance Summary,Data,Forex,CAD,0.000068835,0.000019935,0.64286,0.69571,286.20494515,-2.945639,-3.30524,0,279.95406615,
+Mark-to-Market Performance Summary,Data,Forex,EUR,382.41082,16.3528,1.0000,1.0000,0,0,0,0,0,
+Mark-to-Market Performance Summary,Data,Forex,GBP,-0.000028176,-0.000028176,1.1187,1.1895,-0.00000199,0,0,0,-0.00000199,
+Mark-to-Market Performance Summary,Data,Forex,HKD,0,0,--,0.11279,-1.3872,0,0,0,-1.3872,
+Mark-to-Market Performance Summary,Data,Forex,JPY,0.00228,2117.00228,0.0079242,0.0076396,-49.20698285,0,0,0,-49.20698285,
+Mark-to-Market Performance Summary,Data,Forex,SEK,0,717.9,--,0.097154,-8.5853934,-0.38225,-1.77218,0,-10.7398234,
+Mark-to-Market Performance Summary,Data,Forex,USD,0.000010595,-0.00001126,0.81863,0.87933,2896.521976,27.135397,-11.8092,0,2911.848173,
+Mark-to-Market Performance Summary,Data,Total,,,,,,3312.81250254,30.305375,-30.21972,0,3312.89815754,
+Mark-to-Market Performance Summary,Data,Total (All Assets),,,,,,-661.55686447,352.95657932,-135.16897288,22.8892354,-420.88002263,
+Mark-to-Market Performance Summary,Data,Broker Interest Paid and Received,,,,,,,,,,-0.1237684,
+Mark-to-Market Performance Summary,Data,Other Fees,,,,,,,,,,-468.96407,
+Total P/L for Statement Period,,,,,,,,,,,,-889.96786103,
+Realized & Unrealized Performance Summary,Header,Asset Category,Symbol,Cost Adj.,Realized S/T Profit,Realized S/T Loss,Realized L/T Profit,Realized L/T Loss,Realized Total,Unrealized S/T Profit,Unrealized S/T Loss,Unrealized L/T Profit,Unrealized L/T Loss,Unrealized Total,Total,Code
+Realized & Unrealized Performance Summary,Data,Warrants,LVOXW,0,0,0,0,0,0,0,-1862.3505936,0,0,-1862.3505936,-1862.3505936,
+Realized & Unrealized Performance Summary,Data,Total,,0,0,0,0,0,0,0,-1862.3505936,0,0,-1862.3505936,-1862.3505936,
+Realized & Unrealized Performance Summary,Data,Stocks,3328.T,0,0,0,0,0,0,0,0,0,-0.763348832,-0.763348832,-0.763348832,
+Realized & Unrealized Performance Summary,Data,Stocks,9618,0,0,0,0,0,0,0,0,5563.527464471,0,5563.527464471,5563.527464471,
+Realized & Unrealized Performance Summary,Data,Stocks,ADYEN,0,0,0,0,0,0,0,0,916,0,916,916,
+Realized & Unrealized Performance Summary,Data,Stocks,ALUMS,0,0,0,97.94,0,97.94,0,0,0,0,0,97.94,
+Realized & Unrealized Performance Summary,Data,Stocks,AMZN,0,0,0,0,0,0,341.531772,0,0,0,341.531772,341.531772,
+Realized & Unrealized Performance Summary,Data,Stocks,ANO,0,0,0,0,0,0,0,-3825.75654912,0,0,-3825.75654912,-3825.75654912,
+Realized & Unrealized Performance Summary,Data,Stocks,CNNE,0,0,-90.42768443,0,0,-90.42768443,0,0,0,0,0,-90.42768443,
+Realized & Unrealized Performance Summary,Data,Stocks,CTT,0,2359.02828,0,0,0,2359.02828,3639.69936,0,0,0,3639.69936,5998.72764,
+Realized & Unrealized Performance Summary,Data,Stocks,EVOs,0,0,0,0,0,0,576.414682,0,0,0,576.414682,576.414682,
+Realized & Unrealized Performance Summary,Data,Stocks,GLNG,0,0,0,0,0,0,0,0,562.02816615,0,562.02816615,562.02816615,
+Realized & Unrealized Performance Summary,Data,Stocks,IDN,0,0,-227.61574832,0,0,-227.61574832,0,0,0,0,0,-227.61574832,
+Realized & Unrealized Performance Summary,Data,Stocks,ILMN,0,0,0,0,0,0,0,0,770.0468676,0,770.0468676,770.0468676,
+Realized & Unrealized Performance Summary,Data,Stocks,LILAK,0,0,0,0,-769.98359727,-769.98359727,0,0,0,0,0,-769.98359727,
+Realized & Unrealized Performance Summary,Data,Stocks,LPRO,0,0,0,0,0,0,0,0,1994.9799375,0,1994.9799375,1994.9799375,
+Realized & Unrealized Performance Summary,Data,Stocks,MIND,0,0,0,0,0,0,0,-173.9666472,0,-28.666158,-202.6328052,-202.6328052,
+Realized & Unrealized Performance Summary,Data,Stocks,PRX,0,0,0,0,0,0,0,0,2.3,0,2.3,2.3,
+Realized & Unrealized Performance Summary,Data,Stocks,RBL,0,0,0,0,0,0,0,-35.77728,0,-990.264,-1026.04128,-1026.04128,
+Realized & Unrealized Performance Summary,Data,Stocks,TDOC,0,0,-557.22534315,0,0,-557.22534315,0,0,0,0,0,-557.22534315,
+Realized & Unrealized Performance Summary,Data,Stocks,TFF,0,0,0,0,-650.5,-650.5,0,0,0,0,0,-650.5,
+Realized & Unrealized Performance Summary,Data,Stocks,TK,0,0,0,115.91117215,-2742.36229029,-2626.45111814,0,0,0,0,0,-2626.45111814,
+Realized & Unrealized Performance Summary,Data,Stocks,VXTR,0,0,0,0,0,0,2525.50034955,0,0,0,2525.50034955,2525.50034955,
+Realized & Unrealized Performance Summary,Data,Total,,0,2359.02828,-875.2687759,213.85117215,-4162.84588756,-2465.23521131,7083.14616355,-4035.50047632,9808.882435721,-1019.693506832,11836.834616119,9371.599404809,
+Realized & Unrealized Performance Summary,Data,Forex,AUD,0,73.901323,-121.592218,0,0,-47.690895,0.592816,0,0,0,0.592816,-47.098079,
+Realized & Unrealized Performance Summary,Data,Forex,CAD,0,1.122501,-4.251184,0,0,-3.128683,0.000001,0,0,0,0.000001,-3.128682,
+Realized & Unrealized Performance Summary,Data,Forex,GBP,0,0,-0.000001,0,0,-0.000001,0,-0.000001,0,0,-0.000001,-0.000002,
+Realized & Unrealized Performance Summary,Data,Forex,JPY,0,0,0,0,0,0,0,-0.416203,0,0,-0.416203,-0.416203,
+Realized & Unrealized Performance Summary,Data,Forex,SEK,0,0,-2.079016,0,0,-2.079016,0,-0.323808,0,0,-0.323808,-2.402824,
+Realized & Unrealized Performance Summary,Data,Forex,USD,0,50.507409,-33.897837,0,0,16.609572,0,0,0,0,0,16.609572,
+Realized & Unrealized Performance Summary,Data,Total,,0,125.531233,-161.820256,0,0,-36.289023,0.592817,-0.740012,0,0,-0.147195,-36.436218,
+Realized & Unrealized Performance Summary,Data,Total (All Assets),,0,2484.559513,-1037.0890319,213.85117215,-4162.84588756,-2501.52423431,7083.73898055,-5898.59108192,9808.882435721,-1019.693506832,9974.336827519,7472.812593209,
+Cash Report,Header,Currency Summary,Currency,Total,Securities,Futures,
+Cash Report,Data,Starting Cash,Base Currency Summary,382.410900721,382.410900721,0,
+Cash Report,Data,Commissions,Base Currency Summary,-135.16897288,-135.16897288,0,
+Cash Report,Data,Deposits,Base Currency Summary,30002.68096464,30002.68096464,0,
+Cash Report,Data,Withdrawals,Base Currency Summary,-2879.68096463,-2879.68096463,0,
+Cash Report,Data,Dividends,Base Currency Summary,25.8905,25.8905,0,
+Cash Report,Data,Broker Interest Paid and Received,Base Currency Summary,-0.1237684,-0.1237684,0,
+Cash Report,Data,Trades (Sales),Base Currency Summary,66484.99770823,66484.99770823,0,
+Cash Report,Data,Trades (Purchase),Base Currency Summary,-93247.1955855,-93247.1955855,0,
+Cash Report,Data,Other Fees,Base Currency Summary,-468.96407,-468.96407,0,
+Cash Report,Data,Withholding Tax,Base Currency Summary,-3.0012646,-3.0012646,0,
+Cash Report,Data,Cash FX Translation Gain/Loss,Base Currency Summary,-38.66154506,-38.66154506,0,
+Cash Report,Data,Ending Cash,Base Currency Summary,123.183902513,123.183902513,0,
+Cash Report,Data,Ending Settled Cash,Base Currency Summary,123.183902513,123.183902513,0,
+Cash Report,Data,Starting Cash,AUD,0.0000655,0.0000655,0,
+Cash Report,Data,Commissions,AUD,-72.624,-72.624,0,
+Cash Report,Data,Deposits,AUD,0.0000655,0.0000655,0,
+Cash Report,Data,Withdrawals,AUD,-0.0000655,-0.0000655,0,
+Cash Report,Data,Trades (Sales),AUD,50443.535,50443.535,0,
+Cash Report,Data,Trades (Purchase),AUD,-50338.17999732,-50338.17999732,0,
+Cash Report,Data,Ending Cash,AUD,32.731068185,32.731068185,0,
+Cash Report,Data,Ending Settled Cash,AUD,32.731068185,32.731068185,0,
+Cash Report,Data,Starting Cash,CAD,0.000068835,0.000068835,0,
+Cash Report,Data,Commissions,CAD,-17.895,-17.895,0,
+Cash Report,Data,Deposits,CAD,0.00006884,0.00006884,0,
+Cash Report,Data,Withdrawals,CAD,-0.00006884,-0.00006884,0,
+Cash Report,Data,Trades (Sales),CAD,3261.72,3261.72,0,
+Cash Report,Data,Trades (Purchase),CAD,-3243.8250489,-3243.8250489,0,
+Cash Report,Data,Ending Cash,CAD,0.000019935,0.000019935,0,
+Cash Report,Data,Ending Settled Cash,CAD,0.000019935,0.000019935,0,
+Cash Report,Data,Starting Cash,EUR,382.41082,382.41082,0,
+Cash Report,Data,Commissions,EUR,-38.21972,-38.21972,0,
+Cash Report,Data,Deposits,EUR,30002.68082,30002.68082,0,
+Cash Report,Data,Withdrawals,EUR,-2879.68082,-2879.68082,0,
+Cash Report,Data,Dividends,EUR,6.3,6.3,0,
+Cash Report,Data,Trades (Sales),EUR,10849.2383,10849.2383,0,
+Cash Report,Data,Trades (Purchase),EUR,-38301.1866,-38301.1866,0,
+Cash Report,Data,Other Fees,EUR,-5.19,-5.19,0,
+Cash Report,Data,Ending Cash,EUR,16.3528,16.3528,0,
+Cash Report,Data,Ending Settled Cash,EUR,16.3528,16.3528,0,
+Cash Report,Data,Starting Cash,JPY,0.00228,0.00228,0,
+Cash Report,Data,Deposits,JPY,0.00228,0.00228,0,
+Cash Report,Data,Withdrawals,JPY,-0.00228,-0.00228,0,
+Cash Report,Data,Dividends,JPY,2500,2500,0,
+Cash Report,Data,Withholding Tax,JPY,-383,-383,0,
+Cash Report,Data,Ending Cash,JPY,2117.00228,2117.00228,0,
+Cash Report,Data,Ending Settled Cash,JPY,2117.00228,2117.00228,0,
+Cash Report,Data,Starting Cash,SEK,0,0,0,
+Cash Report,Data,Commissions,SEK,-49,-49,0,
+Cash Report,Data,Trades (Sales),SEK,20508.9,20508.9,0,
+Cash Report,Data,Trades (Purchase),SEK,-19742,-19742,0,
+Cash Report,Data,Ending Cash,SEK,717.9,717.9,0,
+Cash Report,Data,Ending Settled Cash,SEK,717.9,717.9,0,
+Cash Report,Data,Starting Cash,USD,0.000010595,0.000010595,0,
+Cash Report,Data,Commissions,USD,-41.14232176,-41.14232176,0,
+Cash Report,Data,Deposits,USD,0.00001059,0.00001059,0,
+Cash Report,Data,Withdrawals,USD,-0.00001059,-0.00001059,0,
+Cash Report,Data,Broker Interest Paid and Received,USD,-0.14,-0.14,0,
+Cash Report,Data,Trades (Sales),USD,23157.3551341,23157.3551341,0,
+Cash Report,Data,Trades (Purchase),USD,-22585.07283419,-22585.07283419,0,
+Cash Report,Data,Other Fees,USD,-531,-531,0,
+Cash Report,Data,Ending Cash,USD,-0.00001126,-0.00001126,0,
+Cash Report,Data,Ending Settled Cash,USD,-0.00001126,-0.00001126,0,
+Open Positions,Header,DataDiscriminator,Asset Category,Currency,Symbol,Quantity,Mult,Cost Price,Cost Basis,Close Price,Value,Unrealized P/L,Code
+Open Positions,Data,Summary,Warrants,USD,LVOXW,4400,1,1.089545455,4794,0.6082,2676.08,-2117.92,
+Open Positions,Total,,Warrants,USD,,,,,4794,,2676.08,-2117.92,
+Open Positions,Total,,Warrants,EUR,,,,,4215.50802,,2353.1574264,-1862.3505936,
+Open Positions,Header,DataDiscriminator,Asset Category,Currency,Symbol,Quantity,Mult,Cost Price,Cost Basis,Close Price,Value,Unrealized P/L,Code
+Open Positions,Data,Summary,Stocks,AUD,ANO,10330,1,3.879692546,40077.224,3.3,34089,-5988.224,
+Open Positions,Data,Summary,Stocks,AUD,CTT,2500,1,1.2812,3203,3.56,8900,5697,
+Open Positions,Data,Summary,Stocks,AUD,RBL,1800,1,4.162222222,7492,3.27,5886,-1606,
+Open Positions,Total,,Stocks,AUD,,,,,50772.224,,48875,-1897.224,
+Open Positions,Total,,Stocks,EUR,,,,,32437.35846912,,31225.26,-1212.09846912,
+Open Positions,Data,Summary,Stocks,CAD,VXTR,5700,1,0.553139474,3152.895,1.19,6783,3630.105,
+Open Positions,Total,,Stocks,CAD,,,,,3152.895,,6783,3630.105,
+Open Positions,Total,,Stocks,EUR,,,,,2193.50058045,,4719.00093,2525.50034955,
+Open Positions,Data,Summary,Stocks,EUR,ADYEN,1,1,1395.5,1395.5,2311.5,2311.5,916,
+Open Positions,Data,Summary,Stocks,EUR,PRX,45,1,73.478888889,3306.55,73.53,3308.85,2.3,
+Open Positions,Total,,Stocks,EUR,,,,,4702.05,,5620.35,918.3,
+Open Positions,Data,Summary,Stocks,HKD,9618,400,1,150.68393775,60273.5751,274,109600,49326.4249,
+Open Positions,Total,,Stocks,HKD,,,,,60273.5751,,109600,49326.4249,
+Open Positions,Total,,Stocks,EUR,,,,,6798.256535529,,12361.784,5563.527464471,
+Open Positions,Data,Summary,Stocks,JPY,3328.T,100,1,2500.9992,250099.92,2500,250000,-99.92,
+Open Positions,Total,,Stocks,JPY,,,,,250099.92,,250000,-99.92,
+Open Positions,Total,,Stocks,EUR,,,,,1910.663348832,,1909.9,-0.763348832,
+Open Positions,Data,Summary,Stocks,SEK,EVOs,20,1,989.55,19791,1286.2,25724,5933,
+Open Positions,Total,,Stocks,SEK,,,,,19791,,25724,5933,
+Open Positions,Total,,Stocks,EUR,,,,,1922.774814,,2499.189496,576.414682,
+Open Positions,Data,Summary,Stocks,USD,AMZN,2,1,3140.14,6280.28,3334.34,6668.68,388.4,
+Open Positions,Data,Summary,Stocks,USD,GLNG,250,1,9.83338,2458.345,12.39,3097.5,639.155,
+Open Positions,Data,Summary,Stocks,USD,ILMN,8,1,270.975,2167.8,380.44,3043.52,875.72,
+Open Positions,Data,Summary,Stocks,USD,LPRO,250,1,13.405,3351.25,22.48,5620,2268.75,
+Open Positions,Data,Summary,Stocks,USD,MIND,2350,1,1.786459574,4198.18,1.6884,3967.74,-230.44,
+Open Positions,Total,,Stocks,USD,,,,,18455.855,,22397.44,3941.585,
+Open Positions,Total,,Stocks,EUR,,,,,16228.78697715,,19694.7409152,3465.95393805,
+Open Positions,Total,,Stocks,EUR,,,,,66193.390725081,,78030.2253412,11836.834616119,
+Forex Balances,Header,Asset Category,Currency,Description,Quantity,Cost Price,Cost Basis in EUR,Close Price,Value in EUR,Unrealized P/L in EUR,Code
+Forex Balances,Data,Forex,EUR,AUD,32.731069,0.620768298,-20.31841,0.63888,20.911225,0.592816,
+Forex Balances,Data,Forex,EUR,EUR,16.3528,1,-16.3528,1,16.3528,0,
+Forex Balances,Data,Forex,EUR,JPY,2117.00228,0.0078362,-16.589253,0.0076396,16.173051,-0.416203,
+Forex Balances,Data,Forex,EUR,SEK,717.9,0.097605048,-70.070664,0.097154,69.746857,-0.323808,
+Forex Balances,Data,Total,,,,,-123.331099,,123.183905,-0.147195,
+Trades,Header,DataDiscriminator,Asset Category,Currency,Account,Symbol,Date/Time,Quantity,T. Price,C. Price,Proceeds,Comm/Fee,Basis,Realized P/L,MTM P/L,Code
+Trades,Data,Order,Warrants,USD,U1111111,CRSAW,"2021-04-01, 09:30:00","3,100",1.12,1.18,-3472,-15.5,3487.5,0,186,O
+Trades,Data,Order,Warrants,USD,U1111111,CRSAW,"2021-04-28, 12:40:57","1,300",1,0.9997,-1300,-6.5,1306.5,0,-0.39,O;P
+Trades,SubTotal,,Warrants,USD,CRSAW,,,4400,,,-4772,-22,4794,0,185.61,
+Trades,Total,,Warrants,USD,,,,,,,-4772,-22,4794,0,185.61, 
+Trades,Total,,Warrants,EUR,,,,,,,-4020.14176,-18.52142,4038.66318,0,157.6072392, 
+Trades,Header,DataDiscriminator,Asset Category,Currency,Account,Symbol,Date/Time,Quantity,T. Price,C. Price,Proceeds,Comm/Fee,Basis,Realized P/L,MTM P/L,Code
+Trades,Data,Order,Stocks,AUD,U1111111,ANO,"2021-01-13, 17:59:58",950,4.33,4.14,-4113.5,-6,4119.5,0,-180.5,O;P
+Trades,Data,Order,Stocks,AUD,U1111111,ANO,"2021-01-18, 18:00:05","1,424",3.91,3.96,-5567.84,-6,5573.84,0,71.2,O;P
+Trades,Data,Order,Stocks,AUD,U1111111,ANO,"2021-01-28, 18:43:06",26,3.91,3.98,-101.66,-6,107.66,0,1.82,O
+Trades,Data,Order,Stocks,AUD,U1111111,ANO,"2021-02-25, 17:59:56","1,200",4.09,4,-4908,-6,4914,0,-108,O;P
+Trades,Data,Order,Stocks,AUD,U1111111,ANO,"2021-03-17, 19:30:03",900,4.4,4.05,-3960,-6,3966,0,-315,O
+Trades,Data,Order,Stocks,AUD,U1111111,ANO,"2021-06-24, 20:00:13","1,410",3.7,3.7,-5217,-6,5223,0,0,O
+Trades,Data,Order,Stocks,AUD,U1111111,ANO,"2021-06-30, 20:00:12",180,3.75,3.77,-675,-6,681,0,3.6,O;P
+Trades,Data,Order,Stocks,AUD,U1111111,ANO,"2021-07-07, 19:59:46","1,850",3.7,3.71,-6845,-6,6851,0,18.5,O;P
+Trades,Data,Order,Stocks,AUD,U1111111,ANO,"2021-08-02, 19:59:51","2,300",3.6,3.6,-8280,-6.624,8286.624,0,0,O;P
+Trades,SubTotal,,Stocks,AUD,ANO,,,10240,,,-39668,-54.624,39722.624,0,-508.38,
+Trades,Data,Order,Stocks,AUD,U1111111,CTT,"2021-03-17, 19:04:03","5,000",1.28,1.265,-6400,-6,6406,0,-75,O
+Trades,Data,Order,Stocks,AUD,U1111111,CTT,"2021-06-08, 20:02:06","-2,500",2.77,2.85,6925,-6,-3203,3716,-200,C
+Trades,SubTotal,,Stocks,AUD,CTT,,,2500,,,525,-12,3203,3716,-275,
+Trades,Data,Order,Stocks,AUD,U1111111,RBL,"2021-06-24, 20:06:48","1,000",3.32,3.43,-3320,-6,3326,0,110,O
+Trades,SubTotal,,Stocks,AUD,RBL,,,1000,,,-3320,-6,3326,0,110,
+Trades,Total,,Stocks,AUD,,,,,,,-42463,-72.624,46251.624,3716,-673.38, 
+Trades,Total,,Stocks,EUR,,,,,,,-27023.4120956,-46.18698048,29428.62735608,2359.02828,-435.2094126, 
+Trades,Data,Order,Stocks,CAD,U1111111,ILA,"2021-01-28, 12:52:55","5,700",0.55,0.51,-3135,-17.895,3152.895,0,-228,O;P
+Trades,SubTotal,,Stocks,CAD,ILA,,,5700,,,-3135,-17.895,3152.895,0,-228,
+Trades,Total,,Stocks,CAD,,,,,,,-3135,-17.895,3152.895,0,-228, 
+Trades,Total,,Stocks,EUR,,,,,,,-2015.77365,-11.50630605,2027.27995605,0,-146.60172, 
+Trades,Data,Order,Stocks,EUR,U1111111,ALUMS,"2021-01-14, 03:14:20",-300,9.044,8.9,2713.2,-4,-2611.259999,97.940001,43.2,C;P
+Trades,SubTotal,,Stocks,EUR,ALUMS,,,-300,,,2713.2,-4,-2611.259999,97.940001,43.2,
+Trades,Data,Order,Stocks,EUR,U1111111,TFF,"2021-03-17, 10:02:47",-90,28.3,28.6,2547,-4,-3193.5,-650.5,-27,C
+Trades,SubTotal,,Stocks,EUR,TFF,,,-90,,,2547,-4,-3193.5,-650.5,-27,
+Trades,Total,,Stocks,EUR,,,,,,,5260.2,-8,-5804.759999,-552.559999,16.2, 
+Trades,Data,Order,Stocks,SEK,U1111111,EVOs,"2021-12-07, 11:22:59",20,987.1,988.7,-19742,-49,19791,0,32,O
+Trades,SubTotal,,Stocks,SEK,EVOs,,,20,,,-19742,-49,19791,0,32,
+Trades,Total,,Stocks,SEK,,,,,,,-19742,-49,19791,0,32, 
+Trades,Total,,Stocks,EUR,,,,,,,-1924.845,-4.7775,1929.6225,0,3.12, 
+Trades,Data,Order,Stocks,USD,U1111111,AMZN,"2021-05-12, 13:59:30",2,3139.64,3151.94,-6279.28,-1,6280.28,0,24.6,O
+Trades,SubTotal,,Stocks,USD,AMZN,,,2,,,-6279.28,-1,6280.28,0,24.6,
+Trades,Data,Order,Stocks,USD,U1111111,CNNE,"2021-05-11, 14:30:30",-66.1549,36.16,36.05,2392.161184,-1.020072455,-2500.996769,-109.855658,7.277,C;FPA;P
+Trades,SubTotal,,Stocks,USD,CNNE,,,-66.1549,,,2392.161184,-1.020072455,-2500.996769,-109.855658,7.277,
+Trades,Data,Order,Stocks,USD,U1111111,IDN,"2021-03-30, 15:14:41",430,7.958104651,7.91,-3421.985,-2.15,3424.135,0,-20.685,O;P
+Trades,Data,Order,Stocks,USD,U1111111,IDN,"2021-05-12, 13:54:17",-430,7.329302326,7.18,3151.6,-2.21724316,-3424.135,-274.752245,64.2,C;P
+Trades,SubTotal,,Stocks,USD,IDN,,,0,,,-270.385,-4.36724316,0,-274.752245,43.515,
+Trades,Data,Order,Stocks,USD,U1111111,LILAK,"2021-01-14, 09:30:02",-100,11.32,11.17,1132,-1.0369172,-2066.919903,-935.95682,15,C
+Trades,SubTotal,,Stocks,USD,LILAK,,,-100,,,1132,-1.0369172,-2066.919903,-935.95682,15,
+Trades,Data,Order,Stocks,USD,U1111111,MIND,"2021-05-12, 14:00:27",350,2.248657143,2.2,-787.03,-1.75,788.78,0,-17.03,O;P
+Trades,SubTotal,,Stocks,USD,MIND,,,350,,,-787.03,-1.75,788.78,0,-17.03,
+Trades,Data,Order,Stocks,USD,U1111111,TDOC,"2021-05-12, 13:58:49",-10.656,140.739384384,140.08,1499.71888,-1.00891663,-2171.329999,-672.620036,7.0264,C;FPA;P
+Trades,SubTotal,,Stocks,USD,TDOC,,,-10.656,,,1499.71888,-1.00891663,-2171.329999,-672.620036,7.0264,
+Trades,Data,Order,Stocks,USD,U1111111,TK,"2021-03-17, 10:05:20","-1,744",3.556880734,3.68,6203.2,-8.95917232,-9340.78408,-3146.543254,-214.72,C;P
+Trades,SubTotal,,Stocks,USD,TK,,,-1744,,,6203.2,-8.95917232,-9340.78408,-3146.543254,-214.72,
+Trades,Total,,Stocks,USD,,,,,,,3890.385064,-19.142321765,-9010.970751,-5139.728013,-134.3316, 
+Trades,Total,,Stocks,EUR,,,,,,,3156.732450407,-15.957046358,-7412.478894542,-4271.70349401,-113.276410784, 
+Trades,Header,DataDiscriminator,Asset Category,Currency,Account,Symbol,Date/Time,Quantity,T. Price,,Proceeds,Comm in EUR,,,MTM in EUR,Code
+Trades,Data,Order,Forex,AUD,U1111111,EUR.AUD,"2021-01-13, 03:45:14","-2,700",1.5724,,4245.48,-1.6383,,,0.719647,
+Trades,Data,Order,Forex,AUD,U1111111,EUR.AUD,"2021-01-18, 01:25:41","-2,600",1.5713,,4085.38,-1.6562,,,-1.69832,
+Trades,Data,Order,Forex,AUD,U1111111,EUR.AUD,"2021-02-18, 18:02:59",0.5525,1.55655,,-0.859993875,0,,,-0.005963,
+Trades,Data,Order,Forex,AUD,U1111111,EUR.AUD,"2021-02-25, 13:25:13","-3,300",1.5409,,5084.97,-1.64352,,,-12.668594,
+Trades,Data,Order,Forex,AUD,U1111111,EUR.AUD,"2021-03-17, 10:07:45","-7,000",1.54225,,10795.75,-1.6803,,,25.766142,
+Trades,Data,Order,Forex,AUD,U1111111,EUR.AUD,"2021-03-30, 15:12:12",385,1.5435,,-594.2475,-1.69996,,,-0.286309,
+Trades,Data,Order,Forex,AUD,U1111111,EUR.AUD,"2021-04-01, 19:56:21",0.3056,1.54615,,-0.47250344,0,,,-0.000034,
+Trades,Data,Order,Forex,AUD,U1111111,EUR.AUD,"2021-06-03, 02:58:56","-1,700",1.5779,,2682.43,-1.63792,,,-5.669915,
+Trades,Data,Order,Forex,AUD,U1111111,EUR.AUD,"2021-07-07, 13:28:10","-4,500",1.57695,,7096.275,-1.6916,,,3.15419,
+Trades,Data,Order,Forex,AUD,U1111111,EUR.AUD,"2021-08-02, 12:45:44","-5,000",1.61145,,8057.25,-1.6853,,,-2.812977,
+Trades,SubTotal,,Forex,AUD,EUR.AUD,,,-26414.1419,,,41451.955002685,-13.3331,,,6.497867,
+Trades,Total,,Forex,AUD,,,,,,,41451.955002685,-13.3331,,,6.497867, 
+Trades,Total,,Forex,EUR,,,,,,,26420.639766452,-13.3331,,,6.497867, 
+Trades,Data,Order,Forex,CAD,U1111111,EUR.CAD,"2021-01-28, 12:50:31","-2,100",1.5532,,3261.72,-1.65126,,,-2.746657,
+Trades,Data,Order,Forex,CAD,U1111111,EUR.CAD,"2021-04-30, 19:50:12",0.122,1.47745,,-0.1802489,0,,,0.000291,
+Trades,SubTotal,,Forex,CAD,EUR.CAD,,,-2099.878,,,3261.5397511,-1.65126,,,-2.746366,
+Trades,Data,Order,Forex,CAD,U1111111,USD.CAD,"2021-04-28, 12:39:18",88,1.2346,,-108.6448,-1.65398,,,-0.199273,
+Trades,SubTotal,,Forex,CAD,USD.CAD,,,88,,,-108.6448,-1.65398,,,-0.199273,
+Trades,Total,,Forex,CAD,,,,,,,3152.8949511,-3.30524,,,-2.945639, 
+Trades,Total,,Forex,EUR,,,,,,,2024.357000503,-3.30524,,,-2.945639, 
+Trades,Data,Order,Forex,SEK,U1111111,EUR.SEK,"2021-12-07, 11:20:04","-2,000",10.25445,,20508.9,-1.77218,,,-0.38225,
+Trades,SubTotal,,Forex,SEK,EUR.SEK,,,-2000,,,20508.9,-1.77218,,,-0.38225,
+Trades,Total,,Forex,SEK,,,,,,,20508.9,-1.77218,,,-0.38225, 
+Trades,Total,,Forex,EUR,,,,,,,1999.61775,-1.77218,,,-0.38225, 
+Trades,Data,Order,Forex,USD,U1111111,AUD.USD,"2021-01-18, 01:25:15","1,471",0.76855,,-1130.53705,-1.6562,,,-0.528677,
+Trades,SubTotal,,Forex,USD,AUD.USD,,,1471,,,-1130.53705,-1.6562,,,-0.528677,
+Trades,Data,Order,Forex,USD,U1111111,EUR.USD,"2021-02-17, 05:07:09",-2,1.206,,2.412,-1.65228,,,0.00319,
+Trades,Data,Order,Forex,USD,U1111111,EUR.USD,"2021-02-19, 18:01:49",-0.9589,1.21175,,1.161947075,0,,,-0.003187,
+Trades,Data,Order,Forex,USD,U1111111,EUR.USD,"2021-03-17, 10:07:08","5,203",1.1905,,-6194.1715,-1.6803,,,32.663107,P
+Trades,Data,Order,Forex,USD,U1111111,EUR.USD,"2021-03-19, 19:54:43",0.0582,1.19045,,-0.06928419,0,,,0.000138,
+Trades,Data,Order,Forex,USD,U1111111,EUR.USD,"2021-03-30, 15:13:43","-3,000",1.17215,,3516.45,-1.69996,,,1.465897,
+Trades,Data,Order,Forex,USD,U1111111,EUR.USD,"2021-03-31, 02:31:23","-3,000",1.17145,,3514.35,-1.7071,,,-4.016625,
+Trades,Data,Order,Forex,USD,U1111111,EUR.USD,"2021-04-28, 12:39:05",-950,1.2089,,1148.455,-1.65398,,,-2.846192,
+Trades,Data,Order,Forex,USD,U1111111,EUR.USD,"2021-11-16, 14:02:31",-447,1.133,,506.451,-1.75938,,,0.388684,
+Trades,Data,Order,Forex,USD,U1111111,EUR.USD,"2021-11-18, 19:48:10",-1.1037,1.13725,,1.255182825,0,,,0.008869,
+Trades,Data,Order,Forex,USD,U1111111,EUR.USD,"2021-12-06, 19:58:16",-0.124,1.12855,,0.1399402,0,,,0.000193,
+Trades,SubTotal,,Forex,USD,EUR.USD,,,-2198.1284,,,2496.43428591,-10.153,,,27.664074,
+Trades,Total,,Forex,USD,,,,,,,1365.89723591,-11.8092,,,27.135397, 
+Trades,Total,,Forex,EUR,,,,,,,1289.707796976,-11.8092,,,27.135397, 
+Corporate Actions,Header,Asset Category,Currency,Account,Report Date,Date/Time,Description,Quantity,Proceeds,Value,Realized P/L,Code
+Corporate Actions,Data,Warrants,USD,U1111111,2021-06-22,"2021-06-21, 20:25:00","CRSAW(US22564L1136) Merged(Acquisition) WITH US53838L1180 1 FOR 1 (CRSAW, LVOX 07MAR24 11.5 C, US22564L1136)",-4400,0,-7032.08,0,
+Corporate Actions,Data,Warrants,USD,U1111111,2021-06-22,"2021-06-21, 20:25:00","CRSAW(US22564L1136) Merged(Acquisition) WITH US53838L1180 1 FOR 1 (LVOXW, LVOXW 18JUN26 11.5 C, US53838L1180)",4400,0,7150,0,
+Corporate Actions,Data,Total,,,,,,,0,117.92,0,
+Corporate Actions,Data,Total in EUR,,,,,,,0,98.7485664,0,
+Corporate Actions,Data,Stocks,AUD,U1111111,2021-05-31,"2021-05-28, 20:25:00","ANO(AU000000ANO7) Subscribable Rights Issue  1 for 50 (ANO.RTS, ADVANCE NANOTEK LTD - RIGHTS, AU0000151565)",90,0,0,0,
+Corporate Actions,Data,Stocks,AUD,U1111111,2021-06-23,"2021-06-22, 19:45:00","ANO.RTS (AU0000151565) Subscribes to  (ANO.RTS, ADVANCE NANOTEK LTD - RIGHTS, AU0000151565)",-90,-354.6,0,0,
+Corporate Actions,Data,Stocks,AUD,U1111111,2021-06-23,"2021-06-22, 19:45:00","ANO.RTS (AU0000151565) Subscribes to  (ANO.SUB6, ADVANCE NANOTEK LTD - RIGHTS SUBSCRIPTION, AU00ANO7SUB6)",90,0,354.6,0,
+Corporate Actions,Data,Stocks,AUD,U1111111,2021-07-05,"2021-07-01, 20:25:00","ANO.SUB6(AU00ANO7SUB6) Merged(Voluntary Offer Allocation) WITH AU000000ANO7 1 FOR 1 (ANO, ADVANCE NANOTEK LTD, AU000000ANO7)",90,0,335.7,0,
+Corporate Actions,Data,Stocks,AUD,U1111111,2021-07-05,"2021-07-01, 20:25:00","ANO.SUB6(AU00ANO7SUB6) Merged(Voluntary Offer Allocation) WITH AU000000ANO7 1 FOR 1 (ANO.SUB6, ADVANCE NANOTEK LTD - RIGHTS SUBSCRIPTION, AU00ANO7SUB6)",-90,0,-354.6,0,
+Corporate Actions,Data,Total,,,,,,,-354.6,335.7,0,
+Corporate Actions,Data,Total in EUR,,,,,,,-225.263196,213.267366,0,
+Corporate Actions,Data,Stocks,CAD,U1111111,2021-02-05,"2021-02-04, 20:25:00","ILA(CA45236R1010) CUSIP/ISIN Change to (CA9290821052) (ILA.OLD, ILOOKABOUT CORP, CA45236R1010)",-5700,0,0,0,
+Corporate Actions,Data,Stocks,CAD,U1111111,2021-02-05,"2021-02-04, 20:25:00","ILA(CA45236R1010) CUSIP/ISIN Change to (CA9290821052) (VXTR, VOXTUR ANALYTICS CORP, CA9290821052)",5700,0,0,0,
+Corporate Actions,Data,Total,,,,,,,0,0,0,
+Corporate Actions,Data,Total in EUR,,,,,,,0,0,0,
+Corporate Actions,Data,Stocks,EUR,U1111111,2021-10-28,"2021-10-27, 20:25:00","PRX(NL0013654783) Dividend Rights Issue  1 for 1 (PRX.RTS, PROSUS NV - RIGHTS, NL0015000LD0)",45,0,0,0,
+Corporate Actions,Data,Stocks,EUR,U1111111,2021-12-01,"2021-11-19, 20:25:00","(NL0015000LD0) Delisted (PRX.RTS, PROSUS NV - RIGHTS, NL0015000LD0)",-45,0,0,0,
+Corporate Actions,Data,Total,,,,,,,0,0,0,
+Corporate Actions,Data,Stocks,HKD,U1111111,2021-11-18,"2021-11-17, 20:25:00","JD.CNV(US47215PCNV0) Merged(Voluntary Offer Allocation) WITH 9618 2 FOR 1 (9618, JD.COM INC - CL A, KYG8208B1014)",400,0,134000,0,
+Corporate Actions,Data,Total,,,,,,,0,134000,0,
+Corporate Actions,Data,Total in EUR,,,,,,,0,15127.26,0,
+Corporate Actions,Data,Stocks,USD,U1111111,2021-11-11,"2021-11-11, 19:45:00","JD(US47215P1066) Tendered to US47215PCNV0 1 FOR 1 (JD, JD.COM INC-ADR, US47215P1066)",-200,0,0,0,
+Corporate Actions,Data,Stocks,USD,U1111111,2021-11-11,"2021-11-11, 19:45:00","JD(US47215P1066) Tendered to US47215PCNV0 1 FOR 1 (JD.CNV, JD.COM INC-ADR - TENDER, US47215PCNV0)",200,0,0,0,
+Corporate Actions,Data,Stocks,USD,U1111111,2021-11-18,"2021-11-17, 20:25:00","JD.CNV(US47215PCNV0) Merged(Voluntary Offer Allocation) WITH 9618 2 FOR 1 (JD.CNV, JD.COM INC-ADR - TENDER, US47215PCNV0)",-200,0,-16346,0,
+Corporate Actions,Data,Total,,,,,,,0,-16346,0,
+Corporate Actions,Data,Total in EUR,,,,,,,0,-14373.20126,0,
+Transfers,Header,Asset Category,Currency,Account,Symbol,Date,Type,Direction,Xfer Company,Xfer Account,Qty,Xfer Price,Market Value,Realized P/L,Cash Amount,Code
+Transfers,Data,U1111111,Stocks,AUD,RBL,2021-01-12,Inter-Company,In,--,U2135957,800,--,"5,248.00",0.00,0.00,
+Transfers,Data,U2135957,Stocks,AUD,RBL,2021-01-12,Inter-Company,Out,--,U1111111,-800,--,"-5,248.00",0.00,0.00,
+Transfers,Data,Total,,,,,,,,,,,0,0,0,
+Transfers,Data,Total in EUR,,,,,,,,,,,0,0,0,
+Transfers,Data,U1111111,Stocks,EUR,ADYEN,2021-01-12,Inter-Company,In,--,U2135957,1,--,"1,744.50",0.00,0.00,
+Transfers,Data,U2135957,Stocks,EUR,ADYEN,2021-01-12,Inter-Company,Out,--,U1111111,-1,--,"-1,744.50",0.00,0.00,
+Transfers,Data,U1111111,Stocks,EUR,ALUMS,2021-01-12,Inter-Company,In,--,U2135957,300,--,"2,820.00",0.00,0.00,
+Transfers,Data,U2135957,Stocks,EUR,ALUMS,2021-01-12,Inter-Company,Out,--,U1111111,-300,--,"-2,820.00",0.00,0.00,
+Transfers,Data,U1111111,Stocks,EUR,PRX,2021-01-12,Inter-Company,In,--,U2135957,45,--,"3,925.80",0.00,0.00,
+Transfers,Data,U2135957,Stocks,EUR,PRX,2021-01-12,Inter-Company,Out,--,U1111111,-45,--,"-3,925.80",0.00,0.00,
+Transfers,Data,U1111111,Stocks,EUR,TFF,2021-01-12,Inter-Company,In,--,U2135957,90,--,"2,286.00",0.00,0.00,
+Transfers,Data,U2135957,Stocks,EUR,TFF,2021-01-12,Inter-Company,Out,--,U1111111,-90,--,"-2,286.00",0.00,0.00,
+Transfers,Data,Total,,,,,,,,,,,-0,0,0,
+Transfers,Data,U1111111,Stocks,JPY,3328.T,2021-01-12,Inter-Company,In,--,U2135957,100,--,"272,800",0,0,
+Transfers,Data,U2135957,Stocks,JPY,3328.T,2021-01-12,Inter-Company,Out,--,U1111111,-100,--,"-272,800",0,0,
+Transfers,Data,Total,,,,,,,,,,,0,0,0,
+Transfers,Data,Total in EUR,,,,,,,,,,,0,0,0,
+Transfers,Data,U1111111,Stocks,USD,CNNE,2021-01-12,Inter-Company,In,--,U2135957,66.1549,--,"2,958.45",0.00,0.00,
+Transfers,Data,U2135957,Stocks,USD,CNNE,2021-01-12,Inter-Company,Out,--,U1111111,-66.1549,--,"-2,958.45",0.00,0.00,
+Transfers,Data,U1111111,Stocks,USD,GLNG,2021-01-12,Inter-Company,In,--,U2135957,250,--,"2,745.00",0.00,0.00,
+Transfers,Data,U2135957,Stocks,USD,GLNG,2021-01-12,Inter-Company,Out,--,U1111111,-250,--,"-2,745.00",0.00,0.00,
+Transfers,Data,U1111111,Stocks,USD,ILMN,2021-01-12,Inter-Company,In,--,U2135957,8,--,"2,979.84",0.00,0.00,
+Transfers,Data,U2135957,Stocks,USD,ILMN,2021-01-12,Inter-Company,Out,--,U1111111,-8,--,"-2,979.84",0.00,0.00,
+Transfers,Data,U1111111,Stocks,USD,JD,2021-01-12,Inter-Company,In,--,U2135957,200,--,"18,076.00",0.00,0.00,
+Transfers,Data,U2135957,Stocks,USD,JD,2021-01-12,Inter-Company,Out,--,U1111111,-200,--,"-18,076.00",0.00,0.00,
+Transfers,Data,U1111111,Stocks,USD,LILAK,2021-01-12,Inter-Company,In,--,U2135957,100,--,"1,108.00",0.00,0.00,
+Transfers,Data,U2135957,Stocks,USD,LILAK,2021-01-12,Inter-Company,Out,--,U1111111,-100,--,"-1,108.00",0.00,0.00,
+Transfers,Data,U1111111,Stocks,USD,LPRO,2021-01-12,Inter-Company,In,--,U2135957,250,--,"8,865.00",0.00,0.00,
+Transfers,Data,U2135957,Stocks,USD,LPRO,2021-01-12,Inter-Company,Out,--,U1111111,-250,--,"-8,865.00",0.00,0.00,
+Transfers,Data,U1111111,Stocks,USD,MIND,2021-01-12,Inter-Company,In,--,U2135957,"2,000",--,"4,280.20",0.00,0.00,
+Transfers,Data,U2135957,Stocks,USD,MIND,2021-01-12,Inter-Company,Out,--,U1111111,"-2,000",--,"-4,280.20",0.00,0.00,
+Transfers,Data,U1111111,Stocks,USD,TDOC,2021-01-12,Inter-Company,In,--,U2135957,10.656,--,"2,353.48",0.00,0.00,
+Transfers,Data,U2135957,Stocks,USD,TDOC,2021-01-12,Inter-Company,Out,--,U1111111,-10.656,--,"-2,353.48",0.00,0.00,
+Transfers,Data,U1111111,Stocks,USD,TK,2021-01-12,Inter-Company,In,--,U2135957,"1,744",--,"4,325.12",0.00,0.00,
+Transfers,Data,U2135957,Stocks,USD,TK,2021-01-12,Inter-Company,Out,--,U1111111,"-1,744",--,"-4,325.12",0.00,0.00,
+Transfers,Data,Total,,,,,,,,,,,0,0,0,
+Transfers,Data,Total in EUR,,,,,,,,,,,0,0,0,
+Deposits & Withdrawals,Header,Currency,Account,Settle Date,Description,Amount
+Deposits & Withdrawals,Data,AUD,U1111111,2021-01-13,Adjustment: Cash Receipt/Disbursement/Transfer (Transfer to U1111111),0.0000655
+Deposits & Withdrawals,Data,AUD,U2135957,2021-01-13,Adjustment: Cash Receipt/Disbursement/Transfer (Transfer to U1111111),-0.0000655
+Deposits & Withdrawals,Data,Total,,,,0
+Deposits & Withdrawals,Data,Total in EUR,,,,0
+Deposits & Withdrawals,Data,CAD,U1111111,2021-01-13,Adjustment: Cash Receipt/Disbursement/Transfer (Transfer to U1111111),0.000068835
+Deposits & Withdrawals,Data,CAD,U2135957,2021-01-13,Adjustment: Cash Receipt/Disbursement/Transfer (Transfer to U1111111),-0.000068835
+Deposits & Withdrawals,Data,Total,,,,0
+Deposits & Withdrawals,Data,Total in EUR,,,,0
+Deposits & Withdrawals,Data,EUR,U2135957,2021-01-12,Electronic Fund Transfer,2500
+Deposits & Withdrawals,Data,EUR,U1111111,2021-01-13,Adjustment: Cash Receipt/Disbursement/Transfer (Transfer to U1111111),2879.68082
+Deposits & Withdrawals,Data,EUR,U2135957,2021-01-13,Adjustment: Cash Receipt/Disbursement/Transfer (Transfer to U1111111),-2879.68082
+Deposits & Withdrawals,Data,EUR,U1111111,2021-01-28,Electronic Fund Transfer,2000
+Deposits & Withdrawals,Data,EUR,U1111111,2021-02-25,Electronic Fund Transfer,3500
+Deposits & Withdrawals,Data,EUR,U1111111,2021-03-30,Electronic Fund Transfer,5623
+Deposits & Withdrawals,Data,EUR,U1111111,2021-06-01,Electronic Fund Transfer,2000
+Deposits & Withdrawals,Data,EUR,U1111111,2021-06-30,Electronic Fund Transfer,4500
+Deposits & Withdrawals,Data,EUR,U1111111,2021-08-02,Electronic Fund Transfer,5000
+Deposits & Withdrawals,Data,EUR,U1111111,2021-12-07,Electronic Fund Transfer,2000
+Deposits & Withdrawals,Data,Total,,,,27123
+Deposits & Withdrawals,Data,GBP,U1111111,2021-01-13,Adjustment: Cash Receipt/Disbursement/Transfer (Transfer to U1111111),-0.000028176
+Deposits & Withdrawals,Data,GBP,U2135957,2021-01-13,Adjustment: Cash Receipt/Disbursement/Transfer (Transfer to U1111111),0.000028176
+Deposits & Withdrawals,Data,Total,,,,0
+Deposits & Withdrawals,Data,Total in EUR,,,,0
+Deposits & Withdrawals,Data,JPY,U1111111,2021-01-13,Adjustment: Cash Receipt/Disbursement/Transfer (Transfer to U1111111),0.00228
+Deposits & Withdrawals,Data,JPY,U2135957,2021-01-13,Adjustment: Cash Receipt/Disbursement/Transfer (Transfer to U1111111),-0.00228
+Deposits & Withdrawals,Data,Total,,,,0
+Deposits & Withdrawals,Data,Total in EUR,,,,0
+Deposits & Withdrawals,Data,USD,U1111111,2021-01-13,Adjustment: Cash Receipt/Disbursement/Transfer (Transfer to U1111111),0.000010595
+Deposits & Withdrawals,Data,USD,U2135957,2021-01-13,Adjustment: Cash Receipt/Disbursement/Transfer (Transfer to U1111111),-0.000010595
+Deposits & Withdrawals,Data,Total,,,,0
+Deposits & Withdrawals,Data,Total in EUR,,,,0
+Deposits & Withdrawals,Data,Total Deposits & Withdrawals in EUR,,,,27123
+Fees,Header,Subtitle,Currency,Account,Date,Description,Amount
+Fees,Data,Other Fees,EUR,U2135957,2021-01-05,Balance of Monthly Minimum Fee for Dec 2020,-2.73
+Fees,Data,Other Fees,EUR,U1111111,2021-06-03,Balance of Monthly Minimum Fee for May 2021,-2.46
+Fees,Data,Total,,,,,-5.19
+Fees,Data,Other Fees,USD,U1111111,2021-02-09,JD(47215P106) ADR Fee USD 0.02 per Share,-4
+Fees,Data,Other Fees,USD,U1111111,2021-11-11,FEE ADR REDEMPTION JD/US47215P1066 FOR NOV 2021,-527
+Fees,Data,Total,,,,,-531
+Fees,Data,Total in EUR,,,,,-463.77407
+Fees,Data,Total Other Fees in EUR,,,,,-468.96407
+Dividends,Header,Currency,Account,Date,Description,Amount
+Dividends,Data,EUR,U1111111,2021-11-23,PRX.RTS(NL0015000LD0) Cash Dividend EUR 0.14 per Share (Return of Capital),6.3
+Dividends,Data,Total,,,,6.3
+Dividends,Data,JPY,U1111111,2021-12-03,3328.T(JP3758110005) Cash Dividend JPY 25 per Share (Ordinary Dividend),2500
+Dividends,Data,Total,,,,2500
+Dividends,Data,Total in EUR,,,,19.5905
+Dividends,Data,Total Dividends in EUR,,,,25.8905
+Withholding Tax,Header,Account,Currency,Date,Description,Amount,Code
+Withholding Tax,Data,U1111111,JPY,2021-12-03,3328.T(JP3758110005) Cash Dividend JPY 25 per Share - JP Tax,-383,
+Withholding Tax,Data,Total,,,,-383,
+Withholding Tax,Data,Total in EUR,,,,-3.0012646,
+Interest,Header,Currency,Account,Date,Description,Amount
+Interest,Data,USD,U1111111,2021-12-03,USD Debit Interest for Nov-2021,-0.14
+Interest,Data,Total,,,,-0.14
+Interest,Data,Total in EUR,,,,-0.1237684
+Interest Accruals,Header,Currency,Field Name,Field Value
+Interest Accruals,Data,Base Currency Summary,Starting Accrual Balance,0
+Interest Accruals,Data,Base Currency Summary,Interest Accrued,-0.123676
+Interest Accruals,Data,Base Currency Summary,Accrual Reversal,0.1237684
+Interest Accruals,Data,Base Currency Summary,FX Translation,-0.0000924
+Interest Accruals,Data,Base Currency Summary,Ending Accrual Balance,0
+Interest Accruals,Data,USD,Starting Accrual Balance,0
+Interest Accruals,Data,USD,Interest Accrued,-0.14
+Interest Accruals,Data,USD,Accrual Reversal,0.14
+Interest Accruals,Data,USD,Ending Accrual Balance,0
+Interest Accruals,Data,USD,Ending Accrual Balance in EUR,0
+Change in Dividend Accruals,Header,Asset Category,Currency,Account,Symbol,Date,Ex Date,Pay Date,Quantity,Tax,Fee,Gross Rate,Gross Amount,Net Amount,Code
+Change in Dividend Accruals,Data,Starting Dividend Accruals in EUR,,,,,,,,,,,,0,
+Change in Dividend Accruals,Data,Stocks,JPY,U1111111,3328.T,2021-09-28,2021-09-29,-,100,382,0,25,2499,2117,Po
+Change in Dividend Accruals,Data,Stocks,JPY,U1111111,3328.T,2021-12-03,2021-09-29,2021-12-03,100,-383,0,25,-2500,-2117,Re
+Change in Dividend Accruals,Data,Total,,,,,,,,-1,0,,-1,0,
+Change in Dividend Accruals,Data,Total in EUR,,,,,,,,-0.0597882,0,,-0.3477002,-0.287912,
+Change in Dividend Accruals,Data,Stocks,USD,U1111111,JD,2021-01-18,2021-01-19,2021-02-09,200,0,4,0.02,0,-4,ADR;Po
+Change in Dividend Accruals,Data,Stocks,USD,U1111111,JD,2021-02-09,2021-01-19,2021-02-09,200,0,-4,0.02,0,4,ADR;Re
+Change in Dividend Accruals,Data,Total,,,,,,,,0,0,,0,0,
+Change in Dividend Accruals,Data,Total in EUR,,,,,,,,0,0.00076,,0,-0.00076,
+Change in Dividend Accruals,Data,Total Stocks in EUR,,,,,,,,-0.0597882,0.00076,,-0.3477002,-0.288672,
+Change in Dividend Accruals,Data,Ending Dividend Accruals in EUR,,,,,,,,,,,,0,
+IBKR Managed Securities Collateral Held at IBSS (Stock Yield Enhancement Program),Header,Asset Category,Currency,Account,Symbol,Quantity,Price,Value
+Financial Instrument Information,Header,Asset Category,Symbol,Description,Conid,Security ID,Listing Exch,Multiplier,Expiry,Strike,Issuer,Code
+Financial Instrument Information,Data,Warrants,CRSAW,LVOX 07MAR24 11.5 C,361102948,US22564L1136,NASDAQ,1,2024-03-07,11.5,SELF,
+Financial Instrument Information,Data,Warrants,LVOXW,LVOXW 18JUN26 11.5 C,498661863,US53838L1180,NASDAQ,1,2026-06-18,11.5,SELF,
+Financial Instrument Information,Header,Asset Category,Symbol,Description,Conid,Security ID,Listing Exch,Multiplier,Type,Code
+Financial Instrument Information,Data,Stocks,3328.T,BEENOS INC,121602621,JP3758110005,TSEJ,1,COMMON,
+Financial Instrument Information,Data,Stocks,9618,JD.COM INC - CL A,426228059,KYG8208B1014,SEHK,1,COMMON,
+Financial Instrument Information,Data,Stocks,ADYEN,ADYEN NV,321202935,NL0012969182,AEB,1,COMMON,
+Financial Instrument Information,Data,Stocks,ALUMS,UMANIS - REG,282008165,FR0013263878,SBF,1,COMMON,
+Financial Instrument Information,Data,Stocks,AMZN,AMAZON.COM INC,3691937,US0231351067,NASDAQ,1,COMMON,
+Financial Instrument Information,Data,Stocks,ANO,ADVANCE ZINCTEK LTD,44187853,AU000000ANO7,ASX,1,COMMON,
+Financial Instrument Information,Data,Stocks,ANO.RTS,ADVANCE NANOTEK LTD - RIGHTS,494323267,AU0000151565,CORPACT,1,RIGHT,
+Financial Instrument Information,Data,Stocks,ANO.SUB6,ADVANCE NANOTEK LTD - RIGHTS SUBSCRIPTION,498969612,AU00ANO7SUB6,CORPACT,1,RIGHT,
+Financial Instrument Information,Data,Stocks,CNNE,CANNAE HOLDINGS INC,296044427,US13765N1072,NYSE,1,COMMON,
+Financial Instrument Information,Data,Stocks,CTT,CETTIRE LTD,461249512,AU0000122210,ASX,1,COMMON,
+Financial Instrument Information,Data,Stocks,EVOs,EVOLUTION AB,366244347,SE0012673267,SFB,1,COMMON,
+Financial Instrument Information,Data,Stocks,GLNG,GOLAR LNG LTD,16692333,BMG9456A1009,NASDAQ,1,COMMON,
+Financial Instrument Information,Data,Stocks,IDN,INTELLICHECK INC,162639228,US45817G2012,NASDAQ,1,COMMON,
+Financial Instrument Information,Data,Stocks,"ILA.OLD, ILA",ILOOKABOUT CORP,61226361,CA45236R1010,VENTURE,1,COMMON,
+Financial Instrument Information,Data,Stocks,ILMN,ILLUMINA INC,9869443,US4523271090,NASDAQ,1,COMMON,
+Financial Instrument Information,Data,Stocks,JD,JD.COM INC-ADR,152486141,US47215P1066,NASDAQ,1,ADR,
+Financial Instrument Information,Data,Stocks,JD.CNV,JD.COM INC-ADR - TENDER,430744956,US47215PCNV0,CORPACT,1,TENDER,
+Financial Instrument Information,Data,Stocks,LILAK,LIBERTY LATIN AMERIC-CL C,301303327,BMG9001E1286,NASDAQ,1,COMMON,
+Financial Instrument Information,Data,Stocks,LPRO,OPEN LENDING CORP - CL A,426545710,US68373J1043,NASDAQ,1,COMMON,
+Financial Instrument Information,Data,Stocks,MIND,MIND TECHNOLOGY INC,438220534,US6025661017,NASDAQ,1,COMMON,
+Financial Instrument Information,Data,Stocks,PRX,PROSUS NV,382625193,NL0013654783,AEB,1,COMMON,
+Financial Instrument Information,Data,Stocks,PRX.RTS,PROSUS NV - RIGHTS,523358066,NL0015000LD0,CORPACT,1,RIGHT,
+Financial Instrument Information,Data,Stocks,RBL,REDBUBBLE LTD,233455663,AU000000RBL2,ASX,1,COMMON,
+Financial Instrument Information,Data,Stocks,TDOC,TELADOC HEALTH INC,198563873,US87918A1051,NYSE,1,COMMON,
+Financial Instrument Information,Data,Stocks,TFF,TFF GROUP,297781308,FR0013295789,SBF,1,COMMON,
+Financial Instrument Information,Data,Stocks,TK,TEEKAY CORP,2009270,MHY8564W1030,NYSE,1,COMMON,
+Financial Instrument Information,Data,Stocks,VXTR,VOXTUR ANALYTICS CORP,469347640,CA9290821052,VENTURE,1,COMMON,

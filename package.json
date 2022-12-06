@@ -4,8 +4,8 @@
   "name": "burocratin",
   "version": "0.1.0",
   "scripts": {
-    "build": "rimraf dist2/js && rollup --config",
-    "start": "rimraf dist2/js && rollup --config --watch"
+    "build": "rimraf dist/js && rollup --config",
+    "start": "rimraf dist/js && rollup --config --watch"
   },
   "devDependencies": {
     "@wasm-tool/rollup-plugin-rust": "^2.0.0",
