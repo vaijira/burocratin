@@ -10,6 +10,15 @@ pub static ROOT_CLASS: Lazy<String> = Lazy::new(|| {
     }
 });
 
+pub static ERROR_PARAGRAPH_CLASS: Lazy<String> = Lazy::new(|| {
+    class! {
+        .style("color", "#ba3939")
+        .style("background", "#ffe0e0")
+        .style("border", "1px solid #a33a3a")
+        .style("text-align", "center")
+    }
+});
+
 pub static FLEX_CONTAINER_CLASS: Lazy<String> = Lazy::new(|| {
     class! {
         .style("display", "flex")

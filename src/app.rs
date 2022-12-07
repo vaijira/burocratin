@@ -8,8 +8,8 @@ use wasm_bindgen_futures::spawn_local;
 use web_sys::HtmlInputElement;
 
 use crate::css::{
-    FLEX_CONTAINER_CLASS, FLEX_CONTAINER_ITEM_20_CLASS, FLEX_CONTAINER_ITEM_40_CLASS, ROOT_CLASS,
-    SECTION_HEADER,
+    ERROR_PARAGRAPH_CLASS, FLEX_CONTAINER_CLASS, FLEX_CONTAINER_ITEM_20_CLASS,
+    FLEX_CONTAINER_ITEM_40_CLASS, ROOT_CLASS, SECTION_HEADER,
 };
 use crate::data::{AccountNote, BalanceNote, BrokerInformation, FinancialInformation};
 use crate::feathers::{
@@ -22,7 +22,6 @@ use crate::parsers::ib_csv::IBCSVParser;
 use crate::parsers::{degiro::DegiroParser, pdf::read_pdf};
 use crate::tooltip::Tooltip;
 use crate::utils::web;
-use crate::utils::zip::read_zip_str;
 
 const DEFAULT_YEAR: usize = 2022;
 
@@ -103,6 +102,7 @@ impl App {
                     .retain(|note| note.broker != app.degiro_broker);
                 app.account_notes.lock_mut().extend(account_notes);
                 app.balance_notes.lock_mut().extend(balance_notes);
+                *app.current_error.lock_mut() = None;
             } else {
                 *app.current_error.lock_mut() = Some(format!(
                     "Error cargando los apuntes del pdf de Degiro: {}",
@@ -128,6 +128,7 @@ impl App {
                     .lock_mut()
                     .retain(|note| note.broker != app.degiro_broker);
                 app.balance_notes.lock_mut().extend(balance_notes);
+                *app.current_error.lock_mut() = None;
             } else {
                 *app.current_error.lock_mut() = Some(format!(
                     "Error cargando los apuntes del csv de Degiro: {}",
@@ -155,6 +156,7 @@ impl App {
                         .retain(|note| note.broker != app.ib_broker);
                     app.account_notes.lock_mut().extend(account_notes);
                     app.balance_notes.lock_mut().extend(balance_notes);
+                    *app.current_error.lock_mut() = None;
                 } else {
                     *app.current_error.lock_mut() = Some(
                         "Error cargando los apuntes del csv de interactive brokers".to_string(),
@@ -169,8 +171,8 @@ impl App {
         App::generate_720_file(app)
     }
 
-    fn read_ib_html_zipped(app: Arc<Self>, content: Vec<u8>) {
-        if let Ok(data) = read_zip_str(content) {
+    fn read_ib_html(app: Arc<Self>, content: Vec<u8>) {
+        if let Ok(data) = String::from_utf8(content) {
             if let Ok(parser) = IBParser::new(&data, &app.ib_broker) {
                 let account_notes = parser.parse_account_notes();
                 let balance_notes = parser.parse_balance_notes();
@@ -183,15 +185,16 @@ impl App {
                         .retain(|note| note.broker != app.ib_broker);
                     app.account_notes.lock_mut().extend(account_notes);
                     app.balance_notes.lock_mut().extend(balance_notes);
+                    *app.current_error.lock_mut() = None;
                 } else {
                     *app.current_error.lock_mut() = Some(
-                        "Error cargando los apuntes del html comprimido con zip de interactive brokers".to_string());
+                        "Error cargando los apuntes del html de interactive brokers".to_string(),
+                    );
                 }
             }
         } else {
-            *app.current_error.lock_mut() = Some(
-                "Error parseando el html comprimido con zip de interactive brokes".to_string(),
-            );
+            *app.current_error.lock_mut() =
+                Some("Error parseando el html de interactive brokes".to_string());
         }
 
         App::generate_720_file(app)
@@ -325,19 +328,13 @@ impl App {
                             .text("Entre en la página de interactive brokers con su usuario.")
                         }),
                         html!("li", {
-                            .text("En el menú superior seleccione informes y seguidamente extractos.")
+                            .text("En el menú superior seleccione Rendimientos e informes y seguidamente extractos.")
                         }),
                         html!("li", {
-                            .text("Si ha tenido más de 1 cuenta seleccione todas pulsando en el identificador de usuario al lado de informes y seleccionando todos.")
-                        }),
-                        html!("li", {
-                            .text("En extractos predeterminados pulse en actividad, seleccione el período anual, el formato HTML/descargar y en opciones zip.")
+                            .text("En extractos predeterminados pulse en actividad, seleccione el período anual, el formato HTML/descargar y en opciones Inglés.")
                         }),
                         html!("li", {
                             .text("Pulse ejecutar.")
-                        }),
-                        html!("li", {
-                            .text("Si tuvo más de una cuenta en el año tendrá que modificar el zip para dejar sólo el html de la cuenta actual.")
                         }),
                     ])
                 }))
@@ -346,7 +343,7 @@ impl App {
                 html!("input" => HtmlInputElement, {
                     .attr("id", "ib_html_report")
                     .attr("alt", "Fichero HTML comprimido informe Interactive Brokers")
-                    .attr("accept", "application/zip")
+                    .attr("accept", "text/html")
                     .attr("type", "file")
                     .with_node!(element => {
                         .event(clone!(app => move |_: events::Change| {
@@ -354,7 +351,7 @@ impl App {
                                 Some(file_list) => file_list,
                                 None => {
                                     *app.current_error.lock_mut() = Some(
-                                    "Error subiendo fichero HTML comprimido de interactive brokers".to_string());
+                                    "Error subiendo fichero HTML de interactive brokers".to_string());
                                     return;
                                 }
                             };
@@ -362,13 +359,13 @@ impl App {
                                 Some(data) => data,
                                 None => {
                                     *app.current_error.lock_mut() = Some(
-                                    "Error obteniendo HTML comprimido de interactive brokers".to_string());
+                                    "Error obteniendo HTML de interactive brokers".to_string());
                                     return;
                                 }
                             };
                             let blob = Blob::from(ib_html_data);
                             spawn_local(clone!(app => async move {
-                                App::read_ib_html_zipped(app, read_as_bytes(&blob).await.unwrap());
+                                App::read_ib_html(app, read_as_bytes(&blob).await.unwrap());
                             }));
                         }))
                     })
@@ -390,10 +387,10 @@ impl App {
                             .text("Entre en la página de interactive brokers con su usuario.")
                         }),
                         html!("li", {
-                            .text("En el menú superior seleccione informes y seguidamente extractos.")
+                            .text("En el menú superior seleccione Rendimientos e informes y seguidamente extractos.")
                         }),
                         html!("li", {
-                            .text("En extractos predeterminados pulse en actividad, seleccione el período anual, el formato CSV.")
+                            .text("En extractos predeterminados pulse en actividad, seleccione el período anual, el formato CSV y en opciones Inglés.")
                         }),
                         html!("li", {
                             .text("Pulse ejecutar.")
@@ -469,7 +466,7 @@ impl App {
                 html!("label", {
                     .class(&*FLEX_CONTAINER_ITEM_20_CLASS)
                     .attr("for", "ib_html_report")
-                    .text("Informe anual Interactive Brokers (HTML comprimido con ZIP):")
+                    .text("Informe anual Interactive Brokers (HTML):")
                 }),
                 App::render_ib_html_input(app.clone()),
                 html!("label", {
@@ -829,6 +826,7 @@ impl App {
             .child_signal(app.current_error.signal_ref(|x| x.clone()).map(|text| {
                 text.map(|txt|
                     html!("p", {
+                        .class(&*ERROR_PARAGRAPH_CLASS)
                         .text(&txt)
                     })
                 )

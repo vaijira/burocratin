@@ -22,6 +22,7 @@ pub fn read_zip(data: Vec<u8>) -> Result<Vec<u8>> {
     Ok(contents)
 }
 
+#[allow(dead_code)]
 pub fn read_zip_str(data: Vec<u8>) -> Result<String> {
     let mut archive = ZipArchive::new(Cursor::new(data))?;
 
