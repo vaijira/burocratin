@@ -43,7 +43,7 @@ pub static FLEX_CONTAINER_ITEM_40_CLASS: Lazy<String> = Lazy::new(|| {
 });
 
 pub static SECTION_HEADER: Lazy<String> = Lazy::new(|| {
-    class!{
+    class! {
         .style("display", "flex")
         .style("flex-direction", "row")
         .style("margin-top", "50px")
