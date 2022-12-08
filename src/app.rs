@@ -832,22 +832,22 @@ impl App {
                 )
             }))
             .children(&mut [
-                html!("h2", {
+                html!("h3", {
                     .class(&*SECTION_HEADER)
                     .text(" Información brokers ")
                 }),
                 App::render_brokers_form(app.clone()),
-                html!("h2", {
+                html!("h3", {
                     .class(&*SECTION_HEADER)
                     .text(" Información personal ")
                 }),
                 App::render_personal_info(app.clone()),
-                html!("h2", {
+                html!("h3", {
                     .class(&*SECTION_HEADER)
                     .text(" Movimientos importados ")
                 }),
                 App::render_financial_information(app.clone()),
-                html!("h2", {
+                html!("h3", {
                     .class(&*SECTION_HEADER)
                     .text(" Descarga de formulario 720 ")
                 }),

@@ -43,30 +43,23 @@ pub static FLEX_CONTAINER_ITEM_40_CLASS: Lazy<String> = Lazy::new(|| {
 });
 
 pub static SECTION_HEADER: Lazy<String> = Lazy::new(|| {
-    class! {
-        .style("overflow", "hidden")
-        .style("text-align", "center")
+    class!{
+        .style("display", "flex")
+        .style("flex-direction", "row")
+        .style("margin-top", "50px")
         .pseudo!(":after", {
-            .style("background-color", "#000")
             .style("content", "''")
-            .style("display", "inline-block")
-            .style("height", "1px")
-            .style("position", "relative")
-            .style("vertical-align", "middle")
-            .style("width", "50%")
-            .style("right", "0.01em")
-            .style("margin-right", "-50%")
+            .style("flex", "1 1 66%")
+            .style("border-bottom", "1px solid")
+            .style("margin", "auto")
+            .style("margin-left", "10px")
         })
         .pseudo!(":before", {
-            .style("background-color", "#000")
             .style("content", "''")
-            .style("display", "inline-block")
-            .style("height", "1px")
-            .style("position", "relative")
-            .style("vertical-align", "middle")
-            .style("width", "50%")
-            .style("right", "0.5em")
-            .style("margin-left", "-50%")
+            .style("flex", "1 1 0%")
+            .style("border-bottom", "1px solid")
+            .style("margin", "auto")
+            .style("margin-right", "10px")
         })
     }
 });
