@@ -26,6 +26,7 @@ pub struct IBCSVParser {
 impl IBCSVParser {
     const EUR_CURRENCY_STR: &'static str = "EUR";
     const STOCK_COMPANY_INFO_SECTOR_START_STR: &'static str = "Financial Instrument Information,Header,Asset Category,Symbol,Description,Conid,Security ID,Listing Exch,Multiplier,Type,Code";
+    const STOCK_COMPANY_INFO_SECTOR_END_STR: &'static str = "Codes,Header,Code,Meaning,Code";
     const OPEN_POSITIONS_BEGIN_STR: &'static str  = "Open Positions,Header,DataDiscriminator,Asset Category,Currency,Symbol,Quantity,Mult,Cost Price,Cost Basis,Close Price,Value,Unrealized P/L,Code";
     const OPEN_POSITIONS_END_STR: &'static str = "Open Positions,Total,,Stocks,EUR,";
     const OPEN_POSITIONS_STOCK_STR: &'static str = "Open Positions,Data,Summary,Stocks,";
@@ -38,23 +39,29 @@ impl IBCSVParser {
         log::debug!("parse companies info");
         let mut result: HashMap<String, CompanyInfo> = HashMap::new();
 
-        if let Some(start) = content.find(IBCSVParser::STOCK_COMPANY_INFO_SECTOR_START_STR) {
-            let mut rdr = csv::Reader::from_reader((&content[start..]).as_bytes());
+        let start = content
+            .find(IBCSVParser::STOCK_COMPANY_INFO_SECTOR_START_STR)
+            .ok_or_else(|| anyhow!("Not found beginning of companies info section"))?;
 
-            for record_result in rdr.records() {
-                let record = record_result?;
-                result.insert(
-                    String::from(record.get(3).ok_or_else(|| anyhow!("Unknown ticker"))?),
-                    CompanyInfo {
-                        name: String::from(
-                            record
-                                .get(4)
-                                .ok_or_else(|| anyhow!("Unknown company name"))?,
-                        ),
-                        isin: String::from(record.get(6).ok_or_else(|| anyhow!("Unknown isin"))?),
-                    },
-                );
-            }
+        let end = content
+            .find(IBCSVParser::STOCK_COMPANY_INFO_SECTOR_END_STR)
+            .ok_or_else(|| anyhow!("Not found end of companies info section"))?;
+
+        let mut rdr = csv::Reader::from_reader((&content[start..end - 1]).as_bytes());
+
+        for record_result in rdr.records() {
+            let record = record_result?;
+            result.insert(
+                String::from(record.get(3).ok_or_else(|| anyhow!("Unknown ticker"))?),
+                CompanyInfo {
+                    name: String::from(
+                        record
+                            .get(4)
+                            .ok_or_else(|| anyhow!("Unknown company name"))?,
+                    ),
+                    isin: String::from(record.get(6).ok_or_else(|| anyhow!("Unknown isin"))?),
+                },
+            );
         }
 
         Ok(result)

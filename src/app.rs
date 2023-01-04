@@ -162,6 +162,9 @@ impl App {
                         "Error cargando los apuntes del csv de interactive brokers".to_string(),
                     );
                 }
+            } else {
+                *app.current_error.lock_mut() =
+                    Some("Error leyendo compañías del csv de interactive brokers".to_string());
             }
         } else {
             *app.current_error.lock_mut() =
@@ -410,7 +413,7 @@ impl App {
                                 Some(file_list) => file_list,
                                 None => {
                                     *app.current_error.lock_mut() = Some(
-                                    "Error subiendo fichero HTML comprimido de interactive brokers".to_string());
+                                    "Error subiendo fichero CSV de interactive brokers".to_string());
                                     return;
                                 }
                             };
