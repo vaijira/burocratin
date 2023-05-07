@@ -62,7 +62,7 @@ fn check_report_content(aeat_720_report: &str) {
 async fn test_all_reports_2019_chrome() -> WebDriverResult<()> {
     common::setup();
     let mut caps = DesiredCapabilities::chrome();
-    let caps = caps.set_headless()?;
+    caps.set_headless()?;
 
     let driver = WebDriver::new("http://localhost:4444", &caps).await?;
 
@@ -84,7 +84,7 @@ async fn test_all_reports_2019_chrome() -> WebDriverResult<()> {
 async fn test_all_reports_2019_firefox() -> WebDriverResult<()> {
     common::setup();
     let mut caps = DesiredCapabilities::firefox();
-    let caps = caps.set_headless()?;
+    caps.set_headless()?;
 
     let driver = WebDriver::new("http://localhost:4444", &caps).await?;
 

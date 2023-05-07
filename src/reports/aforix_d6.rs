@@ -333,7 +333,7 @@ mod tests {
 
         let d6_form = create_d6_form(&info).unwrap();
         compare_strs_by_line(
-            &D6_FORM_XML_RESULT.replace("\n", "\r\n"),
+            &D6_FORM_XML_RESULT.replace('\n', "\r\n"),
             str::from_utf8(&d6_form[..]).unwrap(),
         );
     }

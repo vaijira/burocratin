@@ -234,6 +234,7 @@ impl IBCSVParser {
 }
 
 #[cfg(test)]
+#[allow(clippy::zero_prefixed_literal)]
 mod tests {
     use super::*;
 
