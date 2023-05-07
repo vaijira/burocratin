@@ -106,11 +106,12 @@ impl DegiroParser {
             let (day, _, month, _, year) = res;
             (
                 next_input,
-                NaiveDate::from_ymd(
+                NaiveDate::from_ymd_opt(
                     year.parse::<i32>().unwrap(),
                     month.parse::<u32>().unwrap(),
                     day.parse::<u32>().unwrap(),
-                ),
+                )
+                .unwrap(),
             )
         })
     }
@@ -433,11 +434,11 @@ mod tests {
     fn date_concept_test() {
         assert_eq!(
             DegiroParser::date_concept("03/11/2018\n"),
-            Ok(("\n", NaiveDate::from_ymd(2018, 11, 3)))
+            Ok(("\n", NaiveDate::from_ymd_opt(2018, 11, 3).unwrap()))
         );
         assert_eq!(
             DegiroParser::date_concept("31/10/2018\n"),
-            Ok(("\n", NaiveDate::from_ymd(2018, 10, 31)))
+            Ok(("\n", NaiveDate::from_ymd_opt(2018, 10, 31).unwrap()))
         );
         assert_eq!(
             DegiroParser::date_concept("32_23_2020\n"),
@@ -615,7 +616,7 @@ C
             Ok((
                 "",
                 AccountNote::new(
-                    NaiveDate::from_ymd(2018, 10, 31),
+                    NaiveDate::from_ymd_opt(2018, 10, 31).unwrap(),
                     CompanyInfo {
                         name: String::from("BURFORD CAP LD"),
                         isin: String::from("GG00B4L84979")
@@ -647,7 +648,7 @@ C
             Ok((
                 "",
                 AccountNote::new(
-                    NaiveDate::from_ymd(2018, 10, 31),
+                    NaiveDate::from_ymd_opt(2018, 10, 31).unwrap(),
                     CompanyInfo {
                         name: String::from("BURFORD CAP LD"),
                         isin: String::from("GG00B4L84979")
@@ -680,7 +681,7 @@ C
             Ok((
                 "",
                 AccountNote::new(
-                    NaiveDate::from_ymd(2021, 8, 2),
+                    NaiveDate::from_ymd_opt(2021, 8, 2).unwrap(),
                     CompanyInfo {
                         name: String::from("GXO LOGISTICS INC. COMMON STOCK WHEN-ISSUED"),
                         isin: String::from("US36262G1013")
@@ -783,7 +784,7 @@ C
 
         let acc_notes = vec![
             AccountNote::new(
-                NaiveDate::from_ymd(2018, 10, 31),
+                NaiveDate::from_ymd_opt(2018, 10, 31).unwrap(),
                 CompanyInfo {
                     name: String::from("BURFORD CAP LD"),
                     isin: String::from("GG00B4L84979"),
@@ -796,7 +797,7 @@ C
                 &degiro_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2018, 10, 22),
+                NaiveDate::from_ymd_opt(2018, 10, 22).unwrap(),
                 CompanyInfo {
                     name: String::from("FACEBOOK INC. - CLASS"),
                     isin: String::from("US30303M1027"),
@@ -809,7 +810,7 @@ C
                 &degiro_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2018, 10, 22),
+                NaiveDate::from_ymd_opt(2018, 10, 22).unwrap(),
                 CompanyInfo {
                     name: String::from("JD.COM INC. - AMERICA"),
                     isin: String::from("US47215P1066"),
@@ -822,7 +823,7 @@ C
                 &degiro_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2018, 11, 23),
+                NaiveDate::from_ymd_opt(2018, 11, 23).unwrap(),
                 CompanyInfo {
                     name: String::from("MONDO TV"),
                     isin: String::from("IT0001447785"),
@@ -835,7 +836,7 @@ C
                 &degiro_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2018, 11, 23),
+                NaiveDate::from_ymd_opt(2018, 11, 23).unwrap(),
                 CompanyInfo {
                     name: String::from("MONDO TV"),
                     isin: String::from("IT0001447785"),
@@ -848,7 +849,7 @@ C
                 &degiro_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2018, 12, 3),
+                NaiveDate::from_ymd_opt(2018, 12, 3).unwrap(),
                 CompanyInfo {
                     name: String::from("TAPTICA INT LTD"),
                     isin: String::from("IL0011320343"),
@@ -861,7 +862,7 @@ C
                 &degiro_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2018, 12, 31),
+                NaiveDate::from_ymd_opt(2018, 12, 31).unwrap(),
                 CompanyInfo {
                     name: String::from("XPO LOGISTICS INC."),
                     isin: String::from("US9837931008"),

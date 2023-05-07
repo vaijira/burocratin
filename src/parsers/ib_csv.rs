@@ -52,7 +52,7 @@ impl IBCSVParser {
             .find('\n')
             .ok_or_else(|| anyhow!("Not found end of companies info section"))?;
 
-        let mut rdr = csv::Reader::from_reader((&content[start..end_left + end]).as_bytes());
+        let mut rdr = csv::Reader::from_reader((content[start..end_left + end]).as_bytes());
 
         for record_result in rdr.records() {
             let record = record_result?;
@@ -121,7 +121,7 @@ impl IBCSVParser {
             .rfind(IBCSVParser::TRADE_END_STR)
             .ok_or_else(|| anyhow!("Not found end of trades section"))?;
 
-        let lines: Vec<&str> = (&self.content[start..end - 1]).split('\n').collect();
+        let lines: Vec<&str> = (self.content[start..end - 1]).split('\n').collect();
 
         for line in lines.iter() {
             if line.starts_with(IBCSVParser::TRADE_STOCK_STR) {
@@ -171,7 +171,7 @@ impl IBCSVParser {
             .rfind(IBCSVParser::OPEN_POSITIONS_END_STR)
             .ok_or_else(|| anyhow!("Not found end of open position section"))?;
 
-        let lines: Vec<&str> = (&self.content[start..end - 1]).split('\n').collect();
+        let lines: Vec<&str> = (self.content[start..end - 1]).split('\n').collect();
 
         let mut state = NoteState::Invalid;
         let mut current_notes: BalanceNotes = Vec::new();
@@ -653,7 +653,7 @@ mod tests {
 
         let acc_notes = vec![
             AccountNote::new(
-                NaiveDate::from_ymd(2021, 01, 13),
+                NaiveDate::from_ymd_opt(2021, 01, 13).unwrap(),
                 CompanyInfo {
                     name: String::from("ADVANCE ZINCTEK LTD"),
                     isin: String::from("AU000000ANO7"),
@@ -666,7 +666,7 @@ mod tests {
                 &ib_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2021, 01, 18),
+                NaiveDate::from_ymd_opt(2021, 01, 18).unwrap(),
                 CompanyInfo {
                     name: String::from("ADVANCE ZINCTEK LTD"),
                     isin: String::from("AU000000ANO7"),
@@ -679,7 +679,7 @@ mod tests {
                 &ib_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2021, 01, 28),
+                NaiveDate::from_ymd_opt(2021, 01, 28).unwrap(),
                 CompanyInfo {
                     name: String::from("ADVANCE ZINCTEK LTD"),
                     isin: String::from("AU000000ANO7"),
@@ -692,7 +692,7 @@ mod tests {
                 &ib_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2021, 02, 25),
+                NaiveDate::from_ymd_opt(2021, 02, 25).unwrap(),
                 CompanyInfo {
                     name: String::from("ADVANCE ZINCTEK LTD"),
                     isin: String::from("AU000000ANO7"),
@@ -705,7 +705,7 @@ mod tests {
                 &ib_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2021, 03, 17),
+                NaiveDate::from_ymd_opt(2021, 03, 17).unwrap(),
                 CompanyInfo {
                     name: String::from("ADVANCE ZINCTEK LTD"),
                     isin: String::from("AU000000ANO7"),
@@ -718,7 +718,7 @@ mod tests {
                 &ib_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2021, 06, 24),
+                NaiveDate::from_ymd_opt(2021, 06, 24).unwrap(),
                 CompanyInfo {
                     name: String::from("ADVANCE ZINCTEK LTD"),
                     isin: String::from("AU000000ANO7"),
@@ -731,7 +731,7 @@ mod tests {
                 &ib_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2021, 06, 30),
+                NaiveDate::from_ymd_opt(2021, 06, 30).unwrap(),
                 CompanyInfo {
                     name: String::from("ADVANCE ZINCTEK LTD"),
                     isin: String::from("AU000000ANO7"),
@@ -744,7 +744,7 @@ mod tests {
                 &ib_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2021, 07, 07),
+                NaiveDate::from_ymd_opt(2021, 07, 07).unwrap(),
                 CompanyInfo {
                     name: String::from("ADVANCE ZINCTEK LTD"),
                     isin: String::from("AU000000ANO7"),
@@ -757,7 +757,7 @@ mod tests {
                 &ib_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2021, 08, 02),
+                NaiveDate::from_ymd_opt(2021, 08, 02).unwrap(),
                 CompanyInfo {
                     name: String::from("ADVANCE ZINCTEK LTD"),
                     isin: String::from("AU000000ANO7"),
@@ -770,7 +770,7 @@ mod tests {
                 &ib_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2021, 03, 17),
+                NaiveDate::from_ymd_opt(2021, 03, 17).unwrap(),
                 CompanyInfo {
                     name: String::from("CETTIRE LTD"),
                     isin: String::from("AU0000122210"),
@@ -783,7 +783,7 @@ mod tests {
                 &ib_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2021, 06, 08),
+                NaiveDate::from_ymd_opt(2021, 06, 08).unwrap(),
                 CompanyInfo {
                     name: String::from("CETTIRE LTD"),
                     isin: String::from("AU0000122210"),
@@ -796,7 +796,7 @@ mod tests {
                 &ib_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2021, 06, 24),
+                NaiveDate::from_ymd_opt(2021, 06, 24).unwrap(),
                 CompanyInfo {
                     name: String::from("REDBUBBLE LTD"),
                     isin: String::from("AU000000RBL2"),
@@ -809,7 +809,7 @@ mod tests {
                 &ib_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2021, 01, 28),
+                NaiveDate::from_ymd_opt(2021, 01, 28).unwrap(),
                 CompanyInfo {
                     name: String::from("ILA"),
                     isin: String::from(""),
@@ -822,7 +822,7 @@ mod tests {
                 &ib_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2021, 01, 14),
+                NaiveDate::from_ymd_opt(2021, 01, 14).unwrap(),
                 CompanyInfo {
                     name: String::from("UMANIS - REG"),
                     isin: String::from("FR0013263878"),
@@ -835,7 +835,7 @@ mod tests {
                 &ib_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2021, 03, 17),
+                NaiveDate::from_ymd_opt(2021, 03, 17).unwrap(),
                 CompanyInfo {
                     name: String::from("TFF GROUP"),
                     isin: String::from("FR0013295789"),
@@ -848,7 +848,7 @@ mod tests {
                 &ib_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2021, 12, 07),
+                NaiveDate::from_ymd_opt(2021, 12, 07).unwrap(),
                 CompanyInfo {
                     name: String::from("EVOLUTION AB"),
                     isin: String::from("SE0012673267"),
@@ -861,7 +861,7 @@ mod tests {
                 &ib_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2021, 05, 12),
+                NaiveDate::from_ymd_opt(2021, 05, 12).unwrap(),
                 CompanyInfo {
                     name: String::from("AMAZON.COM INC"),
                     isin: String::from("US0231351067"),
@@ -874,7 +874,7 @@ mod tests {
                 &ib_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2021, 05, 11),
+                NaiveDate::from_ymd_opt(2021, 05, 11).unwrap(),
                 CompanyInfo {
                     name: String::from("CANNAE HOLDINGS INC"),
                     isin: String::from("US13765N1072"),
@@ -887,7 +887,7 @@ mod tests {
                 &ib_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2021, 03, 30),
+                NaiveDate::from_ymd_opt(2021, 03, 30).unwrap(),
                 CompanyInfo {
                     name: String::from("INTELLICHECK INC"),
                     isin: String::from("US45817G2012"),
@@ -900,7 +900,7 @@ mod tests {
                 &ib_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2021, 05, 12),
+                NaiveDate::from_ymd_opt(2021, 05, 12).unwrap(),
                 CompanyInfo {
                     name: String::from("INTELLICHECK INC"),
                     isin: String::from("US45817G2012"),
@@ -913,7 +913,7 @@ mod tests {
                 &ib_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2021, 01, 14),
+                NaiveDate::from_ymd_opt(2021, 01, 14).unwrap(),
                 CompanyInfo {
                     name: String::from("LIBERTY LATIN AMERIC-CL C"),
                     isin: String::from("BMG9001E1286"),
@@ -926,7 +926,7 @@ mod tests {
                 &ib_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2021, 05, 12),
+                NaiveDate::from_ymd_opt(2021, 05, 12).unwrap(),
                 CompanyInfo {
                     name: String::from("MIND TECHNOLOGY INC"),
                     isin: String::from("US6025661017"),
@@ -939,7 +939,7 @@ mod tests {
                 &ib_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2021, 05, 12),
+                NaiveDate::from_ymd_opt(2021, 05, 12).unwrap(),
                 CompanyInfo {
                     name: String::from("TELADOC HEALTH INC"),
                     isin: String::from("US87918A1051"),
@@ -952,7 +952,7 @@ mod tests {
                 &ib_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2021, 03, 17),
+                NaiveDate::from_ymd_opt(2021, 03, 17).unwrap(),
                 CompanyInfo {
                     name: String::from("TEEKAY CORP"),
                     isin: String::from("MHY8564W1030"),

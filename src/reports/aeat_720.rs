@@ -489,7 +489,8 @@ impl DetailRegister {
             let company = transactions.iter().find(|&x| x.company == note.company);
             match company {
                 Some(c) => c.date.format("%Y%m%d").to_string(),
-                None => NaiveDate::from_ymd(year as i32, 1, 1)
+                None => NaiveDate::from_ymd_opt(year as i32, 1, 1)
+                    .unwrap()
                     .format("%Y%m%d")
                     .to_string(),
             }

@@ -217,7 +217,7 @@ impl IBParser {
                     }
                     log::debug!("field values: {:?}", field_values);
                     let ticker = field_values
-                        .get(0)
+                        .first()
                         .ok_or_else(|| anyhow!("No company ticker found"))?;
                     let name = field_values
                         .get(1)
@@ -252,7 +252,7 @@ impl IBParser {
         );
 
         let symbol = field_values
-            .get(0)
+            .first()
             .ok_or_else(|| anyhow!("No ticker symbol"))?;
         let quantity = field_values
             .get(1)
@@ -397,7 +397,7 @@ mod tests {
 
         let acc_notes = vec![
             AccountNote::new(
-                NaiveDate::from_ymd(2019, 4, 16),
+                NaiveDate::from_ymd_opt(2019, 4, 16).unwrap(),
                 CompanyInfo {
                     name: String::from("EUROTECH SPA"),
                     isin: String::from("IT0003895668"),
@@ -410,7 +410,7 @@ mod tests {
                 &ib_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2019, 9, 12),
+                NaiveDate::from_ymd_opt(2019, 9, 12).unwrap(),
                 CompanyInfo {
                     name: String::from("PROSUS NV"),
                     isin: String::from("NL0013654783"),
@@ -423,7 +423,7 @@ mod tests {
                 &ib_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2019, 9, 11),
+                NaiveDate::from_ymd_opt(2019, 9, 11).unwrap(),
                 CompanyInfo {
                     name: String::from("TFF GROUP"),
                     isin: String::from("FR0013295789"),
@@ -436,7 +436,7 @@ mod tests {
                 &ib_broker,
             ),
             AccountNote::new(
-                NaiveDate::from_ymd(2019, 2, 15),
+                NaiveDate::from_ymd_opt(2019, 2, 15).unwrap(),
                 CompanyInfo {
                     name: String::from("TEEKAY CORP"),
                     isin: String::from("MHY8564W1030"),
