@@ -14,8 +14,7 @@ pub fn read_zip(data: Vec<u8>) -> Result<Vec<u8>> {
     }
 
     let mut file = archive.by_index(0)?;
-    let mut contents = Vec::new();
-    contents.reserve(file.size() as usize);
+    let mut contents = Vec::with_capacity(file.size() as usize);
 
     file.read_exact(&mut contents)?;
 

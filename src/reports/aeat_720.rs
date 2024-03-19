@@ -577,9 +577,7 @@ impl Aeat720Report {
     }
 
     pub fn generate(self) -> Result<Vec<u8>> {
-        let mut result = Vec::new();
-
-        result.reserve(
+        let mut result = Vec::with_capacity(
             AEAT_720_REGISTER_SIZE_BYTES * (self.details.len() + 1) + (self.details.len() + 1),
         );
 

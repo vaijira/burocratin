@@ -151,7 +151,7 @@ impl IBParser {
                             .map(|x| x.value())
                             .unwrap()
                             .as_element()
-                            .map(|x| has_class(x))
+                            .map(has_class)
                             == Some(true)
                         {
                             state = NoteState::Note;
@@ -173,7 +173,7 @@ impl IBParser {
                             .map(|x| x.value())
                             .unwrap()
                             .as_element()
-                            .map(|x| has_class(x))
+                            .map(has_class)
                             == Some(true)
                         {
                             state = NoteState::Invalid;
@@ -201,11 +201,8 @@ impl IBParser {
 
                 if let Some(element) = table_row.first_child().unwrap().value().as_element() {
                     if element.has_class("header-asset", CaseSensitivity::AsciiCaseInsensitive) {
-                        if table_row.text().next() == Some(IBParser::STOCKS_STR) {
-                            start_parsing_symbols = true;
-                        } else {
-                            start_parsing_symbols = false;
-                        }
+                        start_parsing_symbols =
+                            table_row.text().next() == Some(IBParser::STOCKS_STR);
                         continue;
                     }
                 }
@@ -310,7 +307,7 @@ impl IBParser {
                             .map(|x| x.value())
                             .unwrap()
                             .as_element()
-                            .map(|x| has_class(x))
+                            .map(has_class)
                             == Some(true)
                         {
                             currency = table_row.text().next();

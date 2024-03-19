@@ -305,7 +305,6 @@ impl DegiroParser {
             "balance notes",
             many0(|x| DegiroParser::balance_note(x, broker)),
         )(input)
-        .map(|(next_input, res)| (next_input, res))
     }
 
     fn parse_account_notes(&self, notes: &str) -> Result<AccountNotes> {
