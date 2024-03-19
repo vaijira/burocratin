@@ -49,6 +49,9 @@ reqwest = { version = "0.11", default-features = false, features = ["json"] }
 thirtyfour = "0.27"
 tokio = { version = "1.0", features = ["fs", "macros", "rt-multi-thread", "io-util"] }
 
+[profile.dev.package."*"]
+opt-level = 3
+
 [profile.release]
 # less code to include into binary
 panic = 'abort'

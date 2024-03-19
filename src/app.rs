@@ -23,7 +23,7 @@ use crate::parsers::{degiro::DegiroParser, pdf::read_pdf};
 use crate::tooltip::Tooltip;
 use crate::utils::web;
 
-const DEFAULT_YEAR: usize = 2022;
+const DEFAULT_YEAR: usize = 2023;
 
 pub struct App {
     current_error: Mutable<Option<String>>,
@@ -806,7 +806,7 @@ impl App {
                 .text("Para cualquier mejora, duda, sugerencia o error puedes crear un ")
                 .child(
                     html!("a", {
-                        .attr("href", "https://github.com/vaijira/burocratin/issues")
+                        .attr("href", "https://github.com/vaijira/burocratin/issues/new?title=Error&body=He%20encontrado%20un%20error")
                         .attr("alt", "informar de problemas o sugerencias")
                         .attr("target", "_blank")
                         .attr("rel", "external nofollow")
