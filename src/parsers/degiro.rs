@@ -7,16 +7,19 @@ use crate::data::{
 
 use crate::utils::decimal;
 
-use anyhow::{bail, Result};
+use anyhow::{bail, Context, Result};
 use chrono::NaiveDate;
+use nom::character::complete::anychar;
+use nom::multi::many_till;
+use nom::sequence::{preceded, separated_pair};
 use nom::{
     branch::alt,
-    bytes::complete::{is_a, take, take_until},
+    bytes::complete::{is_a, take},
     character::complete::none_of,
     combinator::{map_res, opt, recognize},
     multi::many0,
     multi::many1,
-    sequence::{preceded, terminated, tuple},
+    sequence::{terminated, tuple},
 };
 use nom::{
     bytes::complete::{tag, tag_no_case},
@@ -37,26 +40,22 @@ pub struct DegiroParser {
     broker: Arc<BrokerInformation>,
 }
 
-const DEGIRO_BALANCE_HEADER_BEGIN: &str = "\nCASH & CASH FUND (EUR)\n";
+pub(crate) const DEGIRO_BALANCE_NOTES_HEADER: &str = r#"Producto ISIN Bolsa Cantidad Moneda Precio Valor (EUR)
+Tipo de
+producto
+"#;
+
+const DEGIRO_BALANCE_HEADER_BEGIN: &str = "CurrencyCASH & CASH FUND (EUR)";
 const DEGIRO_BALANCE_HEADER_END: &str = "Amsterdam, ";
 
-const DEGIRO_NOTES_HEADER_END: &str = "Informe anual de flatex";
+const DEGIRO_NOTES_HEADER_END: &str = "EURTotal\n\nInforme anual de flatex";
 
-const DEGIRO_NOTES_HEADER_BEGIN: &str = r#"
-Fecha
-Producto
-Symbol/ISIN
-Tipo de
-orden
-Cantidad
-Precio
-Valor local
-Valor en EUR
-Comisión
-Tipo de
-cambio
-Beneficios y
-pérdidas"#;
+pub(crate) const DEGIRO_NOTES_HEADER_BEGIN: &str = r#"
+Fecha Producto Symbol/ISIN Tipo de
+orden Cantidad Precio Valor local Valor en EUR Comisión Tipo de
+cambio Beneficios y
+pérdidas
+"#;
 
 impl DegiroParser {
     fn n_to_m_digits<'b>(n: usize, m: usize) -> impl FnMut(&'b str) -> Res<&str, String> {
@@ -71,6 +70,43 @@ impl DegiroParser {
             "decimal value",
             map_res(
                 recognize(many1(terminated(one_of("0123456789"), many0(is_a(",."))))),
+                |out: &str| Decimal::from_str(&decimal::transform_i18n_es_str(out)),
+            ),
+        )(input)
+    }
+
+    fn number_no_decimal_digits(input: &str) -> Res<&str, Decimal> {
+        context(
+            "number no decimal digits",
+            map_res(recognize(many1(one_of("0123456789"))), |out: &str| {
+                Decimal::from_str(out)
+            }),
+        )(input)
+    }
+
+    fn number_two_decimal_digits(input: &str) -> Res<&str, Decimal> {
+        context(
+            "number two decimal digits",
+            map_res(
+                recognize(separated_pair(
+                    many1(one_of("0123456789.")),
+                    tag(","),
+                    take(2usize),
+                )),
+                |out: &str| Decimal::from_str(&decimal::transform_i18n_es_str(out)),
+            ),
+        )(input)
+    }
+
+    fn number_four_decimal_digits(input: &str) -> Res<&str, Decimal> {
+        context(
+            "number four decimal digits",
+            map_res(
+                recognize(separated_pair(
+                    many1(one_of("0123456789.")),
+                    tag(","),
+                    take(4usize),
+                )),
                 |out: &str| Decimal::from_str(&decimal::transform_i18n_es_str(out)),
             ),
         )(input)
@@ -130,48 +166,21 @@ impl DegiroParser {
     }
 
     fn company_info(input: &str) -> Res<&str, CompanyInfo> {
-        context(
-            "company info",
-            alt((
-                tuple((
-                    take_until("\n"),
-                    char('\n'),
-                    take(0usize),
-                    take(0usize),
-                    terminated(DegiroParser::isin, opt(char('\n'))),
-                )),
-                tuple((
-                    take_until("\n"),
-                    char('\n'),
-                    take_until("\n"),
-                    take(1usize),
-                    terminated(DegiroParser::isin, opt(char('\n'))),
-                )),
-                tuple((
-                    take_until("\n"),
-                    char('\n'),
-                    recognize(tuple((
-                        take_until("\n"),
-                        char('\n'),
-                        take_until("\n"),
-                        char('\n'),
-                    ))),
-                    take(0usize),
-                    terminated(DegiroParser::isin, opt(char('\n'))),
-                )),
-            )),
-        )(input)
-        .map(|(next_input, res)| {
-            let (company_name, _, extra, _, isin) = res;
-            let mut name = company_name.to_string();
+        context("company info", many_till(anychar, DegiroParser::isin))(input).map(
+            |(next_input, res)| {
+                let (company_name, isin) = res;
+                let company_name: String = company_name.into_iter().collect();
+                let company_name = company_name.replace('\n', " ").trim_end().to_string();
 
-            if !extra.is_empty() {
-                name.push(' ');
-                name.push_str(&str::replace(extra, "\n", ""));
-            }
-
-            (next_input, CompanyInfo { name, isin })
-        })
+                (
+                    next_input,
+                    CompanyInfo {
+                        name: company_name,
+                        isin,
+                    },
+                )
+            },
+        )
     }
 
     fn account_note<'a>(
@@ -182,22 +191,24 @@ impl DegiroParser {
             "account note",
             tuple((
                 DegiroParser::date_concept,
-                char('\n'),
+                tag(" "),
                 DegiroParser::company_info,
+                tag(" "),
                 DegiroParser::broker_operation,
-                char('\n'),
+                tag(" "),
                 DegiroParser::decimal_value,
-                char('\n'),
+                tag(" "),
                 DegiroParser::decimal_value,
-                char('\n'),
+                tag(" "),
                 DegiroParser::decimal_value,
-                char('\n'),
+                tag(" "),
                 DegiroParser::decimal_value,
-                char('\n'),
+                tag(" "),
                 DegiroParser::decimal_value,
-                char('\n'),
+                tag(" "),
                 DegiroParser::decimal_value,
-                opt(tuple((char('\n'), DegiroParser::earnings_value))),
+                opt(tuple((char(' '), DegiroParser::earnings_value))),
+                tag("\n"),
             )),
         )(input)
         .map(|(next_input, res)| {
@@ -205,6 +216,7 @@ impl DegiroParser {
                 date,
                 _,
                 company,
+                _,
                 operation,
                 _,
                 quantity,
@@ -218,9 +230,9 @@ impl DegiroParser {
                 commision,
                 _,
                 _exchange_rate,
-                earnings_opt,
+                _earnings_value,
+                _,
             ) = res;
-            let _earnings: Decimal = earnings_opt.unwrap_or_else(|| ('\n', Decimal::new(0, 2))).1;
 
             (
                 next_input,
@@ -235,40 +247,22 @@ impl DegiroParser {
         input: &'a str,
         broker: &Arc<BrokerInformation>,
     ) -> Res<&'a str, BalanceNote> {
+        log::trace!("balance note: -{}-", input);
         context(
             "balance note",
             tuple((
-                DegiroParser::decimal_value, // value in euro
-                char('\n'),
-                DegiroParser::decimal_value, // price
-                char('\n'),
-                take(3usize), // currency
-                char('\n'),
-                DegiroParser::decimal_value, // quantity
-                char('\n'),
-                take_until("\n"), // market
-                char('\n'),
-                take_until("\n"), // product type: Stock
-                char('\n'),
-                DegiroParser::company_info, // company info
+                tag("\n "),
+                DegiroParser::number_two_decimal_digits, // value in euro
+                DegiroParser::number_four_decimal_digits, // price
+                take(3usize),                            // currency
+                DegiroParser::number_no_decimal_digits,  // quantity
+                take(3usize),                            // market
+                alt((tag("Stock"), tag("ETF"))),         // product type: Stock | ETF
+                DegiroParser::company_info,              // company info
             )),
         )(input)
         .map(|(next_input, res)| {
-            let (
-                value_in_euro,
-                _,
-                price,
-                _,
-                currency,
-                _,
-                quantity,
-                _,
-                market,
-                _,
-                _product_type,
-                _,
-                company,
-            ) = res;
+            let (_, value_in_euro, price, currency, quantity, market, _product_type, company) = res;
 
             (
                 next_input,
@@ -310,7 +304,10 @@ impl DegiroParser {
     fn parse_account_notes(&self, notes: &str) -> Result<AccountNotes> {
         log::debug!("account notes:-{}-", notes);
         let notes = match DegiroParser::account_notes(notes, &self.broker) {
-            Ok((_, notes)) => notes,
+            Ok((_, notes)) => {
+                log::debug!("Ok parsing {} account notes", notes.len());
+                notes
+            }
             Err(err) => {
                 bail!("Unable to parse account notes: {}", err);
             }
@@ -338,23 +335,25 @@ impl DegiroParser {
     fn parse_pdf_account_notes(&self) -> Result<AccountNotes> {
         let mut result = vec![];
 
-        let indexes: Vec<_> = self
+        let header_begin = self
             .content
-            .match_indices(DEGIRO_NOTES_HEADER_BEGIN)
-            .collect();
+            .find(DEGIRO_NOTES_HEADER_BEGIN)
+            .context("No account notes section found")?;
 
-        for i in 0..indexes.len() {
-            let header_begin = indexes.get(i).unwrap().0 + DEGIRO_NOTES_HEADER_BEGIN.len();
-            let header_end = if i < indexes.len() - 1 {
-                indexes.get(i + 1).unwrap().0
-            } else {
-                match self.content.find(DEGIRO_NOTES_HEADER_END) {
-                    Some(end) => end - 1,
-                    None => self.content.len(),
-                }
-            };
-            result.extend(self.parse_account_notes(&self.content[header_begin..header_end])?);
-        }
+        let header_end = match self.content.rfind(DEGIRO_NOTES_HEADER_END) {
+            Some(end) => end - 1,
+            None => self.content.len(),
+        };
+
+        let header_end = if let Some(pos) = self.content[..header_end].rfind('\n') {
+            pos
+        } else {
+            header_end
+        };
+
+        result.extend(self.parse_account_notes(
+            &self.content[header_begin + DEGIRO_NOTES_HEADER_BEGIN.len()..header_end],
+        )?);
 
         Ok(result)
     }
@@ -377,7 +376,7 @@ impl DegiroParser {
                     None => self.content.len(),
                 }
             };
-            result.extend(self.parse_balance_notes(&self.content[header_begin..header_end])?);
+            result.extend(self.parse_balance_notes(&self.content[header_begin..header_end - 1])?);
         }
 
         Ok(result)
@@ -410,20 +409,20 @@ mod tests {
     #[test]
     fn broker_operation_test() {
         assert_eq!(
-            DegiroParser::broker_operation("C\n"),
-            Ok(("\n", BrokerOperation::Buy))
+            DegiroParser::broker_operation("C "),
+            Ok((" ", BrokerOperation::Buy))
         );
         assert_eq!(
-            DegiroParser::broker_operation("V\n"),
-            Ok(("\n", BrokerOperation::Sell))
+            DegiroParser::broker_operation("V "),
+            Ok((" ", BrokerOperation::Sell))
         );
         assert_eq!(
-            DegiroParser::broker_operation("Z\n"),
+            DegiroParser::broker_operation("Z "),
             Err(NomErr::Error(VerboseError {
                 errors: vec![
-                    ("Z\n", VerboseErrorKind::Nom(ErrorKind::Tag)),
-                    ("Z\n", VerboseErrorKind::Nom(ErrorKind::Alt)),
-                    ("Z\n", VerboseErrorKind::Context("broker operation")),
+                    ("Z ", VerboseErrorKind::Nom(ErrorKind::Tag)),
+                    ("Z ", VerboseErrorKind::Nom(ErrorKind::Alt)),
+                    ("Z ", VerboseErrorKind::Context("broker operation")),
                 ]
             }))
         );
@@ -432,19 +431,19 @@ mod tests {
     #[test]
     fn date_concept_test() {
         assert_eq!(
-            DegiroParser::date_concept("03/11/2018\n"),
-            Ok(("\n", NaiveDate::from_ymd_opt(2018, 11, 3).unwrap()))
+            DegiroParser::date_concept("03/11/2018 "),
+            Ok((" ", NaiveDate::from_ymd_opt(2018, 11, 3).unwrap()))
         );
         assert_eq!(
-            DegiroParser::date_concept("31/10/2018\n"),
-            Ok(("\n", NaiveDate::from_ymd_opt(2018, 10, 31).unwrap()))
+            DegiroParser::date_concept("31/10/2018 "),
+            Ok((" ", NaiveDate::from_ymd_opt(2018, 10, 31).unwrap()))
         );
         assert_eq!(
-            DegiroParser::date_concept("32_23_2020\n"),
+            DegiroParser::date_concept("32_23_2020 "),
             Err(NomErr::Error(VerboseError {
                 errors: vec![
-                    ("_23_2020\n", VerboseErrorKind::Nom(ErrorKind::Tag)),
-                    ("32_23_2020\n", VerboseErrorKind::Context("date concept")),
+                    ("_23_2020 ", VerboseErrorKind::Nom(ErrorKind::Tag)),
+                    ("32_23_2020 ", VerboseErrorKind::Context("date concept")),
                 ]
             }))
         );
@@ -453,20 +452,20 @@ mod tests {
     #[test]
     fn isin_test() {
         assert_eq!(
-            DegiroParser::isin("GG00B4L84979\n"),
-            Ok(("\n", String::from("GG00B4L84979")))
+            DegiroParser::isin("GG00B4L84979 "),
+            Ok((" ", String::from("GG00B4L84979")))
         );
         assert_eq!(
-            DegiroParser::isin("IL0011320343\n"),
-            Ok(("\n", String::from("IL0011320343")))
+            DegiroParser::isin("IL0011320343 "),
+            Ok((" ", String::from("IL0011320343")))
         );
         assert_eq!(
-            DegiroParser::isin("US342342\n"),
+            DegiroParser::isin("US342342 "),
             Err(NomErr::Error(VerboseError {
                 errors: vec![
-                    ("\n", VerboseErrorKind::Nom(ErrorKind::NoneOf)),
-                    ("\n", VerboseErrorKind::Nom(ErrorKind::ManyMN)),
-                    ("US342342\n", VerboseErrorKind::Context("isin")),
+                    (" ", VerboseErrorKind::Nom(ErrorKind::NoneOf)),
+                    (" ", VerboseErrorKind::Nom(ErrorKind::ManyMN)),
+                    ("US342342 ", VerboseErrorKind::Context("isin")),
                 ]
             }))
         );
@@ -474,14 +473,12 @@ mod tests {
 
     #[test]
     fn company_info_test() {
-        let compmany_info_burford: &str = r#"BURFORD CAP LD
-GG00B4L84979
-"#;
+        let company_info_burford: &str = r#"BURFORD CAP LD GG00B4L84979 "#;
 
         assert_eq!(
-            DegiroParser::company_info(compmany_info_burford),
+            DegiroParser::company_info(company_info_burford),
             Ok((
-                "",
+                " ",
                 CompanyInfo {
                     name: String::from("BURFORD CAP LD"),
                     isin: String::from("GG00B4L84979"),
@@ -489,16 +486,13 @@ GG00B4L84979
             ))
         );
 
-        let compmany_info_gxo: &str = r#"GXO LOGISTICS INC.
-COMMON STOCK WHEN-
-ISSUED
-US36262G1013
-"#;
+        let company_info_gxo: &str = r#"GXO LOGISTICS INC. COMMON
+STOCK WHEN-ISSUED US36262G1013 "#;
 
         assert_eq!(
-            DegiroParser::company_info(compmany_info_gxo),
+            DegiroParser::company_info(company_info_gxo),
             Ok((
-                "",
+                " ",
                 CompanyInfo {
                     name: String::from("GXO LOGISTICS INC. COMMON STOCK WHEN-ISSUED"),
                     isin: String::from("US36262G1013"),
@@ -510,24 +504,53 @@ US36262G1013
     #[test]
     fn decimal_value_test() {
         assert_eq!(
-            DegiroParser::decimal_value("1.000,03\n"),
-            Ok(("\n", Decimal::new(1_000_03, 2)))
+            DegiroParser::decimal_value("1.000,03 "),
+            Ok((" ", Decimal::new(1_000_03, 2)))
         );
         assert_eq!(
-            DegiroParser::decimal_value("300\n"),
-            Ok(("\n", Decimal::new(300, 0)))
+            DegiroParser::decimal_value("300 "),
+            Ok((" ", Decimal::new(300, 0)))
         );
         assert_eq!(
-            DegiroParser::decimal_value("0,9030\n"),
-            Ok(("\n", Decimal::new(9030, 4)))
+            DegiroParser::decimal_value("0,9030 "),
+            Ok((" ", Decimal::new(9030, 4)))
         );
         assert_eq!(
-            DegiroParser::decimal_value("a234,23\n"),
+            DegiroParser::decimal_value("a234,23 "),
             Err(NomErr::Error(VerboseError {
                 errors: vec![
-                    ("a234,23\n", VerboseErrorKind::Nom(ErrorKind::OneOf)),
-                    ("a234,23\n", VerboseErrorKind::Nom(ErrorKind::Many1)),
-                    ("a234,23\n", VerboseErrorKind::Context("decimal value")),
+                    ("a234,23 ", VerboseErrorKind::Nom(ErrorKind::OneOf)),
+                    ("a234,23 ", VerboseErrorKind::Nom(ErrorKind::Many1)),
+                    ("a234,23 ", VerboseErrorKind::Context("decimal value")),
+                ]
+            }))
+        );
+    }
+
+    #[test]
+    fn number_two_decimal_digits_test() {
+        assert_eq!(
+            DegiroParser::number_two_decimal_digits("1.000,03 "),
+            Ok((" ", Decimal::new(1_000_03, 2)))
+        );
+        assert_eq!(
+            DegiroParser::number_two_decimal_digits("300,00 "),
+            Ok((" ", Decimal::new(300, 0)))
+        );
+        assert_eq!(
+            DegiroParser::number_two_decimal_digits("0,90 "),
+            Ok((" ", Decimal::new(90, 2)))
+        );
+        assert_eq!(
+            DegiroParser::number_two_decimal_digits("a234,23 "),
+            Err(NomErr::Error(VerboseError {
+                errors: vec![
+                    ("a234,23 ", VerboseErrorKind::Nom(ErrorKind::OneOf)),
+                    ("a234,23 ", VerboseErrorKind::Nom(ErrorKind::Many1)),
+                    (
+                        "a234,23 ",
+                        VerboseErrorKind::Context("number two decimal digits")
+                    ),
                 ]
             }))
         );
@@ -565,14 +588,8 @@ US36262G1013
             String::from("NL"),
         ));
 
-        const BURFORD_NOTE: &str = r#"3.889,94
-712,0000
-GBX
-463
-LSE
-Stock
-BURFORD CAP LD
-GG00B4L84979"#;
+        const BURFORD_NOTE: &str = r#"
+ 2.247,001.656,0000GBX122LSEStockBURFORD CAP LD GG00B4L84979"#;
 
         assert_eq!(
             DegiroParser::balance_note(BURFORD_NOTE, &degiro_broker),
@@ -584,10 +601,10 @@ GG00B4L84979"#;
                         isin: String::from("GG00B4L84979")
                     },
                     String::from("LSE"),
-                    Decimal::new(463, 0),
+                    Decimal::new(122, 0),
                     String::from("GBX"),
-                    Decimal::new(712_0000, 4),
-                    Decimal::new(3889_94, 2),
+                    Decimal::new(1_6560000, 4),
+                    Decimal::new(2247_00, 2),
                     &degiro_broker,
                 )
             ))
@@ -600,16 +617,9 @@ GG00B4L84979"#;
             String::from("Degiro"),
             String::from("NL"),
         ));
-        const BURFORD_NOTE: &str = r#"31/10/2018
-BURFORD CAP LD
-GG00B4L84979
-C
-122
-1.616,0000
-197.152,00
-2.247,93
-5,28
-0,0114"#;
+        const BURFORD_NOTE: &str = r#"31/10/2018 BURFORD CAP LD GG00B4L84979 C 122 1.616,0000 197.152,00 2.247,93 5,28 0,0114
+"#;
+
         assert_eq!(
             DegiroParser::account_note(BURFORD_NOTE, &degiro_broker),
             Ok((
@@ -630,17 +640,8 @@ C
             ))
         );
 
-        const BURFORD_LONG_NOTE: &str = r#"31/10/2018
-BURFORD
-CAP LD
-GG00B4L84979
-C
-122
-1.616,0000
-197.152,00
-2.247,93
-5,28
-0,0114"#;
+        const BURFORD_LONG_NOTE: &str = r#"31/10/2018 BURFORD CAP LD GG00B4L84979 C 122 1.616,0000 197.152,00 2.247,93 5,28 0,0114
+"#;
 
         assert_eq!(
             DegiroParser::account_note(BURFORD_LONG_NOTE, &degiro_broker),
@@ -662,18 +663,9 @@ C
             ))
         );
 
-        const GXO_LONG_NOTE: &str = r#"02/08/2021
-GXO LOGISTICS INC.
-COMMON STOCK WHEN-
-ISSUED
-US36262G1013
-C
-69
-0,0000
-0,00
-0,00
-0,00
-0,8423"#;
+        const GXO_LONG_NOTE: &str = r#"02/08/2021 GXO LOGISTICS INC. COMMON
+STOCK WHEN-ISSUED US36262G1013 C 69 0,0000 0,00 0,00 0,00 0,8423
+"#;
 
         assert_eq!(
             DegiroParser::account_note(GXO_LONG_NOTE, &degiro_broker),
@@ -697,13 +689,14 @@ C
     }
 
     #[test]
-    fn degiro_2018_parse_content_test() {
+    fn degiro_2023_parse_content_test() {
         let degiro_broker: Arc<BrokerInformation> = Arc::new(BrokerInformation::new(
             String::from("Degiro"),
             String::from("NL"),
         ));
-        let parser = DegiroParser::new(INPUT_2018.to_string(), &degiro_broker);
+        let parser = DegiroParser::new(INPUT_2023.to_string(), &degiro_broker);
         let (balance_notes, account_notes) = parser.parse_pdf_content().unwrap();
+
         let bal_notes = vec![
             BalanceNote::new(
                 CompanyInfo {
@@ -743,6 +736,18 @@ C
             ),
             BalanceNote::new(
                 CompanyInfo {
+                    name: String::from("GXO LOGISTICS INC. COMMON STOCK"),
+                    isin: String::from("US9837931008"),
+                },
+                String::from("NSY"),
+                Decimal::new(41, 0),
+                String::from("USD"),
+                Decimal::new(57_0400, 4),
+                Decimal::new(2039_76, 2),
+                &degiro_broker,
+            ),
+            BalanceNote::new(
+                CompanyInfo {
                     name: String::from("MONDO TV"),
                     isin: String::from("IT0001447785"),
                 },
@@ -765,20 +770,11 @@ C
                 Decimal::new(1005_43, 2),
                 &degiro_broker,
             ),
-            BalanceNote::new(
-                CompanyInfo {
-                    name: String::from("XPO LOGISTICS INC."),
-                    isin: String::from("US9837931008"),
-                },
-                String::from("NSY"),
-                Decimal::new(41, 0),
-                String::from("USD"),
-                Decimal::new(57_0400, 4),
-                Decimal::new(2039_76, 2),
-                &degiro_broker,
-            ),
         ];
 
+        for (i, item) in bal_notes.iter().enumerate() {
+            assert_eq!(*item, balance_notes[i]);
+        }
         assert_eq!(bal_notes, balance_notes);
 
         let acc_notes = vec![
@@ -874,30 +870,28 @@ C
                 &degiro_broker,
             ),
         ];
+        for (i, item) in acc_notes.iter().enumerate() {
+            assert_eq!(*item, account_notes[i]);
+        }
+
         assert_eq!(acc_notes, account_notes);
     }
 
-    const INPUT_2018: &str = r#"
+    const INPUT_2023: &str = r#"
 Sr. John Doe
 neverwhere
 neverland
 
 
-Nombre de usuario: 
-******aaa
-DEGIRO B.V.
+Nombre de usuario: ******aaa
+ DEGIRO B.V.
 Rembrandt Tower - 9th floor
 Amstelplein 1
 1096 HA Amsterdam
 
-T
- +34 91 123 96 78
-E
- 
-clientes@degiro.es
-I
- 
-www.degiro.es
+T +34 91 123 96 78
+E clientes@degiro.es
+I www.degiro.es
 
 Estimado señor Doe,
 
@@ -943,304 +937,168 @@ Webtrader.
 DEGIRO realiza el Informe Fiscal de la manera más rigurosa posible pero no asume responsabilidad
 por cualquier posible inexactitud en el mismo. Este informe no es vinculante y de tener cualquier duda
 al respecto, le rogamos se ponga en contacto con el Servicio de Atención al Cliente de DEGIRO en
-clientes@degiro.es
-.
+clientes@degiro.es.
 
 Atentamente,
 
 DEGIRO
 
-
 DEGIRO B.V. es una empresa de servicios de inversión regulada por la Autoridad Financiera de los MeArcados
 Holandeses.
-Informe Anual 2018 - 
-www.degiro.es
-1
-/ 3
+Informe Anual 2018 - www.degiro.es 1 / 3
 
 Sr. John Doe
 neverwhere
 neverland
 
-
-Nombre de usuario: 
-******aaa
-DEGIRO B.V.
+Nombre de usuario: ******aaa
+ DEGIRO B.V.
 Rembrandt Tower - 9th floor
 Amstelplein 1
 1096 HA Amsterdam
 
-T
- +34 91 123 96 78
-E
- 
-clientes@degiro.es
-I
- 
-www.degiro.es
-Valor de la Cartera
-01-01-2018
-31-12-2018
-Fondos del MeArcado Monetario
-0.00 EUR
-109.63 EUR
-Valor en cartera
-0.00 EUR
-11,568.35 EUR
-Valor total
-0.00 EUR
-11,677.98 EUR
+T +34 91 123 96 78
+E clientes@degiro.es
+I www.degiro.es
+
+Valor de la Cartera 01-01-2018 31-12-2018
+
+Fondos del Mercado Monetario 0.00 EUR 109.63 EUR
+
+Valor en cartera 0.00 EUR 11,568.35 EUR
+
+Valor total 0.00 EUR 11,677.98 EUR
+
 Ganancias (1 de enero - 31 de diciembre)
-Ganancia bruta por liquidación de posiciones
-0.00 EUR
-Pérdida bruta por liquidación de posiciones
--0.17 EUR
-Total de comisiones por transacción pagadas en el año 2018
-Total de comisiones por transacción de las posiciones cerradas
-0.00 EUR
-Comisiones
-17.85 EUR
-Comisión de conectividad con el meArcado
-10.00 EUR
-Interés
-Total interés pagado por venta en corto
-0.00 EUR
-Total interés recibido
-0.00 EUR
-Total interés pagado
-0.00 EUR
-Compensación Fondos del MeArcado Monetario (FMM)
-Compensación total recibida 2018
-0.18
-EUR
 
+Ganancia bruta por liquidación de posiciones 0.00 EUR
+
+Pérdida bruta por liquidación de posiciones -0.17 EUR
+
+Total de comisiones por transacción pagadas en el año 2018
+
+Total de comisiones por transacción de las posiciones cerradas 0.00 EUR
+
+Comisiones
+ 17.85 EUR
+
+Comisión de conectividad con el mercado 10.00 EUR
+
+Interés
+
+Total interés pagado por venta en corto 0.00 EUR
+
+Total interés recibido 0.00 EUR
+
+Total interés pagado 0.00 EUR
+
+Compensación Fondos del Mercado Monetario (FMM)
+
+Compensación total recibida 2018 0.18 EUR
 
 DEGIRO B.V. es una empresa de servicios de inversión regulada por la Autoridad Financiera de los MeArcados
 Holandeses.
-Informe Anual 2018 - 
-www.degiro.es
-2
-/ 3
+
+Informe Anual 2018 - www.degiro.es
+2 / 3
 
 Sr. John Doe
 neverwhere
 neverland
 
 
-Nombre de usuario: 
-******aaa
-DEGIRO B.V.
+Nombre de usuario: ******aaa
+ DEGIRO B.V.
 Rembrandt Tower - 9th floor
 Amstelplein 1
 1096 HA Amsterdam
 
-T
- +34 91 123 96 78
-E
- 
-clientes@degiro.es
-I
- 
-www.degiro.es
-Dividendos, Cupones y otras remuneraciones
-País
-Producto
-Ingreso bruto
-Retenciones a cuenta
-Ingreso neto
-GG
-0.00 EUR
-3.86 EUR
-3.86 EUR
-BURFORD CAP LD
-3.86 EUR
-0.00 EUR
-3.86 EUR
-Distribuciones Fondos del MeArcado Monetario
-Producto
-Ingreso neto
-No se han abonado distribuciones
-Relación de ganancias y pérdidas por producto
-Por favor, tenga en cuenta que el resultado de "Ganancias/Pérdidas" incluye las comisiones de compra/venta.
-Producto
-Symbol/ISIN
-Ganancias / Pérdidas
-Comisión pagada
-Morgan Stanley EUR Liquidity Fund
-LU0904783973
--0.17
-0.00
-EUR
-EUR
+T +34 91 123 96 78
+E clientes@degiro.es
+I www.degiro.es
 
+Dividendos, Cupones y otras remuneraciones
+País Producto Ingreso bruto Retenciones a cuenta Ingreso neto
+
+GG 0.00 EUR3.86 EUR 3.86 EURBURFORD CAP LD
+ 3.86 EUR0.00 EUR3.86 EUR
+
+Distribuciones Fondos del Mercado Monetario
+
+Producto Ingreso neto
+
+No se han abonado distribuciones
+
+Relación de ganancias y pérdidas por producto
+
+Por favor, tenga en cuenta que el resultado de "Ganancias/Pérdidas" incluye las comisiones de compra/venta.
+
+Producto Symbol/ISIN Ganancias / Pérdidas Comisión pagada
+
+Morgan Stanley EUR Liquidity Fund LU0904783973 -0.17 0.00EUR EUR
 
 DEGIRO B.V. es una empresa de servicios de inversión regulada por la Autoridad Financiera de los MeArcados
 Holandeses.
-Informe Anual 2018 - 
-www.degiro.es
-3
-/ 3
 
+Informe Anual 2018 - www.degiro.es
+3 / 3
 
 
 Certificado de Beneficiario Último Económico.
-Cliente:
-Sr. John Doe
-johndoeaaa
-Nombre de usuario:
-Dirección:
-neverwhere, neverland
-País:
-España
-31/12/2018
-Fecha del extracto:
-Producto
-ISIN
-Bolsa
-Cantidad
-Moneda
-Precio
-Valor (EUR)
-CASH & CASH FUND (EUR)
-2.247,00
-1.656,0000
-GBX
-122
-LSE
-Stock
-BURFORD CAP LD
-GG00B4L84979
-2.401,07
-131,0900
-USD
-21
-NDQ
-Stock
-FACEBOOK INC. - CLASS
-US30303M1027
-2.555,72
-20,9300
-USD
-140
-NDQ
-Stock
-JD.COM INC. - AMERICA
-US47215P1066
-1.319,37
-1,1940
-EUR
-1105
-MIL
-Stock
-MONDO TV
-IT0001447785
-1.005,43
-160,0000
-GBX
-565
-LSE
-Stock
-TAPTICA INT LTD
-IL0011320343
-2.039,76
-57,0400
-USD
-41
-NSY
-Stock
-XPO LOGISTICS INC.
-US9837931008
 
+Cliente: Sr. John Doe
 
+johndoeaaaNombre de usuario:
+
+Dirección: neverwhere, neverland
+
+País: España
+ 31/12/2018Fecha del extracto:
+
+Producto ISIN Bolsa Cantidad Moneda Precio Valor (EUR)
+
+ 2.247,00CurrencyCASH & CASH FUND (EUR)
+ 2.247,001.656,0000GBX122LSEStockBURFORD CAP LD GG00B4L84979
+ 2.401,07131,0900USD21NDQStockFACEBOOK INC. - CLASS US30303M1027
+ 2.555,7220,9300USD140NDQStockJD.COM INC. - AMERICA US47215P1066
+ 2.039,7657,0400USD41NSYStockGXO LOGISTICS INC. COMMON
+STOCK US9837931008
+ 1.319,371,1940EUR1105MILStockMONDO TV IT0001447785
+ 1.005,43160,0000GBX565LSEStockTAPTICA INT LTD IL0011320343
 
 Amsterdam, 28/01/2019
+
 Este certificado está expedido en la fecha y hora exacta indicadas. Ni Degiro ni Stichting Degiro asumen
 ninguna responsabilidad en la expedición o corrección del presente documento.
 
 Beneficios y pérdidas derivadas de la transmisión de elementos patrimoniales
+
 Por favor, tenga en cuenta que el resultado de "Beneficios y pérdidas" no incluye las comisiones de compra/venta.
-Fecha
-Producto
-Symbol/ISIN
-Tipo de
-orden
-Cantidad
-Precio
-Valor local
-Valor en EUR
-Comisión
-Tipo de
-cambio
-Beneficios y
+
+Fecha Producto Symbol/ISIN Tipo de
+orden Cantidad Precio Valor local Valor en EUR Comisión Tipo de
+cambio Beneficios y
 pérdidas
-31/10/2018
-BURFORD CAP LD
-GG00B4L84979
-C
-122
-1.616,0000
-197.152,00
-2.247,93
-5,28
-0,0114
-22/10/2018
-FACEBOOK INC. - CLASS
-US30303M1027
-C
-21
-154,7600
-3.249,96
-2.834,62
-0,57
-0,8722
-22/10/2018
-JD.COM INC. - AMERICA
-US47215P1066
-C
-140
-23,8900
-3.344,60
-2.917,16
-0,99
-0,8722
-23/11/2018
-MONDO TV
-IT0001447785
-C
-877
-1,9000
-1.666,30
-1.666,30
-4,97
-1,0000
-23/11/2018
-MONDO TV
-IT0001447785
-C
-228
-1,9000
-433,20
-433,20
-0,25
-1,0000
-03/12/2018
-TAPTICA INT LTD
-IL0011320343
-C
-565
-310,0000
-175.150,00
-1.962,91
-5,15
-0,0112
-31/12/2018
-XPO LOGISTICS INC.
-US9837931008
-C
-41
-56,6000
-2.320,60
-2.024,03
-0,64
-0,8722"#;
+
+31/10/2018 BURFORD CAP LD GG00B4L84979 C 122 1.616,0000 197.152,00 2.247,93 5,28 0,0114
+
+22/10/2018 FACEBOOK INC. - CLASS US30303M1027 C 21 154,7600 3.249,96 2.834,62 0,57 0,8722
+
+22/10/2018 JD.COM INC. - AMERICA US47215P1066 C 140 23,8900 3.344,60 2.917,16 0,99 0,8722
+
+23/11/2018 MONDO TV IT0001447785 C 877 1,9000 1.666,30 1.666,30 4,97 1,0000
+
+23/11/2018 MONDO TV IT0001447785 C 228 1,9000 433,20 433,20 0,25 1,0000
+
+03/12/2018 TAPTICA INT LTD IL0011320343 C 565 310,0000 175.150,00 1.962,91 5,15 0,0112
+
+31/12/2018 XPO LOGISTICS INC.  US9837931008 C 41 56,6000 2.320,60 2.024,03 0,64 0,8722
+
+67,00 EURTotal
+
+Informe anual de flatex
+
+Para ayudarle a realizar su declaración de la renta le proveemos con este informe anual ya que dispone de una Cuenta de
+Efectivo en flatex asociada a su cuenta de DEGIRO.
+"#;
 }

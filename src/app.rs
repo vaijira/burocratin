@@ -90,7 +90,7 @@ impl App {
     }
 
     fn read_degiro_pdf(app: Arc<Self>, content: Vec<u8>) {
-        if let Ok(data) = read_pdf(content) {
+        if let Ok(data) = read_pdf(&content) {
             let parser = DegiroParser::new(data, &app.degiro_broker);
             let pdf_content = parser.parse_pdf_content();
             if let Ok((balance_notes, account_notes)) = pdf_content {
