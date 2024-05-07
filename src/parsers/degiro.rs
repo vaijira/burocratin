@@ -84,28 +84,14 @@ impl DegiroParser {
         )(input)
     }
 
-    fn number_two_decimal_digits(input: &str) -> Res<&str, Decimal> {
+    fn number_decimal_digits(input: &str, count: usize) -> Res<&str, Decimal> {
         context(
-            "number two decimal digits",
+            "number n decimal digits",
             map_res(
                 recognize(separated_pair(
                     many1(one_of("0123456789.")),
                     tag(","),
-                    take(2usize),
-                )),
-                |out: &str| Decimal::from_str(&decimal::transform_i18n_es_str(out)),
-            ),
-        )(input)
-    }
-
-    fn number_four_decimal_digits(input: &str) -> Res<&str, Decimal> {
-        context(
-            "number four decimal digits",
-            map_res(
-                recognize(separated_pair(
-                    many1(one_of("0123456789.")),
-                    tag(","),
-                    take(4usize),
+                    take(count),
                 )),
                 |out: &str| Decimal::from_str(&decimal::transform_i18n_es_str(out)),
             ),
@@ -161,8 +147,21 @@ impl DegiroParser {
     }
 
     fn isin(input: &str) -> Res<&str, String> {
-        context("isin", many_m_n(12, 12, none_of("\t \n")))(input)
-            .map(|(next_input, res)| (next_input, res.iter().collect()))
+        context(
+            "isin",
+            tuple((
+                many_m_n(2, 2, none_of("\t \n0123456789")),
+                many_m_n(9, 9, none_of("\t \n")),
+                many1(one_of("0123456789")),
+            )),
+        )(input)
+        .map(|(next_input, res)| {
+            let (prefix, main, control) = res;
+            let mut result: String = prefix.iter().collect();
+            result.push_str(&main.iter().collect::<String>());
+            result.push_str(&control.iter().collect::<String>());
+            (next_input, result)
+        })
     }
 
     fn company_info(input: &str) -> Res<&str, CompanyInfo> {
@@ -252,13 +251,13 @@ impl DegiroParser {
             "balance note",
             tuple((
                 tag("\n "),
-                DegiroParser::number_two_decimal_digits, // value in euro
-                DegiroParser::number_four_decimal_digits, // price
-                take(3usize),                            // currency
-                DegiroParser::number_no_decimal_digits,  // quantity
-                take(3usize),                            // market
-                alt((tag("Stock"), tag("ETF"))),         // product type: Stock | ETF
-                DegiroParser::company_info,              // company info
+                |input| DegiroParser::number_decimal_digits(input, 2), // value in euro
+                |input| DegiroParser::number_decimal_digits(input, 4), // price
+                take(3usize),                                          // currency
+                DegiroParser::number_no_decimal_digits,                // quantity
+                take(3usize),                                          // market
+                alt((tag("Stock"), tag("ETF"))),                       // product type: Stock | ETF
+                DegiroParser::company_info,                            // company info
             )),
         )(input)
         .map(|(next_input, res)| {
@@ -528,28 +527,28 @@ STOCK WHEN-ISSUED US36262G1013 "#;
     }
 
     #[test]
-    fn number_two_decimal_digits_test() {
+    fn number_decimal_digits_test() {
         assert_eq!(
-            DegiroParser::number_two_decimal_digits("1.000,03 "),
+            DegiroParser::number_decimal_digits("1.000,03 ", 2),
             Ok((" ", Decimal::new(1_000_03, 2)))
         );
         assert_eq!(
-            DegiroParser::number_two_decimal_digits("300,00 "),
+            DegiroParser::number_decimal_digits("300,00 ", 2),
             Ok((" ", Decimal::new(300, 0)))
         );
         assert_eq!(
-            DegiroParser::number_two_decimal_digits("0,90 "),
+            DegiroParser::number_decimal_digits("0,90 ", 2),
             Ok((" ", Decimal::new(90, 2)))
         );
         assert_eq!(
-            DegiroParser::number_two_decimal_digits("a234,23 "),
+            DegiroParser::number_decimal_digits("a234,23 ", 2),
             Err(NomErr::Error(VerboseError {
                 errors: vec![
                     ("a234,23 ", VerboseErrorKind::Nom(ErrorKind::OneOf)),
                     ("a234,23 ", VerboseErrorKind::Nom(ErrorKind::Many1)),
                     (
                         "a234,23 ",
-                        VerboseErrorKind::Context("number two decimal digits")
+                        VerboseErrorKind::Context("number n decimal digits")
                     ),
                 ]
             }))
@@ -682,6 +681,28 @@ STOCK WHEN-ISSUED US36262G1013 C 69 0,0000 0,00 0,00 0,00 0,8423
                     Decimal::new(0, 4),
                     Decimal::new(0, 2),
                     Decimal::new(0, 2),
+                    &degiro_broker,
+                )
+            ))
+        );
+
+        const WATER_NOTE: &str = r#"07/02/2023 WATER INTELLIGENCE PLC GB00BZ973D04 C 880 600,0000 528.000,00 5.928,91 4,90 0,0112
+"#;
+        assert_eq!(
+            DegiroParser::account_note(WATER_NOTE, &degiro_broker),
+            Ok((
+                "",
+                AccountNote::new(
+                    NaiveDate::from_ymd_opt(2023, 2, 7).unwrap(),
+                    CompanyInfo {
+                        name: String::from("WATER INTELLIGENCE PLC"),
+                        isin: String::from("GB00BZ973D04")
+                    },
+                    BrokerOperation::Buy,
+                    Decimal::new(880, 0),
+                    Decimal::new(6000000, 4),
+                    Decimal::new(52800000, 2),
+                    Decimal::new(490, 2),
                     &degiro_broker,
                 )
             ))
