@@ -15,6 +15,7 @@ mod app;
 mod css;
 mod data;
 mod feathers;
+mod footer;
 mod parsers;
 mod reports;
 mod tooltip;

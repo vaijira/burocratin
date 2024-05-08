@@ -32,20 +32,20 @@ pub fn render_svg_help_icon(color: &str, size: &str) -> Dom {
 }
 
 pub fn render_svg_twitter_icon(color: &str, size: &str) -> Dom {
-    // <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-twitter"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg>
+    // <svg alt="X twitter icon" width="24" height="24" viewBox="0 0 24 24"><path d="m 18.744792,0 h 3.850107 l -8.453496,10.079827 9.876362,13.673506 H 16.267332 L 10.199228,15.444049 3.2522952,23.753333 H -0.59781209 L 8.3578721,12.9723 -1.1,0 h 7.9429388 l 5.4822182,7.5905485 z m -1.347537,21.386764 h 2.134298 L 5.7213859,2.2789175 H 3.4280611 Z" style="stroke-width:0.0856513"></path></svg>
     svg!("svg", {
-        .attr("alt", "twitter icon")
+        .attr("alt", "X twitter icon")
         .attr("width", size)
         .attr("height", size)
         .attr("viewBox", "0 0 24 24")
         .attr("fill", color)
         .attr("stroke", color)
-        .attr("stroke-width", "2")
+        .attr("stroke-width", "0.0856513")
         .attr("stroke-linecap", "round")
         .attr("stroke-linejoin", "round")
         .children(&mut[
             svg!("path",{
-                .attr("d", "M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z")
+                .attr("d", "m 18.744792,0 h 3.850107 l -8.453496,10.079827 9.876362,13.673506 H 16.267332 L 10.199228,15.444049 3.2522952,23.753333 H -0.59781209 L 8.3578721,12.9723 -1.1,0 h 7.9429388 l 5.4822182,7.5905485 z m -1.347537,21.386764 h 2.134298 L 5.7213859,2.2789175 H 3.4280611 Z")
             }),
         ])
     })
