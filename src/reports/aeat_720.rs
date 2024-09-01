@@ -1,6 +1,5 @@
-use crate::data::{AccountNote, BalanceNote, FinancialInformation};
+use crate::data::{Aeat720Information, Aeat720Record};
 use anyhow::{bail, Result};
-use chrono::NaiveDate;
 use encoding_rs::ISO_8859_15;
 use rust_decimal::{prelude::ToPrimitive, Decimal};
 use std::io::Write;
@@ -228,7 +227,13 @@ impl Default for SummaryRegister {
 }
 
 impl SummaryRegister {
-    fn new(notes: &[BalanceNote], year: usize, nif: &str, name: &str, phone: &str) -> Result<Self> {
+    fn new(
+        records: &[Aeat720Record],
+        year: usize,
+        nif: &str,
+        name: &str,
+        phone: &str,
+    ) -> Result<Self> {
         let mut fields = Self::default().fields;
 
         Aeat720Field::write_field(&mut fields, Self::NIF_FIELD, nif)?;
@@ -246,12 +251,12 @@ impl SummaryRegister {
         Aeat720Field::write_numeric_field(
             &mut fields,
             Self::TOTAL_DETAIL_REGISTERS_FIELD,
-            notes.len(),
+            records.len(),
         )?;
 
         let mut total_acquisition = Decimal::new(0, 2);
 
-        for note in notes {
+        for note in records {
             total_acquisition += note.value_in_euro;
         }
 
@@ -456,13 +461,7 @@ impl Default for DetailRegister {
 }
 
 impl DetailRegister {
-    fn new(
-        note: &BalanceNote,
-        transactions: &[AccountNote],
-        year: usize,
-        nif: &str,
-        name: &str,
-    ) -> Result<Self> {
+    fn new(record: &Aeat720Record, year: usize, nif: &str, name: &str) -> Result<Self> {
         let mut fields = Self::default().fields;
 
         Aeat720Field::write_numeric_field(&mut fields, Self::YEAR_FIELD, year)?;
@@ -472,38 +471,26 @@ impl DetailRegister {
         Aeat720Field::write_field(
             &mut fields,
             Self::COUNTRY_CODE_FIELD,
-            &note.broker.country_code,
+            &record.broker.country_code,
         )?;
-        Aeat720Field::write_field(&mut fields, Self::STOCK_ID_FIELD, &note.company.isin)?;
+        Aeat720Field::write_field(&mut fields, Self::STOCK_ID_FIELD, &record.company.isin)?;
         Aeat720Field::write_field(
             &mut fields,
             Self::ENTITY_NAME_FIELD,
-            &note.company.name.to_uppercase(),
+            &record.company.name.to_uppercase(),
         )?;
         Aeat720Field::write_field(
             &mut fields,
             Self::ENTITY_COUNTRY_CODE_FIELD,
-            &note.company.isin[0..2],
+            &record.company.isin[0..2],
         )?;
-        let first_tx_date = {
-            let company = transactions.iter().find(|&x| x.company == note.company);
-            match company {
-                Some(c) => c.date.format("%Y%m%d").to_string(),
-                None => NaiveDate::from_ymd_opt(year as i32, 1, 1)
-                    .unwrap()
-                    .format("%Y%m%d")
-                    .to_string(),
-            }
-            .parse::<usize>()
-            .unwrap_or(0)
-        };
         Aeat720Field::write_numeric_field(
             &mut fields,
             Self::FIRST_ACQUISITION_DATE_FIELD,
-            first_tx_date,
+            record.first_tx_date,
         )?;
 
-        if note.value_in_euro.is_sign_negative() {
+        if record.value_in_euro.is_sign_negative() {
             Aeat720Field::write_field(
                 &mut fields,
                 Self::ACQUISITON_SIGN_FIELD,
@@ -513,9 +500,9 @@ impl DetailRegister {
         Aeat720Field::write_numeric_field(
             &mut fields,
             Self::ACQUISITION_INT_FIELD,
-            note.value_in_euro.trunc().abs().to_usize().unwrap_or(0),
+            record.value_in_euro.trunc().abs().to_usize().unwrap_or(0),
         )?;
-        let mut remainder = note.value_in_euro.fract();
+        let mut remainder = record.value_in_euro.fract();
         remainder.set_scale(0)?;
         Aeat720Field::write_numeric_field(
             &mut fields,
@@ -526,10 +513,10 @@ impl DetailRegister {
         Aeat720Field::write_numeric_field(
             &mut fields,
             Self::STOCK_QUANTITY_INT_FIELD,
-            note.quantity.trunc().abs().to_usize().unwrap_or(0),
+            record.quantity.trunc().abs().to_usize().unwrap_or(0),
         )?;
 
-        let mut remainder = note.quantity.fract();
+        let mut remainder = record.quantity.fract();
         remainder.set_scale(2)?;
         Aeat720Field::write_numeric_field(
             &mut fields,
@@ -549,16 +536,15 @@ pub struct Aeat720Report {
 }
 
 impl Aeat720Report {
-    pub fn new(info: &FinancialInformation) -> Result<Aeat720Report> {
+    pub fn new(info: &Aeat720Information) -> Result<Aeat720Report> {
         let mut details = Vec::new();
         let full_name = info.full_name();
 
-        for balance_note in &info.balance_notes {
+        for record in &info.records {
             let detail = DetailRegister::new(
-                balance_note,
-                &info.account_notes,
-                info.year,
-                &info.nif,
+                record,
+                info.personal_info.year,
+                &info.personal_info.nif,
                 &full_name,
             )?;
             details.push(detail);
@@ -566,11 +552,11 @@ impl Aeat720Report {
 
         Ok(Aeat720Report {
             summary: SummaryRegister::new(
-                &info.balance_notes,
-                info.year,
-                &info.nif,
+                &info.records,
+                info.personal_info.year,
+                &info.personal_info.nif,
                 &full_name,
-                &info.phone,
+                &info.personal_info.phone,
             )?,
             details,
         })

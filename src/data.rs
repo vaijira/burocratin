@@ -5,6 +5,7 @@ use std::{convert::From, sync::Arc};
 
 pub type AccountNotes = Vec<AccountNote>;
 pub type BalanceNotes = Vec<BalanceNote>;
+pub type Aeat720Records = Vec<Aeat720Record>;
 
 pub const SPAIN_COUNTRY_CODE: &str = "ES";
 
@@ -115,9 +116,18 @@ impl BrokerInformation {
         }
     }
 }
-pub struct FinancialInformation {
-    pub account_notes: AccountNotes,
-    pub balance_notes: BalanceNotes,
+
+#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+pub struct Aeat720Record {
+    pub company: CompanyInfo,
+    pub quantity: Decimal,
+    pub value_in_euro: Decimal,
+    pub first_tx_date: usize,
+    pub broker: Arc<BrokerInformation>,
+}
+
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
+pub struct PersonalInformation {
     pub name: String,
     pub surname: String,
     pub nif: String,
@@ -125,21 +135,29 @@ pub struct FinancialInformation {
     pub phone: String,
 }
 
-impl FinancialInformation {
-    #[allow(dead_code)]
+#[derive(Debug, Eq, Clone, PartialEq, Deserialize, Serialize)]
+pub struct Aeat720Information {
+    pub records: Vec<Aeat720Record>,
+    pub personal_info: PersonalInformation,
+}
+
+pub const DEFAULT_YEAR: usize = 2024;
+
+impl Aeat720Information {
     pub fn new() -> Self {
         Self {
-            account_notes: vec![],
-            balance_notes: vec![],
-            name: String::from(""),
-            surname: String::from(""),
-            nif: String::from(""),
-            year: 0,
-            phone: String::from(""),
+            records: vec![],
+            personal_info: PersonalInformation {
+                name: String::from(""),
+                surname: String::from(""),
+                nif: String::from(""),
+                year: DEFAULT_YEAR,
+                phone: String::from(""),
+            },
         }
     }
 
     pub fn full_name(&self) -> String {
-        self.surname.clone() + " " + &self.name
+        self.personal_info.surname.clone() + " " + &self.personal_info.name
     }
 }

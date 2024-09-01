@@ -26,6 +26,7 @@ futures = "0.3"
 futures-signals = "0.3"
 gloo-file = { version = "0.2", features = [ "futures" ] }
 html5ever = "0.25"
+infer = "0.16.0"
 instant = { version = "0.1", features =  [ "wasm-bindgen", "inaccurate" ] }
 js-sys = "0.3"
 log = "0.4"

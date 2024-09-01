@@ -2,7 +2,6 @@ use anyhow::{bail, Result};
 use std::io::{Cursor, Read};
 use zip::ZipArchive;
 
-#[allow(dead_code)]
 pub fn read_zip(data: Vec<u8>) -> Result<Vec<u8>> {
     let mut archive = ZipArchive::new(Cursor::new(data))?;
 
