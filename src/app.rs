@@ -35,7 +35,7 @@ impl App {
 
         Arc::new(Self {
             current_error: Mutable::new(None),
-            aeat720_records: MutableVec::new(), // aeat720_records.clone(),
+            aeat720_records: aeat720_records.clone(),
             personal_info: personal_info.clone(),
             aeat720_form_path: Mutable::new(None),
             personal_info_viewer: PersonalInfoViewer::new(personal_info.clone()),
