@@ -1,9 +1,11 @@
 use std::sync::Arc;
 
+use anyhow::Result;
 use dominator::{clone, events, html, stylesheet, with_node, Dom};
 use futures_signals::{
-    signal::{Mutable, SignalExt},
-    signal_vec::MutableVec,
+    map_ref,
+    signal::{Mutable, Signal, SignalExt},
+    signal_vec::{MutableVec, SignalVecExt},
 };
 use gloo_file::{futures::read_as_bytes, Blob};
 use wasm_bindgen_futures::spawn_local;
@@ -41,6 +43,14 @@ impl App {
         })
     }
 
+    fn is_needed_to_generate_report(this: &Arc<Self>) -> impl Signal<Item = bool> {
+        map_ref! {
+            let personal_info_changed = this.personal_info.signal_ref(|_| true),
+            let records_changed = this.aeat720_records.signal_vec_cloned().to_signal_map(|x| !x.is_empty()) =>
+            *personal_info_changed || *records_changed
+        }
+    }
+
     fn import_file(this: &Arc<Self>, content: Vec<u8>) {
         let import_data = file_importer(content);
         match import_data {
@@ -53,18 +63,19 @@ impl App {
         }
     }
 
-    fn generate_720_file(this: &Arc<Self>) {
+    fn generate_720_file(this: &Arc<Self>) -> Result<()> {
         let old_path = (*this.aeat720_form_path.lock_ref()).clone();
         let old_path = old_path.map_or("".to_owned(), |x| x);
-        if let Ok(path) = web::generate_720(
-            &Aeat720Information {
-                records: this.aeat720_records.lock_ref().to_vec(),
-                personal_info: PersonalInformation::default(),
-            },
-            &old_path,
-        ) {
-            *this.aeat720_form_path.lock_mut() = Some(path);
+        let path = web::generate_720(&Aeat720Information {
+            records: this.aeat720_records.lock_ref().to_vec(),
+            personal_info: PersonalInformation::default(),
+        })?;
+        if !old_path.is_empty() {
+            let _ = web::delete_path(old_path);
         }
+
+        *this.aeat720_form_path.lock_mut() = Some(path);
+        Ok(())
     }
 
     fn render_import_button(this: &Arc<Self>) -> Dom {
@@ -103,7 +114,6 @@ impl App {
                   let blob = Blob::from(ib_csv_data);
                   spawn_local(clone!(this => async move {
                     App::import_file(&this, read_as_bytes(&blob).await.unwrap());
-                    App::generate_720_file(&this);
                   }));
                 }))
               })
@@ -121,7 +131,6 @@ impl App {
             .with_node!(_element => {
               .event(clone!(this => move |_: events::Click| {
                 this.aeat720_records.lock_mut().clear();
-                App::generate_720_file(&this);
               }))
             })
           }))
@@ -130,26 +139,42 @@ impl App {
 
     fn render_download_button(this: &Arc<Self>) -> Dom {
         html!("section", {
-            .style("text-align", "center")
-            .child_signal(this.aeat720_form_path.signal_ref(|x| x.clone()).map(move |url| {
-                match url {
-                    Some(path) => Some(html!("a",{
+         .style("text-align", "center")
+         .child_signal(
+           App::is_needed_to_generate_report(&this).map(clone!(this => move |x| {
+              let default_button = Some(
+                html!("button", {
+                  .attr("type", "button")
+                  .attr("disabled", "true")
+                  .text("Descargar informe AEAT 720")
+                }));
+
+              if x {
+                let result = App::generate_720_file(&this);
+                if result.is_ok() {
+                  Some(
+                    html!(
+                      "a", {
                         .attr("id", "aeat_720_form")
-                        .attr("href", &path)
+                        .attr_signal("href", this.aeat720_form_path.signal_cloned())
                         .attr("alt", "Informe 720 generado")
                         .attr("download", "fichero-720.txt")
-                        .child(html!("button", {
+                        .child(
+                          html!("button", {
                             .attr("type", "button")
                             .text("Descargar informe AEAT 720")
-                        }))
-                    })),
-                    None => Some(html!("button", {
-                        .attr("type", "button")
-                        .attr("disabled", "true")
-                        .text("Descargar informe AEAT 720")
-                    })),
+                          })
+                        )
+                      })
+                    )
+
+                } else {
+                  default_button
                 }
-            }))
+             } else {
+                default_button
+             }
+          })))
         })
     }
 

@@ -5,7 +5,16 @@ use js_sys::{Array, Uint8Array};
 use wasm_bindgen::JsValue;
 use web_sys::{Blob, BlobPropertyBag, Url};
 
-pub fn generate_720(info: &Aeat720Information, old_path: &str) -> Result<String> {
+pub fn delete_path(path: String) -> Result<()> {
+    if let Err(err) = Url::revoke_object_url(&path) {
+        log::error!("Error deleting old aeat 720 form: {:?}", err);
+        bail!("Error deleting old AEAT 720 form");
+    }
+
+    Ok(())
+}
+
+pub fn generate_720(info: &Aeat720Information) -> Result<String> {
     let result;
     let aeat720report = match Aeat720Report::new(info) {
         Ok(report) => report,
@@ -27,12 +36,6 @@ pub fn generate_720(info: &Aeat720Information, old_path: &str) -> Result<String>
             );
             match blob {
                 Ok(blob_data) => {
-                    if !old_path.is_empty() {
-                        if let Err(err) = Url::revoke_object_url(old_path) {
-                            log::error!("Error deleting old aeat 720 form: {:?}", err);
-                            bail!("Error deleting old AEAT 720 form");
-                        }
-                    }
                     result = Url::create_object_url_with_blob(&blob_data).unwrap();
                 }
                 Err(err) => {

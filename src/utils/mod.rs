@@ -8,7 +8,10 @@ use crate::{
     data::{
         AccountNotes, Aeat720Record, Aeat720Records, BalanceNotes, BrokerInformation, DEFAULT_YEAR,
     },
-    parsers::{degiro::DegiroParser, ib::IBParser, ib_csv::IBCSVParser, pdf::read_pdf},
+    parsers::{
+        degiro::DegiroParser, degiro_csv::DegiroCSVParser, ib::IBParser, ib_csv::IBCSVParser,
+        pdf::read_pdf,
+    },
 };
 
 pub mod decimal;
@@ -66,6 +69,16 @@ fn read_ib_csv(content: Vec<u8>) -> Result<(BalanceNotes, AccountNotes)> {
     }
 }
 
+fn read_degiro_csv(content: Vec<u8>) -> Result<(BalanceNotes, AccountNotes)> {
+    if let Ok(data) = String::from_utf8(content) {
+        let parser = DegiroCSVParser::new(data, &DEGIRO_BROKER);
+        let balance_notes = parser.parse_csv()?;
+        Ok((balance_notes, vec![]))
+    } else {
+        bail!("Unable to parse Degiro CSV");
+    }
+}
+
 fn transform_to_aeat720_records(notes: (BalanceNotes, AccountNotes)) -> Result<Aeat720Records> {
     let mut result = vec![];
 
@@ -106,6 +119,12 @@ pub(crate) fn file_importer(content: Vec<u8>) -> Result<Aeat720Records> {
                 bail!("{} Infer types not valid", infer_type);
             }
         },
-        None => transform_to_aeat720_records(read_ib_csv(content)?),
+        None => {
+            if content.starts_with("Producto".as_bytes()) {
+                transform_to_aeat720_records(read_degiro_csv(content)?)
+            } else {
+                transform_to_aeat720_records(read_ib_csv(content)?)
+            }
+        }
     }
 }
