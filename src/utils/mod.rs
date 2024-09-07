@@ -32,6 +32,15 @@ static IB_BROKER: LazyLock<Arc<BrokerInformation>> = LazyLock::new(|| {
     ))
 });
 
+pub fn usize_to_date(date_int: usize) -> Option<NaiveDate> {
+    let mut date = date_int;
+    let day = date % 100;
+    date /= 100;
+    let month = date % 100;
+    date /= 100;
+    NaiveDate::from_ymd_opt(date as i32, month as u32, day as u32)
+}
+
 fn read_degiro_pdf(content: Vec<u8>) -> Result<(BalanceNotes, AccountNotes)> {
     if let Ok(data) = read_pdf(&content) {
         let parser = DegiroParser::new(data, &DEGIRO_BROKER);

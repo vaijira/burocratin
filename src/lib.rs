@@ -20,7 +20,6 @@ mod parsers;
 mod personal_info;
 mod reports;
 mod table;
-mod tooltip;
 mod utils;
 
 #[wasm_bindgen(start)]

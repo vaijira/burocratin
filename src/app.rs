@@ -103,7 +103,7 @@ impl App {
                       return;
                     }
                   };
-                  let ib_csv_data = match file_list.get(0) {
+                  let file_data = match file_list.get(0) {
                     Some(data) => data,
                     None => {
                       *this.current_error.lock_mut() = Some(
@@ -111,7 +111,7 @@ impl App {
                       return;
                     }
                   };
-                  let blob = Blob::from(ib_csv_data);
+                  let blob = Blob::from(file_data);
                   spawn_local(clone!(this => async move {
                     App::import_file(&this, read_as_bytes(&blob).await.unwrap());
                   }));
@@ -141,7 +141,7 @@ impl App {
         html!("section", {
          .style("text-align", "center")
          .child_signal(
-           App::is_needed_to_generate_report(&this).map(clone!(this => move |x| {
+           App::is_needed_to_generate_report(this).map(clone!(this => move |x| {
               let default_button = Some(
                 html!("button", {
                   .attr("type", "button")

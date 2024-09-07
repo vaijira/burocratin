@@ -3,7 +3,7 @@ use std::sync::Arc;
 use dominator::{html, Dom};
 use futures_signals::signal_vec::{MutableVec, SignalVecExt};
 
-use crate::data::Aeat720Record;
+use crate::{data::Aeat720Record, utils::usize_to_date};
 
 pub struct Table {
     headers: Vec<&'static str>,
@@ -50,6 +50,9 @@ impl Table {
     }
 
     fn render_row(data: &Aeat720Record) -> Dom {
+        let date = usize_to_date(data.first_tx_date)
+            .map_or("".to_string(), |d| d.format("%d/%m/%Y").to_string());
+
         html!("tr", {
           .children(&mut [
             html!("td", {
@@ -62,7 +65,7 @@ impl Table {
               .text(&data.broker.country_code)
             }),
             html!("td", {
-              .text("Pending")
+              .text(&date)
             }),
             html!("td", {
               .text(&data.value_in_euro.to_string())
@@ -71,7 +74,7 @@ impl Table {
               .text(&data.quantity.to_string())
             }),
             html!("td", {
-              .text("100")
+              .text("100%")
             }),
 
           ])
