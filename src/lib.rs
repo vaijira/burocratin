@@ -14,8 +14,6 @@ use wasm_bindgen::prelude::*;
 mod app;
 mod css;
 mod data;
-mod feathers;
-mod footer;
 mod parsers;
 mod personal_info;
 mod reports;

@@ -32,7 +32,7 @@ impl Table {
             .map(|header_cell| {
                 html!("th", {
                   .attr("scope", "col")
-                  .attr("vertical-align", "bottom")
+                  .style("vertical-align", "bottom")
                   .text(header_cell)
                 })
             })
@@ -43,6 +43,13 @@ impl Table {
         html!("thead", {
           .child(
             html!("tr", {
+              .child(
+                html!("th", {
+                  .attr("scope", "col")
+                  .style("vertical-align", "bottom")
+                  .text(" ")
+                })
+              )
               .children(Self::render_header_cells(this))
             })
           )
@@ -55,6 +62,9 @@ impl Table {
 
         html!("tr", {
           .children(&mut [
+            html!("td", {
+              .text(" ")
+            }),
             html!("td", {
               .text(&data.company.name)
             }),
@@ -93,15 +103,15 @@ impl Table {
 
     pub fn render(this: &Arc<Self>) -> Dom {
         html!("table", {
-          .attr("overflow", "auto")
-          .attr("width", "100%")
-          .attr("max-width", "400px")
-          .attr("height", "300px")
-          .attr("display", "block")
-          .attr("margin", "0 auto")
-          .attr("border-spacing", "0")
-          .attr("border-collapse", "collapse")
-          .attr("border", "1px solid #8c8c8c")
+          .style("overflow", "auto")
+          .style("width", "100%")
+          //.style("max-width", "600px")
+          .style("height", "300px")
+          .style("display", "block")
+          .style("margin", "0 auto")
+          .style("border-spacing", "0")
+          .style("border-collapse", "collapse")
+          .style("border", "1px solid #8c8c8c")
           .child(
             html!("caption", {
               .text("Movimientos importados.")

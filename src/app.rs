@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use anyhow::Result;
-use dominator::{clone, events, html, stylesheet, with_node, Dom};
+use dominator::{clone, events, html, with_node, Dom};
 use futures_signals::{
     map_ref,
     signal::{Mutable, Signal, SignalExt},
@@ -80,11 +80,12 @@ impl App {
 
     fn render_import_button(this: &Arc<Self>) -> Dom {
         html!("span", {
-          .style("text-align", "center")
           .child(
             html!("label", {
+              .style("cursor", "pointer")
+              .attr("autofocus", "autofocus")
               .attr("for", "import_report")
-              .text("Importar informes de Interactive brookers o Degiro: ")
+              .text("Importar informes de Interactive brookers o Degiro")
             })
           )
           .child(
@@ -93,6 +94,7 @@ impl App {
               .attr("alt", "Botón para importar ficheros de Interactive brokers o Degiro")
               .attr("accept", "text/html,text/csv,application/pdf,application/zip,.zip,.pdf,.csv,.html")
               .attr("type", "file")
+              .style("display", "none")
               .with_node!(element => {
                 .event(clone!(this => move |_: events::Change| {
                     let file_list = match element.files() {
@@ -124,7 +126,6 @@ impl App {
 
     fn render_clear_button(this: &Arc<Self>) -> Dom {
         html!("span", {
-          .style("text-align", "center")
           .child(html!("input" => HtmlInputElement, {
             .attr("type", "button")
             .attr("value", "Limpiar movimientos")
@@ -139,7 +140,6 @@ impl App {
 
     fn render_download_button(this: &Arc<Self>) -> Dom {
         html!("section", {
-         .style("text-align", "center")
          .child_signal(
            App::is_needed_to_generate_report(this).map(clone!(this => move |x| {
               let default_button = Some(
@@ -179,12 +179,7 @@ impl App {
     }
 
     pub fn render(this: Arc<Self>) -> Dom {
-        stylesheet!("html", {
-          .style("font-family", "arial")
-        });
-
         html!("div", {
-            .class(&*ROOT_CLASS)
             .child(
                 html!("h3", {
                   .class(&*SECTION_HEADER)
@@ -214,13 +209,6 @@ impl App {
                 })
             )
             .child(App::render_download_button(&this))
-            .child(
-                html!("hr", {})
-            )
-            .child(
-                crate::footer::render_footer()
-            )
-
         })
     }
 }

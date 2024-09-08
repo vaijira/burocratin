@@ -135,7 +135,7 @@ pub struct PersonalInformation {
     pub phone: String,
 }
 
-#[derive(Debug, Eq, Clone, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Eq, Default, Clone, PartialEq, Deserialize, Serialize)]
 pub struct Aeat720Information {
     pub records: Vec<Aeat720Record>,
     pub personal_info: PersonalInformation,
@@ -144,19 +144,6 @@ pub struct Aeat720Information {
 pub const DEFAULT_YEAR: usize = 2024;
 
 impl Aeat720Information {
-    pub fn new() -> Self {
-        Self {
-            records: vec![],
-            personal_info: PersonalInformation {
-                name: String::from(""),
-                surname: String::from(""),
-                nif: String::from(""),
-                year: DEFAULT_YEAR,
-                phone: String::from(""),
-            },
-        }
-    }
-
     pub fn full_name(&self) -> String {
         self.personal_info.surname.clone() + " " + &self.personal_info.name
     }

@@ -22,6 +22,7 @@ export default {
 
         copy({
             targets: [
+                { src: 'static/css/main.css', dest: 'dist/css/' },
                 { src: 'static/img/degiro.svg', dest: 'dist/img/' },
                 { src: 'static/img/interactive_brokers.svg', dest: 'dist/img/' },
                 { src: 'static/img/favicon.ico', dest: 'dist/img/' },

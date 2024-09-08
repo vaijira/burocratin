@@ -20,45 +20,62 @@
     <link rel="canonical" href="https://www.burocratin.com" />
     <link rel="shortcut icon" type="image/x-icon" href="/img/favicon.ico" />
     <script defer data-api="/api/event" data-domain="burocratin.com" src="/js/script.js"></script>
-    <style>
-      .alert-warning {
-        padding: 5px;
-        color: #664d03;
-        background-color: #fff3cd;
-        border-color: #ffecb5;
-        display: inline-block;
-      }
-    </style>
+    <link rel="stylesheet" type="text/css" href="css/main.css" />
   </head>
   <body>
-    <h1>Burocratin te ayuda a rellenar el modelo 720 a partir de los informes de Interactivebrokers y Degiro.</h1>
-    <p>
-      Burocratin utiliza la tecnología <a href="https://en.wikipedia.org/wiki/WebAssembly" alt="WebAssembly" target="_blank" rel="noopener external nofollow">WebAssembly</a>
-      con lo cual una vez la página realiza la carga inicial toda acción es local y ningún dato viaja por la red.
-    </p>
-    <p>
-      El modelo 720 generado se puede presentar si es la primera declaración o
-      <a href="https://sede.agenciatributaria.gob.es/Sede/todas-gestiones/impuestos-tasas/declaraciones-informativas/modelo-720-decla_____sobre-bienes-derechos-extranjero_/preguntas-frecuentes/otras-cuestiones.html?faqId=d466ff1d82d8f710VgnVCM100000dc381e0aRCRD" target="_blank" rel="noopener external nofollow" alt="720 FAQ">
-      si se ha realizado alguna venta y reinvertido el importe</a>.
-    </p>
-    <div class="alert-warning"><strong>Limitaciones:</strong>
-      <ul>
-        <li>No olvide seleccionar el idioma inglés cuando descargue informes de interactive brokers.</li>
-        <li>Sólo rellena información de acciones, no líquidez del broker.</li>
-        <li>El código de país que usará para Degiro será NL y para interactive brokers IE.</li>
-        <li>Modelo 720: Revisar el código de domiciliación del país, por defecto cogerá el del ISIN, pero esto no siempre es correcto.</li>
-        <li>Modelo 720: Revisar la fecha de primera incorporación si tu primera transacción fue antes del año a declarar.</li>
-      </ul>
-    </div>
-    <p>El autor no se hace responsable del uso resultante de esta aplicación.</p>
-    <h2>Instrucciones para la generación del modelo 720.</h2>
-    <p>Determine los ficheros a subir dependiendo de si su broker es Degiro, Interactive brokers o ambos.
-      Para Degiro se recomienda el informe anual en PDF. Para Interactive Brokers a la hora de descargar cualquiera de los informes anulaes bien en CSV ó HTML no olvide seleccionar el idioma <strong><u>INGLÉS</u></strong>.</p>
-    <p>Sólo tendrá que subir un fichero por broker, aunque se dé la opción de distintos formatos.</p>
-    <p>Tiene más información de cómo descargar los informes si desliza el puntero por el signo de interrogación adjunto a cada opción de subida de fichero.</p>
-    <p>Introduzca los datos personales para la generación del fichero del modelo 720, de otra forma al importarlo dará error.</p>
-    <p>Pulse "Descargar informe AEAT 720" y guarde el fichero en el disco duro.</p>
-    <p>Finalmente suba el fichero descargado con el modelo 720 a <a alt="enlace modelo 720 AEAT" target="_blank" rel="noopener external nofollow" href="https://sede.agenciatributaria.gob.es/Sede/procedimientoini/GI34.shtml">página correspondiente de la AEAT</a> y comparta en redes sociales si le ha resultado de utilidad.</p>
-    <div id="burocratinApp" ><script src="js/index.js"></script></div>
+    <header><h1>Burocratin te ayuda a rellenar el modelo 720 a partir de los informes de Interactivebrokers y Degiro.</h1></header>
+    <main class="container">
+      <div class="item">
+        <p>
+          Burocratin utiliza la tecnología <a href="https://en.wikipedia.org/wiki/WebAssembly" alt="WebAssembly" target="_blank" rel="noopener external nofollow">WebAssembly</a>
+          con lo cual una vez la página realiza la carga inicial toda acción es local y ningún dato viaja por la red.
+        </p>
+        <p>
+          El modelo 720 generado se puede presentar si es la primera declaración o
+          <a href="https://sede.agenciatributaria.gob.es/Sede/todas-gestiones/impuestos-tasas/declaraciones-informativas/modelo-720-decla_____sobre-bienes-derechos-extranjero_/preguntas-frecuentes/otras-cuestiones.html?faqId=d466ff1d82d8f710VgnVCM100000dc381e0aRCRD" target="_blank" rel="noopener external nofollow" alt="720 FAQ">
+          si se ha realizado alguna venta y reinvertido el importe</a>.
+        </p>
+        <div class="alert-warning"><strong>Limitaciones:</strong>
+          <ul>
+            <li>No olvide seleccionar el idioma inglés cuando descargue informes de interactive brokers.</li>
+            <li>Sólo rellena información de acciones, no líquidez del broker.</li>
+            <li>El código de país que usará para Degiro será NL y para interactive brokers IE.</li>
+            <li>Modelo 720: Revisar el código de domiciliación del país, por defecto cogerá el del ISIN, pero esto no siempre es correcto.</li>
+            <li>Modelo 720: Revisar la fecha de primera incorporación si tu primera transacción fue antes del año a declarar.</li>
+          </ul>
+        </div>
+        <p>El autor no se hace responsable del uso resultante de esta aplicación.</p>
+      </div>
+      <div class="item">
+        <h2>Instrucciones para la generación del modelo 720.</h2>
+        <p>Determine los ficheros a subir dependiendo de si su broker es Degiro, Interactive brokers o ambos.
+          Para Degiro se recomienda el informe anual en PDF. Para Interactive Brokers a la hora de descargar cualquiera de los informes anulaes bien en CSV ó HTML no olvide seleccionar el idioma <strong><u>INGLÉS</u></strong>.</p>
+        <p>Sólo tendrá que subir un fichero por broker, aunque se dé la opción de distintos formatos.</p>
+        <p>Tiene más información de cómo descargar los informes si desliza el puntero por el signo de interrogación adjunto a cada opción de subida de fichero.</p>
+        <p>Introduzca los datos personales para la generación del fichero del modelo 720, de otra forma al importarlo dará error.</p>
+        <p>Pulse "Descargar informe AEAT 720" y guarde el fichero en el disco duro.</p>
+        <p>Finalmente suba el fichero descargado con el modelo 720 a <a alt="enlace modelo 720 AEAT" target="_blank" rel="noopener external nofollow" href="https://sede.agenciatributaria.gob.es/Sede/procedimientoini/GI34.shtml">página correspondiente de la AEAT</a> y comparta en redes sociales si le ha resultado de utilidad.</p>
+      </div>
+      <div class="item">
+        <div id="burocratinApp" ><script src="js/index.js"></script></div>
+      </div>
+    </main>
+    <footer>
+      <p>Comparte en tus redes sociales si te ha sido de utilidad.</p>
+      <div>
+        <span style="margin: 2px;">
+          <a alt="Compartir en twitter" aria-label="Compartir en twitter" href="https://twitter.com/intent/tweet?text=Facilita trámites burocráticos como modelo 720&amp;url=https://www.burocratin.com" target="_blank" rel="external nofollow"><svg alt="X twitter icon" width="24" height="24" viewBox="0 0 24 24"><path d="m 18.744792,0 h 3.850107 l -8.453496,10.079827 9.876362,13.673506 H 16.267332 L 10.199228,15.444049 3.2522952,23.753333 H -0.59781209 L 8.3578721,12.9723 -1.1,0 h 7.9429388 l 5.4822182,7.5905485 z m -1.347537,21.386764 h 2.134298 L 5.7213859,2.2789175 H 3.4280611 Z" style="stroke-width:0.0856513"/></svg></a>
+        </span>
+        <span style="margin: 5px;">
+          <a alt="Compartir en facebook" aria-label="Compartir en facebook" href="https://www.facebook.com/sharer/sharer.php?u=www.burocratin.com" target="_blank" rel="external nofollow"><svg alt="facebook icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="blue" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg></a>
+        </span><span style="margin: 5px;">
+          <a alt="Compartir en instagram" aria-label="Compartir en instagram" href="https://www.instagram.com" target="_blank" rel="external nofollow"><svg alt="instagram icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="darkviolet" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg></a>
+        </span>
+        <span style="margin: 5px;">
+          <a alt="Compartir en linkedin" aria-label="Compartir en linkedin" href="https://www.linkedin.com/sharing/share-offsite/?url=https://www.burocratin.com" target="_blank" rel="external nofollow"><svg alt="linkedin icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="blue" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="9" width="4" height="12"></rect><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><circle cx="4" cy="4" r="2"></circle></svg></a>
+        </span>
+      </div>
+      <p>Para cualquier mejora, duda, sugerencia o error puedes crear un <a href="https://github.com/vaijira/burocratin/issues/new?title=Error&amp;body=He%20encontrado%20un%20error" alt="informar de problemas o sugerencias" target="_blank" rel="external nofollow">ticket</a>.</p>
+    </footer>
   </body>
 </html>
