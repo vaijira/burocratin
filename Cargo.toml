@@ -11,6 +11,7 @@ crate-type = ["cdylib", "rlib"]
 version = "0.3"
 features = [
   "HtmlInputElement",
+  "FileList",
 ]
 
 [dependencies]

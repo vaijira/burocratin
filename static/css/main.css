@@ -47,3 +47,8 @@ img.opacity:hover {
   display: inline-block;
 }
  
+th,
+td{
+    padding:0.5em;
+    border:1px solid #ccc;
+}

@@ -81,12 +81,15 @@ impl App {
     fn render_import_button(this: &Arc<Self>) -> Dom {
         html!("span", {
           .child(
-            html!("label", {
-              .style("cursor", "pointer")
-              .attr("autofocus", "autofocus")
-              .attr("for", "import_report")
-              .text("Importar informes de Interactive brookers o Degiro")
-            })
+            html!("button", {
+              .child(
+                html!("label", {
+                  .style("cursor", "pointer")
+                  .attr("autofocus", "autofocus")
+                  .attr("for", "import_report")
+                  .text("Importar informes de brokers")
+              })
+            )})
           )
           .child(
             html!("input" => HtmlInputElement, {
@@ -101,7 +104,7 @@ impl App {
                     Some(file_list) => file_list,
                     None => {
                       *this.current_error.lock_mut() = Some(
-                        "Error subiendo fichero CSV de interactive brokers".to_string());
+                        "Error subiendo fichero".to_string());
                       return;
                     }
                   };
@@ -109,7 +112,7 @@ impl App {
                     Some(data) => data,
                     None => {
                       *this.current_error.lock_mut() = Some(
-                        "Error obteniendo CSV de interactive brokers".to_string());
+                        "Error obteniendo fichero".to_string());
                       return;
                     }
                   };
@@ -117,6 +120,7 @@ impl App {
                   spawn_local(clone!(this => async move {
                     App::import_file(&this, read_as_bytes(&blob).await.unwrap());
                   }));
+                  element.set_value("");
                 }))
               })
             })
@@ -190,10 +194,10 @@ impl App {
                Table::render(&this.table)
             )
             .child(
-                App::render_clear_button(&this)
+                App::render_import_button(&this)
             )
             .child(
-                App::render_import_button(&this)
+                App::render_clear_button(&this)
             )
             .child(
                 html!("h3", {

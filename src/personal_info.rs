@@ -32,6 +32,7 @@ impl PersonalInfoViewer {
                         .attr("id", "name")
                         .attr("alt", "Nombre")
                         .attr("type", "text")
+                        .attr("autocomplete", "given-name")
                         .with_node!(element => {
                             .event(clone!(this => move |_: events::Input| {
                                 this.personal_info.lock_mut().name = element.value().to_uppercase();
@@ -51,6 +52,7 @@ impl PersonalInfoViewer {
                         .attr("id", "surname")
                         .attr("alt", "Apellidos")
                         .attr("type", "text")
+                        .attr("autocomplete", "family-name")
                         .with_node!(element => {
                             .event(clone!(this => move |_: events::Input| {
                                 this.personal_info.lock_mut().surname = element.value().to_uppercase();
@@ -89,7 +91,7 @@ impl PersonalInfoViewer {
                         .attr("id", "year")
                         .attr("alt", "Año")
                         .attr("type", "text")
-                        .attr("placeholder", &DEFAULT_YEAR.to_string())
+                        .attr("value", &DEFAULT_YEAR.to_string())
                         .with_node!(element => {
                             .event(clone!(this => move |_: events::Input| {
                                 this.personal_info.lock_mut().year = element.value().parse::<usize>().unwrap_or(DEFAULT_YEAR);
@@ -109,6 +111,7 @@ impl PersonalInfoViewer {
                         .attr("id", "phone")
                         .attr("alt", "Teléfono")
                         .attr("type", "text")
+                        .attr("autocomplete", "tel")
                         .with_node!(element => {
                             .event(clone!(this => move |_: events::Input| {
                                 this.personal_info.lock_mut().phone = element.value().to_uppercase();
