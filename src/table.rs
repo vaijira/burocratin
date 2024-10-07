@@ -8,6 +8,7 @@ use futures_signals::{
 use web_sys::HtmlElement;
 
 use crate::{
+    css::TABLE_ROW,
     data::Aeat720Record,
     utils::{icons::render_svg_delete_square_icon, usize_to_date},
 };
@@ -72,6 +73,7 @@ impl Table {
             .map_or("".to_string(), |d| d.format("%d/%m/%Y").to_string());
 
         html!("tr", {
+          .class(&*TABLE_ROW)
           .children(&mut [
            html!("td", {
               .text(&record.company.name)

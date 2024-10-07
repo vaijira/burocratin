@@ -60,3 +60,11 @@ pub static SECTION_HEADER: Lazy<String> = Lazy::new(|| {
         })
     }
 });
+
+pub static TABLE_ROW: Lazy<String> = Lazy::new(|| {
+    class! {
+        .pseudo!(":nth-child(even)", {
+            .style("background-color", "#f2f2f2")
+        })
+    }
+});
