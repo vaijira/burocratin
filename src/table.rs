@@ -7,12 +7,14 @@ use futures_signals::{
 };
 use web_sys::HtmlElement;
 
-use crate::{data::Aeat720Record, utils::usize_to_date};
+use crate::{
+    data::Aeat720Record,
+    utils::{icons::render_svg_delete_square_icon, usize_to_date},
+};
 
 pub struct Table {
     headers: Vec<&'static str>,
     data: MutableVec<Aeat720Record>,
-    selected_row: Mutable<Option<usize>>,
 }
 
 impl Table {
@@ -28,7 +30,6 @@ impl Table {
                 "Porcentaje",
             ],
             data: aeat720_records,
-            selected_row: Mutable::new(None),
         })
     }
 
@@ -51,70 +52,56 @@ impl Table {
         html!("thead", {
           .child(
             html!("tr", {
+              .children(Self::render_header_cells(this))
               .child(
                 html!("th", {
                   .attr("scope", "col")
                   .style("vertical-align", "bottom")
                   .style("font-weight", "bold")
                   .style("background-color", "#ddd")
-                  .text(" ")
+                  .text("Eliminar")
                 })
               )
-              .children(Self::render_header_cells(this))
             })
           )
         })
     }
 
-    fn render_row(this: &Arc<Self>, index: usize, data: &Aeat720Record) -> Dom {
-        let date = usize_to_date(data.first_tx_date)
+    fn render_row(this: &Arc<Self>, index: usize, record: &Aeat720Record) -> Dom {
+        let date = usize_to_date(record.first_tx_date)
             .map_or("".to_string(), |d| d.format("%d/%m/%Y").to_string());
 
         html!("tr", {
-          .style_signal("background-color", this.selected_row.signal().map(
-            move |row| if row == Some(index) {
-              "#ddd"
-            } else {
-              "#fff"
-            }
-          ))
           .children(&mut [
-            html!("td" => HtmlElement, {
-              .style("font-weight", "bold")
-              .style("background-color", "#ddd")
-              .text(" ")
-              .with_node!(_element => {
-                .event(clone!(this => move |_: events::Click| {
-                  if this.selected_row.get() == Some(index) {
-                    this.selected_row.set(None)
-                  } else {
-                    this.selected_row.set(Some(index))
-                  }
-                }))
-              })
+           html!("td", {
+              .text(&record.company.name)
             }),
             html!("td", {
-              .text(&data.company.name)
+              .text(&record.company.isin)
             }),
             html!("td", {
-              .text(&data.company.isin)
-            }),
-            html!("td", {
-              .text(&data.broker.country_code)
+              .text(&record.broker.country_code)
             }),
             html!("td", {
               .text(&date)
             }),
             html!("td", {
-              .text(&data.value_in_euro.to_string())
+              .text(&record.value_in_euro.to_string())
             }),
             html!("td", {
-              .text(&data.quantity.to_string())
+              .text(&record.quantity.to_string())
             }),
             html!("td", {
               .text("100%")
             }),
-
+            html!("td" => HtmlElement, {
+              .child(render_svg_delete_square_icon("red", "24"))
+              .with_node!(_element => {
+                .event(clone!(this, record => move |_: events::Click| {
+                  this.data.lock_mut().retain(|x| x != &record);
+                }))
+              })
+            }),
           ])
         })
     }

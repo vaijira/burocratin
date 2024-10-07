@@ -15,6 +15,7 @@ use crate::{
 };
 
 pub mod decimal;
+pub mod icons;
 pub mod web;
 pub mod zip;
 
