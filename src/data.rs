@@ -124,6 +124,7 @@ pub struct Aeat720Record {
     pub value_in_euro: Decimal,
     pub first_tx_date: usize,
     pub broker: Arc<BrokerInformation>,
+    pub percentage: Decimal,
 }
 
 #[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]

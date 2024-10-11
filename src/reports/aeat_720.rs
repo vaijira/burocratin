@@ -6,7 +6,7 @@ use std::io::Write;
 
 /*
    aeat 720 model specification.
-   https://www.agenciatributaria.es/static_files/AEAT/Contenidos_Comunes/La_Agencia_Tributaria/Ayuda/Disenyos_de_registro/Ayudas/DR_Resto_Modelos/Ficheros/modelo_720.pdf
+   https://www.boe.es/buscar/act.php?id=BOE-A-2013-954
 
     Summary Register:
 
@@ -68,7 +68,7 @@ use std::io::Write;
     stockQuantityFrac: NumericField, // Pos 473-474
     realStateRepresentation: StringField, // pos 475
     OwnPercentageInt: NumericField, // Pos 476-478
-    OwnPercentageFrac: NumericField, // Pos 479-489
+    OwnPercentageFrac: NumericField, // Pos 479-480
     blank: StringField,      // Pos 481-500
 */
 const AEAT_720_REGISTER_SIZE_BYTES: usize = 500;
@@ -524,8 +524,19 @@ impl DetailRegister {
             remainder.trunc().to_usize().unwrap_or(0),
         )?;
 
-        Aeat720Field::write_numeric_field(&mut fields, Self::OWNED_PERCENTAGE_INT_FIELD, 100)?;
-        Aeat720Field::write_numeric_field(&mut fields, Self::OWNED_PERCENTAGE_FRACTION_FIELD, 0)?;
+        Aeat720Field::write_numeric_field(
+            &mut fields,
+            Self::OWNED_PERCENTAGE_INT_FIELD,
+            record.percentage.abs().to_usize().unwrap_or(0),
+        )?;
+        let mut remainder = record.percentage.fract();
+        remainder.set_scale(2)?;
+
+        Aeat720Field::write_numeric_field(
+            &mut fields,
+            Self::OWNED_PERCENTAGE_FRACTION_FIELD,
+            remainder.trunc().to_usize().unwrap_or(0),
+        )?;
 
         Ok(Self { fields })
     }

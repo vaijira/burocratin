@@ -2,6 +2,7 @@ use std::sync::{Arc, LazyLock};
 
 use anyhow::{bail, Result};
 use chrono::NaiveDate;
+use rust_decimal::Decimal;
 use zip::read_zip;
 
 use crate::{
@@ -111,6 +112,7 @@ fn transform_to_aeat720_records(notes: (BalanceNotes, AccountNotes)) -> Result<A
             value_in_euro: note.value_in_euro,
             first_tx_date,
             broker: note.broker.clone(),
+            percentage: Decimal::new(100, 0),
         })
     }
 

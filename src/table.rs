@@ -1,8 +1,9 @@
-use std::{sync::Arc, usize};
+use std::sync::Arc;
 
 use dominator::{clone, events, html, with_node, Dom};
 use futures_signals::{
-    signal::{Mutable, SignalExt},
+    map_ref,
+    signal::{Mutable, Signal, SignalExt},
     signal_vec::{MutableVec, SignalVecExt},
 };
 use web_sys::HtmlElement;
@@ -16,6 +17,7 @@ use crate::{
 pub struct Table {
     headers: Vec<&'static str>,
     data: MutableVec<Aeat720Record>,
+    editable: Mutable<bool>,
 }
 
 impl Table {
@@ -31,6 +33,7 @@ impl Table {
                 "Porcentaje",
             ],
             data: aeat720_records,
+            editable: Mutable::new(false),
         })
     }
 
@@ -53,6 +56,15 @@ impl Table {
         html!("thead", {
           .child(
             html!("tr", {
+              .child(
+                html!("th", {
+                  .attr("scope", "col")
+                  .style("vertical-align", "bottom")
+                  .style("font-weight", "bold")
+                  .style("background-color", "#ddd")
+                  .text("")
+                })
+              )
               .children(Self::render_header_cells(this))
               .child(
                 html!("th", {
@@ -76,6 +88,9 @@ impl Table {
           .class(&*TABLE_ROW)
           .children(&mut [
            html!("td", {
+              .text(&format!("{}", index + 1))
+            }),
+           html!("td", {
               .text(&record.company.name)
             }),
             html!("td", {
@@ -94,13 +109,79 @@ impl Table {
               .text(&record.quantity.to_string())
             }),
             html!("td", {
-              .text("100%")
+              .text(&record.percentage.to_string())
+              .text("%")
             }),
             html!("td" => HtmlElement, {
               .child(render_svg_delete_square_icon("red", "24"))
               .with_node!(_element => {
-                .event(clone!(this, record => move |_: events::Click| {
-                  this.data.lock_mut().retain(|x| x != &record);
+                .event(clone!(this => move |_: events::Click| {
+                  this.data.lock_mut().remove(index);
+                }))
+              })
+            }),
+          ])
+        })
+    }
+
+    fn render_editable_row(this: &Arc<Self>, index: usize, record: &Aeat720Record) -> Dom {
+        let date = usize_to_date(record.first_tx_date)
+            .map_or("".to_string(), |d| d.format("%d/%m/%Y").to_string());
+
+        html!("tr", {
+          .class(&*TABLE_ROW)
+          .children(&mut [
+           html!("td", {
+              .text(&format!("{}", index + 1))
+            }),
+           html!("td", {
+              .child(html!("input", {
+                .attr("type", "text")
+                .attr("value", &record.company.name)
+              }))
+            }),
+            html!("td", {
+              .child(html!("input", {
+                .attr("type", "text")
+                .attr("value", &record.company.isin)
+              }))
+            }),
+            html!("td", {
+              .child(html!("input", {
+                .attr("type", "text")
+                .attr("value", &record.broker.country_code)
+              }))
+            }),
+            html!("td", {
+              .child(html!("input", {
+                .attr("type", "text")
+                .attr("value", &date)
+              }))
+            }),
+            html!("td", {
+              .child(html!("input", {
+                .attr("type", "text")
+                .attr("value", &record.value_in_euro.to_string())
+              }))
+            }),
+            html!("td", {
+              .child(html!("input", {
+                .attr("type", "text")
+                .attr("value", &record.quantity.to_string())
+              }))
+            }),
+            html!("td", {
+              .child(html!("input", {
+                .attr("type", "text")
+                .attr("value", &record.percentage.to_string())
+              }))
+              .text("%")
+            }),
+            html!("td" => HtmlElement, {
+              .child(render_svg_delete_square_icon("red", "24"))
+              .with_node!(_element => {
+                .event(clone!(this => move |_: events::Click| {
+                  this.data.lock_mut().remove(index);
                 }))
               })
             }),
@@ -112,10 +193,23 @@ impl Table {
         html!("tbody", {
           .children_signal_vec(this.data.signal_vec_cloned()
             .enumerate().map(clone!(this => move |(index, record)| {
-              Table::render_row(&this, index.get().unwrap_or(usize::MAX), &record)
+              if this.editable.get() {
+
+                Table::render_editable_row(&this, index.get().unwrap_or(usize::MAX), &record)
+              } else {
+                Table::render_row(&this, index.get().unwrap_or(usize::MAX), &record)
+              }
             }))
           )
         })
+    }
+
+    fn is_needed_to_rerender_rows(this: &Arc<Self>) -> impl Signal<Item = bool> {
+        map_ref! {
+            let _editable_changed = this.editable.signal(),
+            let _records_len = this.data.signal_vec_cloned().to_signal_map(|x| x.len()) =>
+            true
+        }
     }
 
     pub fn render(this: &Arc<Self>) -> Dom {
@@ -133,7 +227,11 @@ impl Table {
 
           )
           .child(Self::render_header(this))
-          .child(Self::render_body(this))
+          .child_signal(Self::is_needed_to_rerender_rows(this).map(
+            clone!(this => move |_x| {
+              Some(Self::render_body(&this))
+            }))
+          )
         })
     }
 }

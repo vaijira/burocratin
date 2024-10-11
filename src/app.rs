@@ -145,7 +145,7 @@ impl App {
     fn render_download_button(this: &Arc<Self>) -> Dom {
         html!("section", {
          .child_signal(
-           App::is_needed_to_generate_report(this).map(clone!(this => move |x| {
+           Self::is_needed_to_generate_report(this).map(clone!(this => move |x| {
               let default_button = Some(
                 html!("button", {
                   .attr("type", "button")
