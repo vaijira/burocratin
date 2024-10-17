@@ -11,7 +11,7 @@ use web_sys::HtmlElement;
 use crate::{
     css::TABLE_ROW,
     data::Aeat720Record,
-    utils::{icons::render_svg_delete_square_icon, usize_to_date},
+    utils::{icons::{render_svg_delete_square_icon, render_svg_edit_icon}, usize_to_date},
 };
 
 pub struct Table {
@@ -72,7 +72,7 @@ impl Table {
                   .style("vertical-align", "bottom")
                   .style("font-weight", "bold")
                   .style("background-color", "#ddd")
-                  .text("Eliminar")
+                  .text("")
                 })
               )
             })
@@ -113,6 +113,7 @@ impl Table {
               .text("%")
             }),
             html!("td" => HtmlElement, {
+              .child(render_svg_edit_icon("red", "24"))
               .child(render_svg_delete_square_icon("red", "24"))
               .with_node!(_element => {
                 .event(clone!(this => move |_: events::Click| {

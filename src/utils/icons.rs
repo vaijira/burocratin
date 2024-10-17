@@ -1,17 +1,56 @@
-use dominator::{svg, Dom};
+use dominator::{svg, Dom, DomBuilder};
+use web_sys::SvgElement;
 
-pub fn render_svg_delete_square_icon(color: &str, size: &str) -> Dom {
-    // <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x-square"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="9" x2="15" y2="15"></line><line x1="15" y1="9" x2="9" y2="15"></line></svg>
-    svg!("svg", {
-        .attr("alt", "facebook icon")
-        .attr("width", size)
-        .attr("height", size)
+fn svg_icon_attrs(icon: DomBuilder<SvgElement>) -> DomBuilder<SvgElement> {
+    icon
         .attr("viewBox", "0 0 24 24")
         .attr("fill", "none")
-        .attr("stroke", color)
         .attr("stroke-width", "2")
         .attr("stroke-linecap", "round")
         .attr("stroke-linejoin", "round")
+}
+
+pub fn render_svg_save_icon(color: &str, size: &str) -> Dom {
+    svg!("svg", {
+        .attr("alt", "edit icon")
+        .attr("width", size)
+        .attr("height", size)
+        .attr("stroke", color)
+        .apply(svg_icon_attrs)
+        .children(&mut[
+            svg!("path", {
+                .attr("d", "M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7")
+                .attr("d", "M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z")
+            })
+        ])
+    })
+}
+
+pub fn render_svg_edit_icon(color: &str, size: &str) -> Dom {
+    svg!("svg", {
+        .attr("alt", "edit icon")
+        .attr("width", size)
+        .attr("height", size)
+        .attr("stroke", color)
+        .apply(svg_icon_attrs)
+        .children(&mut[
+            svg!("path", {
+                .attr("d", "M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7")
+            }),
+            svg!("path", {
+                .attr("d", "M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z")
+            })
+        ])
+    })
+}
+
+pub fn render_svg_delete_square_icon(color: &str, size: &str) -> Dom {
+    svg!("svg", {
+        .attr("alt", "delete icon")
+        .attr("width", size)
+        .attr("height", size)
+        .attr("stroke", color)
+        .apply(svg_icon_attrs)
         .children(&mut[
             svg!("rect", {
                 .attr("x", "3")
