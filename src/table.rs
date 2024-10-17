@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{sync::Arc, usize::MAX};
 
 use dominator::{clone, events, html, with_node, Dom};
 use futures_signals::{
@@ -11,7 +11,10 @@ use web_sys::HtmlElement;
 use crate::{
     css::TABLE_ROW,
     data::Aeat720Record,
-    utils::{icons::{render_svg_delete_square_icon, render_svg_edit_icon}, usize_to_date},
+    utils::{
+        icons::{render_svg_delete_square_icon, render_svg_edit_icon, render_svg_save_icon},
+        usize_to_date,
+    },
 };
 
 pub struct Table {
@@ -22,6 +25,8 @@ pub struct Table {
 
 impl Table {
     pub fn new(aeat720_records: MutableVec<Aeat720Record>) -> Arc<Self> {
+        let editable = MutableVec::new_with_values(vec![false; aeat720_records.lock_ref().len()]);
+
         Arc::new(Self {
             headers: vec![
                 "Nombre compañía",
@@ -84,6 +89,24 @@ impl Table {
         let date = usize_to_date(record.first_tx_date)
             .map_or("".to_string(), |d| d.format("%d/%m/%Y").to_string());
 
+        let action_span = html!("span" => HtmlElement, {
+          .child(render_svg_edit_icon("red", "24"))
+          .with_node!(_element => {
+            .event(clone!(this => move |_: events::Click| {
+              *this.editable.lock_mut() = true;
+            }))
+          })
+        });
+
+        let delete_span = html!("span" => HtmlElement, {
+          .child(render_svg_delete_square_icon("red", "24"))
+          .with_node!(_element => {
+            .event(clone!(this => move |_: events::Click| {
+              this.data.lock_mut().remove(index);
+            }))
+          })
+        });
+
         html!("tr", {
           .class(&*TABLE_ROW)
           .children(&mut [
@@ -112,14 +135,9 @@ impl Table {
               .text(&record.percentage.to_string())
               .text("%")
             }),
-            html!("td" => HtmlElement, {
-              .child(render_svg_edit_icon("red", "24"))
-              .child(render_svg_delete_square_icon("red", "24"))
-              .with_node!(_element => {
-                .event(clone!(this => move |_: events::Click| {
-                  this.data.lock_mut().remove(index);
-                }))
-              })
+            html!("td", {
+              .child(action_span)
+              .child(delete_span)
             }),
           ])
         })
@@ -128,6 +146,24 @@ impl Table {
     fn render_editable_row(this: &Arc<Self>, index: usize, record: &Aeat720Record) -> Dom {
         let date = usize_to_date(record.first_tx_date)
             .map_or("".to_string(), |d| d.format("%d/%m/%Y").to_string());
+
+        let action_span = html!("span" => HtmlElement, {
+          .child(render_svg_save_icon("red", "24"))
+          .with_node!(_element => {
+            .event(clone!(this => move |_: events::Click| {
+              *this.editable.lock_mut() = false;
+            }))
+          })
+        });
+
+        let delete_span = html!("span" => HtmlElement, {
+          .child(render_svg_delete_square_icon("red", "24"))
+          .with_node!(_element => {
+            .event(clone!(this => move |_: events::Click| {
+              this.data.lock_mut().remove(index);
+            }))
+          })
+        });
 
         html!("tr", {
           .class(&*TABLE_ROW)
@@ -178,13 +214,9 @@ impl Table {
               }))
               .text("%")
             }),
-            html!("td" => HtmlElement, {
-              .child(render_svg_delete_square_icon("red", "24"))
-              .with_node!(_element => {
-                .event(clone!(this => move |_: events::Click| {
-                  this.data.lock_mut().remove(index);
-                }))
-              })
+            html!("td", {
+              .child(action_span)
+              .child(delete_span)
             }),
           ])
         })
@@ -194,11 +226,11 @@ impl Table {
         html!("tbody", {
           .children_signal_vec(this.data.signal_vec_cloned()
             .enumerate().map(clone!(this => move |(index, record)| {
+              let i = index.get().unwrap_or(usize::MAX);
               if this.editable.get() {
-
-                Table::render_editable_row(&this, index.get().unwrap_or(usize::MAX), &record)
+                Table::render_editable_row(&this, i, &record)
               } else {
-                Table::render_row(&this, index.get().unwrap_or(usize::MAX), &record)
+                Table::render_row(&this, i, &record)
               }
             }))
           )
