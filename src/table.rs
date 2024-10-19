@@ -119,140 +119,182 @@ impl Table {
         let date = usize_to_date(record.lock_ref().record.first_tx_date)
             .map_or("".to_string(), |d| d.format("%d/%m/%Y").to_string());
 
-        let action_span = html!("span" => HtmlElement, {
-          .child(render_svg_edit_icon("red", "24"))
-          .with_node!(_element => {
-            .event(clone!(record => move |_: events::Click| {
-              record.lock_mut().editable = true;
-            }))
-          })
-        });
-
-        let delete_span = html!("span" => HtmlElement, {
-          .child(render_svg_delete_square_icon("red", "24"))
-          .with_node!(_element => {
-            .event(clone!(this => move |_: events::Click| {
-              this.data.lock_mut().remove(index);
-            }))
-          })
-        });
-
         html!("tr", {
           .class(&*TABLE_ROW)
-          .children(&mut [
-           html!("td", {
+          .child(
+            html!("td", {
               .text(&format!("{}", index + 1))
-            }),
-           html!("td", {
-              .text(&record.lock_ref().record.company.name)
-            }),
-            html!("td", {
-              .text(&record.lock_ref().record.company.isin)
-            }),
-            html!("td", {
-              .text(&record.lock_ref().record.broker.country_code)
-            }),
-            html!("td", {
-              .text(&date)
-            }),
-            html!("td", {
-              .text(&record.lock_ref().record.value_in_euro.to_string())
-            }),
-            html!("td", {
-              .text(&record.lock_ref().record.quantity.to_string())
-            }),
-            html!("td", {
-              .text(&record.lock_ref().record.percentage.to_string())
-              .text("%")
-            }),
-            html!("td", {
-              .child(action_span)
-              .child(delete_span)
-            }),
-          ])
-        })
-    }
+            })
+          )
+          .child_signal(record.signal_ref(clone!(record => move |r| {
+            if r.editable {
+              Some(
+                html!("td", {
+                  .child(html!("input", {
+                    .attr("type", "text")
+                    .attr("value", &r.record.company.name)
+                  }))
+                })
+              )
+            } else {
+              Some(html!("td", {
+                .text(&r.record.company.name)
+              }))
+            }
+          })))
+          .child_signal(record.signal_ref(clone!(record => move |r| {
+            if r.editable {
+              Some(
+                html!("td", {
+                  .child(html!("input", {
+                    .attr("type", "text")
+                    .attr("value", &r.record.company.isin)
+                  }))
+                })
+              )
+            } else {
+              Some(
+                html!("td", {
+                  .text(&r.record.company.isin)
+                })
+              )
+            }
+          })))
+          .child_signal(record.signal_ref(clone!(record => move |r| {
+            if r.editable {
+              Some(
+                html!("td", {
+                  .child(html!("input", {
+                    .attr("type", "text")
+                    .attr("value", &r.record.broker.country_code)
+                  }))
+                })
+              )
+            } else {
+              Some(
+                html!("td", {
+                  .text(&r.record.broker.country_code)
+                })
+              )
+            }
+          })))
+          .child_signal(record.signal_ref(clone!(record => move |r| {
+            if r.editable {
+              Some(
+                html!("td", {
+                  .child(html!("input", {
+                    .attr("type", "text")
+                    .attr("value", &date)
+                  }))
+                })
+              )
+            } else {
+              Some(
+                html!("td", {
+                  .text(&date)
+                })
+              )
+            }
+          })))
+          .child_signal(record.signal_ref(clone!(record => move |r| {
+            if r.editable {
+              Some(
+                html!("td", {
+                  .child(html!("input", {
+                    .attr("type", "text")
+                    .attr("value", &r.record.value_in_euro.to_string())
+                  }))
+                })
+              )
+            } else {
+              Some(
+                html!("td", {
+                  .text(&r.record.value_in_euro.to_string())
+                })
+              )
+            }
+          })))
+          .child_signal(record.signal_ref(clone!(record => move |r| {
+            if r.editable {
+              Some(
+                html!("td", {
+                  .child(html!("input", {
+                    .attr("type", "text")
+                    .attr("value", &r.record.quantity.to_string())
+                  }))
+                })
+              )
+            } else {
+              Some(
+                html!("td", {
+                  .text(&r.record.quantity.to_string())
+                })
+              )
+            }
+          })))
+          .child_signal(record.signal_ref(clone!(record => move |r| {
+            if r.editable {
+              Some(
+                html!("td", {
+                  .child(html!("input", {
+                    .attr("type", "text")
+                    .attr("value", &r.record.percentage.to_string())
+                  }))
+                })
+              )
+            } else {
+              Some(
+                html!("td", {
+                  .text(&r.record.percentage.to_string())
+                })
+              )
+            }
+          })))
+          .child_signal(record.signal_ref(clone!(record,this => move |r| {
+            let edit_span = html!("span" => HtmlElement, {
+              .child(render_svg_edit_icon("red", "24"))
+              .with_node!(_element => {
+                .event(clone!(record => move |_: events::Click| {
+                  record.lock_mut().editable = true;
+                }))
+              })
+            });
 
-    fn render_editable_row(
-        this: &Arc<Self>,
-        index: usize,
-        record: &Mutable<Aeat720RecordInfo>,
-    ) -> Dom {
-        let date = usize_to_date(record.lock_ref().record.first_tx_date)
-            .map_or("".to_string(), |d| d.format("%d/%m/%Y").to_string());
+           let save_span = html!("span" => HtmlElement, {
+             .child(render_svg_save_icon("red", "24"))
+             .with_node!(_element => {
+               .event(clone!(record => move |_: events::Click| {
+                 record.lock_mut().editable = false;
+               }))
+             })
+           });
 
-        let action_span = html!("span" => HtmlElement, {
-          .child(render_svg_save_icon("red", "24"))
-          .with_node!(_element => {
-            .event(clone!(record => move |_: events::Click| {
-              record.lock_mut().editable = false;
-            }))
-          })
-        });
 
-        let delete_span = html!("span" => HtmlElement, {
-          .child(render_svg_delete_square_icon("red", "24"))
-          .with_node!(_element => {
-            .event(clone!(this => move |_: events::Click| {
-              this.data.lock_mut().remove(index);
-            }))
-          })
-        });
+           let delete_span = html!("span" => HtmlElement, {
+             .child(render_svg_delete_square_icon("red", "24"))
+            .with_node!(_element => {
+              .event(clone!(this => move |_: events::Click| {
+                this.data.lock_mut().remove(index);
+              }))
+            })
+           });
 
-        html!("tr", {
-          .class(&*TABLE_ROW)
-          .children(&mut [
-           html!("td", {
-              .text(&format!("{}", index + 1))
-            }),
-           html!("td", {
-              .child(html!("input", {
-                .attr("type", "text")
-                .attr("value", &record.lock_ref().record.company.name)
-              }))
-            }),
-            html!("td", {
-              .child(html!("input", {
-                .attr("type", "text")
-                .attr("value", &record.lock_ref().record.company.isin)
-              }))
-            }),
-            html!("td", {
-              .child(html!("input", {
-                .attr("type", "text")
-                .attr("value", &record.lock_ref().record.broker.country_code)
-              }))
-            }),
-            html!("td", {
-              .child(html!("input", {
-                .attr("type", "text")
-                .attr("value", &date)
-              }))
-            }),
-            html!("td", {
-              .child(html!("input", {
-                .attr("type", "text")
-                .attr("value", &record.lock_ref().record.value_in_euro.to_string())
-              }))
-            }),
-            html!("td", {
-              .child(html!("input", {
-                .attr("type", "text")
-                .attr("value", &record.lock_ref().record.quantity.to_string())
-              }))
-            }),
-            html!("td", {
-              .child(html!("input", {
-                .attr("type", "text")
-                .attr("value", &record.lock_ref().record.percentage.to_string())
-              }))
-              .text("%")
-            }),
-            html!("td", {
-              .child(action_span)
-              .child(delete_span)
-            }),
-          ])
+           if r.editable {
+              Some(
+                html!("td", {
+                  .child(save_span)
+                  .child(delete_span)
+                })
+              )
+            } else {
+              Some(
+                html!("td", {
+                  .child(edit_span)
+                  .child(delete_span)
+                })
+              )
+            }
+          })))
         })
     }
 
@@ -261,12 +303,8 @@ impl Table {
           .children_signal_vec(this.data.signal_vec_cloned()
             .enumerate().map(clone!(this => move |(index, record)| {
               let i = index.get().unwrap_or(usize::MAX);
-              if record.lock_ref().editable {
-                Table::render_editable_row(&this, i, &record)
-              } else {
-                Table::render_row(&this, i, &record)
-              }
-            }))
+              Table::render_row(&this, i, &record)
+           }))
           )
         })
     }
