@@ -5,15 +5,14 @@ use dominator::{clone, events, html, with_node, Dom};
 use futures_signals::{
     map_ref,
     signal::{Mutable, Signal, SignalExt},
-    signal_vec::{MutableVec, SignalVecExt},
 };
 use gloo_file::{futures::read_as_bytes, Blob};
 use wasm_bindgen_futures::spawn_local;
 use web_sys::HtmlInputElement;
 
 use crate::{
-    css::{ROOT_CLASS, SECTION_HEADER},
-    data::{Aeat720Information, Aeat720Record, PersonalInformation},
+    css::SECTION_HEADER,
+    data::{Aeat720Information, PersonalInformation},
     personal_info::PersonalInfoViewer,
     table::Table,
     utils::{file_importer, web},
@@ -21,7 +20,6 @@ use crate::{
 
 pub struct App {
     current_error: Mutable<Option<String>>,
-    aeat720_records: MutableVec<Aeat720Record>,
     personal_info: Mutable<PersonalInformation>,
     aeat720_form_path: Mutable<Option<String>>,
     personal_info_viewer: Arc<PersonalInfoViewer>,
@@ -31,22 +29,20 @@ pub struct App {
 impl App {
     pub fn new() -> Arc<Self> {
         let personal_info = Mutable::new(PersonalInformation::default());
-        let aeat720_records = MutableVec::new();
 
         Arc::new(Self {
             current_error: Mutable::new(None),
-            aeat720_records: aeat720_records.clone(),
             personal_info: personal_info.clone(),
             aeat720_form_path: Mutable::new(None),
             personal_info_viewer: PersonalInfoViewer::new(personal_info.clone()),
-            table: Table::new(aeat720_records.clone()),
+            table: Table::new(),
         })
     }
 
     fn is_needed_to_generate_report(this: &Arc<Self>) -> impl Signal<Item = bool> {
         map_ref! {
             let personal_info_changed = this.personal_info.signal_ref(|_| true),
-            let records_changed = this.aeat720_records.signal_vec_cloned().to_signal_map(|x| !x.is_empty()) =>
+            let records_changed = this.table.table_rows_not_empty() =>
             *personal_info_changed || *records_changed
         }
     }
@@ -55,7 +51,7 @@ impl App {
         let import_data = file_importer(content);
         match import_data {
             Ok(records) => {
-                this.aeat720_records.lock_mut().extend(records);
+                this.table.extend_rows(records);
             }
             Err(error) => {
                 *this.current_error.lock_mut() = Some(error.to_string());
@@ -67,7 +63,7 @@ impl App {
         let old_path = (*this.aeat720_form_path.lock_ref()).clone();
         let old_path = old_path.map_or("".to_owned(), |x| x);
         let path = web::generate_720(&Aeat720Information {
-            records: this.aeat720_records.lock_ref().to_vec(),
+            records: this.table.get_records(),
             personal_info: PersonalInformation::default(),
         })?;
         if !old_path.is_empty() {
@@ -135,7 +131,7 @@ impl App {
             .attr("value", "Limpiar movimientos")
             .with_node!(_element => {
               .event(clone!(this => move |_: events::Click| {
-                this.aeat720_records.lock_mut().clear();
+                this.table.clear();
               }))
             })
           }))

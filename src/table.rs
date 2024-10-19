@@ -17,16 +17,18 @@ use crate::{
     },
 };
 
+#[derive(Debug, PartialEq, Clone)]
+struct Aeat720RecordInfo {
+    record: Aeat720Record,
+    editable: bool,
+}
 pub struct Table {
     headers: Vec<&'static str>,
-    data: MutableVec<Aeat720Record>,
-    editable: Mutable<bool>,
+    data: MutableVec<Mutable<Aeat720RecordInfo>>,
 }
 
 impl Table {
-    pub fn new(aeat720_records: MutableVec<Aeat720Record>) -> Arc<Self> {
-        let editable = MutableVec::new_with_values(vec![false; aeat720_records.lock_ref().len()]);
-
+    pub fn new() -> Arc<Self> {
         Arc::new(Self {
             headers: vec![
                 "Nombre compañía",
@@ -37,9 +39,37 @@ impl Table {
                 "Nº acciones",
                 "Porcentaje",
             ],
-            data: aeat720_records,
-            editable: Mutable::new(false),
+            data: MutableVec::new(),
         })
+    }
+
+    pub fn table_rows_not_empty(&self) -> impl Signal<Item = bool> {
+        self.data
+            .signal_vec_cloned()
+            .to_signal_map(|x| !x.is_empty())
+    }
+
+    pub fn extend_rows(&self, records: Vec<Aeat720Record>) {
+        for record in records.into_iter() {
+            self.data
+                .lock_mut()
+                .push_cloned(Mutable::new(Aeat720RecordInfo {
+                    record,
+                    editable: false,
+                }));
+        }
+    }
+
+    pub fn get_records(&self) -> Vec<Aeat720Record> {
+        let mut result = vec![];
+        for record in self.data.lock_ref().iter() {
+            result.push(record.lock_ref().record.clone());
+        }
+        result
+    }
+
+    pub fn clear(&self) {
+        self.data.lock_mut().clear();
     }
 
     fn render_header_cells(this: &Arc<Self>) -> Vec<Dom> {
@@ -85,15 +115,15 @@ impl Table {
         })
     }
 
-    fn render_row(this: &Arc<Self>, index: usize, record: &Aeat720Record) -> Dom {
-        let date = usize_to_date(record.first_tx_date)
+    fn render_row(this: &Arc<Self>, index: usize, record: &Mutable<Aeat720RecordInfo>) -> Dom {
+        let date = usize_to_date(record.lock_ref().record.first_tx_date)
             .map_or("".to_string(), |d| d.format("%d/%m/%Y").to_string());
 
         let action_span = html!("span" => HtmlElement, {
           .child(render_svg_edit_icon("red", "24"))
           .with_node!(_element => {
-            .event(clone!(this => move |_: events::Click| {
-              *this.editable.lock_mut() = true;
+            .event(clone!(record => move |_: events::Click| {
+              record.lock_mut().editable = true;
             }))
           })
         });
@@ -114,25 +144,25 @@ impl Table {
               .text(&format!("{}", index + 1))
             }),
            html!("td", {
-              .text(&record.company.name)
+              .text(&record.lock_ref().record.company.name)
             }),
             html!("td", {
-              .text(&record.company.isin)
+              .text(&record.lock_ref().record.company.isin)
             }),
             html!("td", {
-              .text(&record.broker.country_code)
+              .text(&record.lock_ref().record.broker.country_code)
             }),
             html!("td", {
               .text(&date)
             }),
             html!("td", {
-              .text(&record.value_in_euro.to_string())
+              .text(&record.lock_ref().record.value_in_euro.to_string())
             }),
             html!("td", {
-              .text(&record.quantity.to_string())
+              .text(&record.lock_ref().record.quantity.to_string())
             }),
             html!("td", {
-              .text(&record.percentage.to_string())
+              .text(&record.lock_ref().record.percentage.to_string())
               .text("%")
             }),
             html!("td", {
@@ -143,15 +173,19 @@ impl Table {
         })
     }
 
-    fn render_editable_row(this: &Arc<Self>, index: usize, record: &Aeat720Record) -> Dom {
-        let date = usize_to_date(record.first_tx_date)
+    fn render_editable_row(
+        this: &Arc<Self>,
+        index: usize,
+        record: &Mutable<Aeat720RecordInfo>,
+    ) -> Dom {
+        let date = usize_to_date(record.lock_ref().record.first_tx_date)
             .map_or("".to_string(), |d| d.format("%d/%m/%Y").to_string());
 
         let action_span = html!("span" => HtmlElement, {
           .child(render_svg_save_icon("red", "24"))
           .with_node!(_element => {
-            .event(clone!(this => move |_: events::Click| {
-              *this.editable.lock_mut() = false;
+            .event(clone!(record => move |_: events::Click| {
+              record.lock_mut().editable = false;
             }))
           })
         });
@@ -174,19 +208,19 @@ impl Table {
            html!("td", {
               .child(html!("input", {
                 .attr("type", "text")
-                .attr("value", &record.company.name)
+                .attr("value", &record.lock_ref().record.company.name)
               }))
             }),
             html!("td", {
               .child(html!("input", {
                 .attr("type", "text")
-                .attr("value", &record.company.isin)
+                .attr("value", &record.lock_ref().record.company.isin)
               }))
             }),
             html!("td", {
               .child(html!("input", {
                 .attr("type", "text")
-                .attr("value", &record.broker.country_code)
+                .attr("value", &record.lock_ref().record.broker.country_code)
               }))
             }),
             html!("td", {
@@ -198,19 +232,19 @@ impl Table {
             html!("td", {
               .child(html!("input", {
                 .attr("type", "text")
-                .attr("value", &record.value_in_euro.to_string())
+                .attr("value", &record.lock_ref().record.value_in_euro.to_string())
               }))
             }),
             html!("td", {
               .child(html!("input", {
                 .attr("type", "text")
-                .attr("value", &record.quantity.to_string())
+                .attr("value", &record.lock_ref().record.quantity.to_string())
               }))
             }),
             html!("td", {
               .child(html!("input", {
                 .attr("type", "text")
-                .attr("value", &record.percentage.to_string())
+                .attr("value", &record.lock_ref().record.percentage.to_string())
               }))
               .text("%")
             }),
@@ -227,7 +261,7 @@ impl Table {
           .children_signal_vec(this.data.signal_vec_cloned()
             .enumerate().map(clone!(this => move |(index, record)| {
               let i = index.get().unwrap_or(usize::MAX);
-              if this.editable.get() {
+              if record.lock_ref().editable {
                 Table::render_editable_row(&this, i, &record)
               } else {
                 Table::render_row(&this, i, &record)
@@ -239,7 +273,7 @@ impl Table {
 
     fn is_needed_to_rerender_rows(this: &Arc<Self>) -> impl Signal<Item = bool> {
         map_ref! {
-            let _editable_changed = this.editable.signal(),
+            // let _editable_changed = this.editable.signal(),
             let _records_len = this.data.signal_vec_cloned().to_signal_map(|x| x.len()) =>
             true
         }
