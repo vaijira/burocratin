@@ -1,4 +1,4 @@
-use std::{sync::Arc, usize::MAX};
+use std::sync::Arc;
 
 use dominator::{clone, events, html, with_node, Dom};
 use futures_signals::{
@@ -115,6 +115,27 @@ impl Table {
         })
     }
 
+    fn company_name_cell(record: &Mutable<Aeat720RecordInfo>) -> impl Signal<Item = Option<Dom>> {
+        record.signal_ref(clone!(record => move |r| {
+          if r.editable {
+            Some(
+              html!("td", {
+                .child(
+                  html!("input", {
+                    .attr("type", "text")
+                    .attr("value", &r.record.company.name)
+                  })
+                )
+              })
+            )
+          } else {
+            Some(html!("td", {
+              .text(&r.record.company.name)
+            }))
+          }
+        }))
+    }
+
     fn render_row(this: &Arc<Self>, index: usize, record: &Mutable<Aeat720RecordInfo>) -> Dom {
         let date = usize_to_date(record.lock_ref().record.first_tx_date)
             .map_or("".to_string(), |d| d.format("%d/%m/%Y").to_string());
@@ -126,22 +147,7 @@ impl Table {
               .text(&format!("{}", index + 1))
             })
           )
-          .child_signal(record.signal_ref(clone!(record => move |r| {
-            if r.editable {
-              Some(
-                html!("td", {
-                  .child(html!("input", {
-                    .attr("type", "text")
-                    .attr("value", &r.record.company.name)
-                  }))
-                })
-              )
-            } else {
-              Some(html!("td", {
-                .text(&r.record.company.name)
-              }))
-            }
-          })))
+          .child_signal(Self::company_name_cell(record))
           .child_signal(record.signal_ref(clone!(record => move |r| {
             if r.editable {
               Some(
@@ -183,7 +189,8 @@ impl Table {
               Some(
                 html!("td", {
                   .child(html!("input", {
-                    .attr("type", "text")
+                    .attr("type", "date")
+                    .attr("placeholder", "DD/MM/YYYY")
                     .attr("value", &date)
                   }))
                 })
