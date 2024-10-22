@@ -123,6 +123,8 @@ impl Table {
                 .child(
                   html!("input", {
                     .attr("type", "text")
+                    .attr("size", "40")
+                    .attr("maxlength", "40")
                     .attr("value", &r.record.company.name)
                   })
                 )
@@ -144,6 +146,8 @@ impl Table {
                 .child(
                   html!("input", {
                     .attr("type", "text")
+                    .attr("size", "12")
+                    .attr("maxlength", "12")
                     .attr("value", &r.record.company.isin)
                   })
                 )
@@ -167,6 +171,8 @@ impl Table {
                 .child(
                   html!("input", {
                     .attr("type", "text")
+                    .attr("size", "2")
+                    .attr("maxlength", "2")
                     .attr("value", &r.record.broker.country_code)
                   })
                 )
@@ -182,14 +188,13 @@ impl Table {
 
     fn date_cell(record: &Mutable<Aeat720RecordInfo>) -> impl Signal<Item = Option<Dom>> {
         let date = usize_to_date(record.lock_ref().record.first_tx_date)
-            .map_or("".to_string(), |d| d.format("%d/%m/%Y").to_string());
+            .map_or("".to_string(), |d| d.format("%Y-%m-%d").to_string());
         record.signal_ref(clone!(record => move |r| {
           if r.editable {
             Some(
               html!("td", {
                 .child(html!("input", {
                   .attr("type", "date")
-                  .attr("placeholder", "DD/MM/YYYY")
                   .attr("value", &date)
                 }))
               })
@@ -210,7 +215,10 @@ impl Table {
             Some(
               html!("td", {
                 .child(html!("input", {
+                  .style("text-align", "right")
                   .attr("type", "text")
+                  .attr("size", "15")
+                  .attr("maxlength", "15")
                   .attr("value", &r.record.value_in_euro.to_string())
                 }))
               })
@@ -231,7 +239,10 @@ impl Table {
             Some(
               html!("td", {
                 .child(html!("input", {
+                  .style("text-align", "right")
                   .attr("type", "text")
+                  .attr("size", "15")
+                  .attr("maxlength", "15")
                   .attr("value", &r.record.quantity.to_string())
                 }))
               })
@@ -252,15 +263,20 @@ impl Table {
             Some(
               html!("td", {
                 .child(html!("input", {
+                  .style("text-align", "right")
                   .attr("type", "text")
+                  .attr("size", "6")
+                  .attr("maxlength", "6")
                   .attr("value", &r.record.percentage.to_string())
                 }))
+                .text("%")
               })
             )
           } else {
             Some(
               html!("td", {
                 .text(&r.record.percentage.to_string())
+                .text("%")
               })
             )
           }
