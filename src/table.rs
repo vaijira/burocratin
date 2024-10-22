@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use chrono::NaiveDate;
 use dominator::{clone, events, html, with_node, Dom};
 use futures_signals::{
     map_ref,
@@ -10,7 +11,7 @@ use web_sys::{HtmlElement, HtmlInputElement};
 
 use crate::{
     css::TABLE_ROW,
-    data::Aeat720Record,
+    data::{Aeat720Record, BrokerInformation},
     utils::{
         icons::{render_svg_delete_square_icon, render_svg_edit_icon, render_svg_save_icon},
         usize_to_date,
@@ -195,11 +196,20 @@ impl Table {
             Some(
               html!("td", {
                 .child(
-                  html!("input", {
+                  html!("input" => HtmlInputElement, {
                     .attr("type", "text")
                     .attr("size", "2")
                     .attr("maxlength", "2")
                     .attr("value", &r.record.broker.country_code)
+                    .with_node!(element => {
+                      .event(clone!(record => move |_: events::Change| {
+                        let broker = Arc::new(BrokerInformation{
+                          name: "new unknown".to_string(),
+                          country_code: element.value(),
+                        });
+                        record.lock_mut().record.broker = broker;
+                      }))
+                    })
                   })
                 )
               })
@@ -213,15 +223,23 @@ impl Table {
     }
 
     fn date_cell(record: &Mutable<Aeat720RecordInfo>) -> impl Signal<Item = Option<Dom>> {
-        let date = usize_to_date(record.lock_ref().record.first_tx_date)
-            .map_or("".to_string(), |d| d.format("%Y-%m-%d").to_string());
         record.signal_ref(clone!(record => move |r| {
+          let first_tx_date = r.record.first_tx_date;
+          let date = usize_to_date(first_tx_date)
+              .map_or("".to_string(), |d| d.format("%Y-%m-%d").to_string());
           if r.editable {
             Some(
               html!("td", {
-                .child(html!("input", {
+                .child(html!("input" => HtmlInputElement, {
                   .attr("type", "date")
                   .attr("value", &date)
+                  .with_node!(element => {
+                      .event(clone!(record => move |_: events::Change| {
+                        let parsed_date = NaiveDate::parse_from_str(&element.value(), "%Y-%m-%d").unwrap();
+                        record.lock_mut().record.first_tx_date =
+                          parsed_date.format("%Y%m%d").to_string().parse::<usize>().unwrap_or(first_tx_date);
+                      }))
+                    })
                 }))
               })
             )
