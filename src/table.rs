@@ -6,7 +6,7 @@ use futures_signals::{
     signal::{Mutable, Signal, SignalExt},
     signal_vec::{MutableVec, SignalVecExt},
 };
-use web_sys::HtmlElement;
+use web_sys::{HtmlElement, HtmlInputElement};
 
 use crate::{
     css::TABLE_ROW,
@@ -121,11 +121,16 @@ impl Table {
             Some(
               html!("td", {
                 .child(
-                  html!("input", {
+                  html!("input" => HtmlInputElement, {
                     .attr("type", "text")
                     .attr("size", "40")
                     .attr("maxlength", "40")
                     .attr("value", &r.record.company.name)
+                    .with_node!(element => {
+                      .event(clone!(record => move |_: events::Change| {
+                        record.lock_mut().record.company.name = element.value();
+                      }))
+                    })
                   })
                 )
               })
@@ -140,15 +145,36 @@ impl Table {
 
     fn company_isin_cell(record: &Mutable<Aeat720RecordInfo>) -> impl Signal<Item = Option<Dom>> {
         record.signal_ref(clone!(record => move |r| {
+          let err_msg: Mutable<Option<&str>> = Mutable::new(None);
+          let isin_error_msg = "ISIN no valido";
           if r.editable {
             Some(
               html!("td", {
                 .child(
-                  html!("input", {
+                  html!("input" => HtmlInputElement, {
+                    .style("display", "block")
                     .attr("type", "text")
                     .attr("size", "12")
                     .attr("maxlength", "12")
                     .attr("value", &r.record.company.isin)
+                    .with_node!(element => {
+                      .event(clone!(record, err_msg => move |_: events::Input| {
+                        let isin = element.value();
+                        if let Ok(_) = isin::parse(&isin) {
+                          record.lock_mut().record.company.isin = isin;
+                          *err_msg.lock_mut() = None;
+                        } else {
+                          *err_msg.lock_mut() = Some(isin_error_msg);
+                        }
+                      }))
+                    })
+                  })
+                )
+                .child(
+                  html!("span", {
+                    .style("color", "red")
+                    .style("font-size", "small")
+                    .text_signal(err_msg.signal_ref(|t| t.unwrap_or("")))
                   })
                 )
               })
