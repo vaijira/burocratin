@@ -118,20 +118,36 @@ impl Table {
 
     fn company_name_cell(record: &Mutable<Aeat720RecordInfo>) -> impl Signal<Item = Option<Dom>> {
         record.signal_ref(clone!(record => move |r| {
+          let err_msg: Mutable<Option<&str>> = Mutable::new(None);
+          let name_error_msg = "Nombre no válido";
           if r.editable {
             Some(
               html!("td", {
                 .child(
                   html!("input" => HtmlInputElement, {
+                    .style("display", "block")
                     .attr("type", "text")
                     .attr("size", "40")
                     .attr("maxlength", "40")
                     .attr("value", &r.record.company.name)
                     .with_node!(element => {
-                      .event(clone!(record => move |_: events::Change| {
-                        record.lock_mut().record.company.name = element.value();
+                      .event(clone!(record, err_msg => move |_: events::Change| {
+                        let name = element.value();
+                        if !name.is_empty() {
+                          record.lock_mut().record.company.name = name;
+                          *err_msg.lock_mut() = None;
+                        } else {
+                          *err_msg.lock_mut() = Some(name_error_msg);
+                        }
                       }))
                     })
+                  })
+                )
+                .child(
+                  html!("span", {
+                    .style("color", "red")
+                    .style("font-size", "small")
+                    .text_signal(err_msg.signal_ref(|t| t.unwrap_or("")))
                   })
                 )
               })
@@ -147,7 +163,7 @@ impl Table {
     fn company_isin_cell(record: &Mutable<Aeat720RecordInfo>) -> impl Signal<Item = Option<Dom>> {
         record.signal_ref(clone!(record => move |r| {
           let err_msg: Mutable<Option<&str>> = Mutable::new(None);
-          let isin_error_msg = "ISIN no valido";
+          let isin_error_msg = "ISIN no válido";
           if r.editable {
             Some(
               html!("td", {
@@ -159,7 +175,7 @@ impl Table {
                     .attr("maxlength", "12")
                     .attr("value", &r.record.company.isin)
                     .with_node!(element => {
-                      .event(clone!(record, err_msg => move |_: events::Input| {
+                      .event(clone!(record, err_msg => move |_: events::Change| {
                         let isin = element.value();
                         if let Ok(_) = isin::parse(&isin) {
                           record.lock_mut().record.company.isin = isin;
