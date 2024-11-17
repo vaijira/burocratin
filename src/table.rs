@@ -13,7 +13,7 @@ use crate::{
     css::TABLE_ROW,
     data::{Aeat720Record, BrokerInformation},
     utils::{
-        icons::{render_svg_delete_square_icon, render_svg_edit_icon, render_svg_save_icon},
+        icons::{render_svg_edit_icon, render_svg_save_icon, render_svg_trash_icon},
         usize_to_date,
     },
 };
@@ -353,7 +353,7 @@ impl Table {
 
 
          let delete_span = html!("span" => HtmlElement, {
-           .child(render_svg_delete_square_icon("red", "24"))
+           .child(render_svg_trash_icon("red", "24"))
           .with_node!(_element => {
             .event(clone!(this => move |_: events::Click| {
               this.data.lock_mut().remove(index);

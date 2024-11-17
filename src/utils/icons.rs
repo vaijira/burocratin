@@ -9,6 +9,36 @@ fn svg_icon_attrs(icon: DomBuilder<SvgElement>) -> DomBuilder<SvgElement> {
         .attr("stroke-linejoin", "round")
 }
 
+pub fn render_svg_trash_icon(color: &str, size: &str) -> Dom {
+    svg!("svg", {
+        .attr("alt", "trash icon")
+        .attr("width", size)
+        .attr("height", size)
+        .attr("stroke", color)
+        .apply(svg_icon_attrs)
+        .children(&mut[
+            svg!("polyline", {
+                .attr("points", "3 6 5 6 21 6")
+            }),
+            svg!("path", {
+                .attr("d", "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2")
+            }),
+            svg!("line", {
+                .attr("x1", "10")
+                .attr("y1", "11")
+                .attr("x2", "10")
+                .attr("y2", "17")
+            }),
+            svg!("line", {
+                .attr("x1", "14")
+                .attr("y1", "11")
+                .attr("x2", "14")
+                .attr("y2", "17")
+            }),
+        ])
+    })
+}
+
 pub fn render_svg_save_icon(color: &str, size: &str) -> Dom {
     svg!("svg", {
         .attr("alt", "save icon")
@@ -48,9 +78,9 @@ pub fn render_svg_edit_icon(color: &str, size: &str) -> Dom {
     })
 }
 
-pub fn render_svg_delete_square_icon(color: &str, size: &str) -> Dom {
+pub fn render_svg_cancel_icon(color: &str, size: &str) -> Dom {
     svg!("svg", {
-        .attr("alt", "delete icon")
+        .attr("alt", "cancel icon")
         .attr("width", size)
         .attr("height", size)
         .attr("stroke", color)
