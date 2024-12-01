@@ -7,8 +7,9 @@ use futures_signals::{
     signal::{Mutable, Signal, SignalExt},
 };
 use gloo_file::{futures::read_as_bytes, Blob};
+use wasm_bindgen::{JsCast, UnwrapThrowExt};
 use wasm_bindgen_futures::spawn_local;
-use web_sys::HtmlInputElement;
+use web_sys::{Element, HtmlAnchorElement, HtmlElement, HtmlInputElement};
 
 use crate::{
     css::SECTION_HEADER,
@@ -142,37 +143,36 @@ impl App {
         html!("section", {
          .child_signal(
            Self::is_needed_to_generate_report(this).map(clone!(this => move |x| {
-              let default_button = Some(
+              if x {
+                  Some(
+                    html!("button" => HtmlElement, {
+                      .attr("type", "button")
+                      .attr("download", "fichero-720.txt")
+                      .text("Descargar informe AEAT 720")
+                      .with_node!(_element => {
+                        .event(clone!(this => move |_: events::Click| {
+                          let result = App::generate_720_file(&this);
+                          if result.is_ok() {
+                            let file_path = this.aeat720_form_path.lock_ref().clone().unwrap();
+                            let elem: Element = gloo_utils::document().create_element("a").unwrap_throw();
+                            let link: HtmlAnchorElement = elem.dyn_into().unwrap_throw();
+                            link.set_href(&file_path);
+                            let _ = link.set_attribute("download", "fichero-720.txt");
+                            link.click();
+                            /* let file_path = this.aeat720_form_path.lock_ref().clone().unwrap();
+                            let _ = web_sys::window().unwrap_throw().open_with_url_and_target(&file_path, "fichero-720.txt"); */
+                          }
+                        }))
+                      })
+                    })
+                  )
+             } else {
+               Some(
                 html!("button", {
                   .attr("type", "button")
                   .attr("disabled", "true")
                   .text("Descargar informe AEAT 720")
-                }));
-
-              if x {
-                let result = App::generate_720_file(&this);
-                if result.is_ok() {
-                  Some(
-                    html!(
-                      "a", {
-                        .attr("id", "aeat_720_form")
-                        .attr_signal("href", this.aeat720_form_path.signal_cloned())
-                        .attr("alt", "Informe 720 generado")
-                        .attr("download", "fichero-720.txt")
-                        .child(
-                          html!("button", {
-                            .attr("type", "button")
-                            .text("Descargar informe AEAT 720")
-                          })
-                        )
-                      })
-                    )
-
-                } else {
-                  default_button
-                }
-             } else {
-                default_button
+                }))
              }
           })))
         })

@@ -10,6 +10,7 @@ crate-type = ["cdylib", "rlib"]
 [dependencies.web-sys]
 version = "0.3"
 features = [
+  "HtmlAnchorElement",
   "HtmlInputElement",
   "FileList",
 ]
@@ -25,7 +26,8 @@ dominator = "0.5"
 encoding_rs = "0.8"
 futures = "0.3"
 futures-signals = "0.3"
-gloo-file = { version = "0.2", features = [ "futures" ] }
+gloo-file = { version = "0.3", features = [ "futures" ] }
+gloo-utils = "0.2"
 html5ever = "0.25"
 infer = "0.16.0"
 instant = { version = "0.1", features =  [ "wasm-bindgen", "inaccurate" ] }

@@ -58,7 +58,7 @@ pérdidas
 "#;
 
 impl DegiroParser {
-    fn n_to_m_digits<'b>(n: usize, m: usize) -> impl FnMut(&'b str) -> Res<&str, String> {
+    fn n_to_m_digits<'b>(n: usize, m: usize) -> impl FnMut(&'b str) -> Res<&'b str, String> {
         move |input| {
             many_m_n(n, m, one_of("0123456789"))(input)
                 .map(|(next_input, result)| (next_input, result.into_iter().collect()))
