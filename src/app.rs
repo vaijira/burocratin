@@ -12,7 +12,6 @@ use wasm_bindgen_futures::spawn_local;
 use web_sys::{Element, HtmlAnchorElement, HtmlElement, HtmlInputElement};
 
 use crate::{
-    css::SECTION_HEADER,
     data::{Aeat720Information, PersonalInformation},
     personal_info::PersonalInfoViewer,
     table::Table,
@@ -42,9 +41,9 @@ impl App {
 
     fn is_needed_to_generate_report(this: &Arc<Self>) -> impl Signal<Item = bool> {
         map_ref! {
-            let personal_info_changed = this.personal_info.signal_ref(|_| true),
+            let _personal_info_changed = this.personal_info.signal_ref(|_| true),
             let records_changed = this.table.table_rows_not_empty() =>
-            *personal_info_changed || *records_changed
+            *records_changed // || *personal_info_changed
         }
     }
 
@@ -147,7 +146,6 @@ impl App {
                   Some(
                     html!("button" => HtmlElement, {
                       .attr("type", "button")
-                      .attr("download", "fichero-720.txt")
                       .text("Descargar informe AEAT 720")
                       .with_node!(_element => {
                         .event(clone!(this => move |_: events::Click| {
@@ -160,7 +158,7 @@ impl App {
                             let _ = link.set_attribute("download", "fichero-720.txt");
                             link.click();
                             /* let file_path = this.aeat720_form_path.lock_ref().clone().unwrap();
-                            let _ = web_sys::window().unwrap_throw().open_with_url_and_target(&file_path, "fichero-720.txt"); */
+                            let _ = web_sys::window().unwrap_throw().open_with_url_and_target(&file_path, "_self"); */
                           }
                         }))
                       })
@@ -180,12 +178,10 @@ impl App {
 
     pub fn render(this: Arc<Self>) -> Dom {
         html!("div", {
-            .child(
-                html!("h3", {
-                  .class(&*SECTION_HEADER)
-                  .text(" Información brokers ")
-                })
-            )
+            .child(html!("h3", {
+                .text("Datos personales")
+            }))
+            .child(PersonalInfoViewer::render(&this.personal_info_viewer))
             .child(
                Table::render(&this.table)
             )
@@ -194,19 +190,6 @@ impl App {
             )
             .child(
                 App::render_clear_button(&this)
-            )
-            .child(
-                html!("h3", {
-                  .class(&*SECTION_HEADER)
-                  .text(" Información personal ")
-                })
-            )
-            .child(PersonalInfoViewer::render(&this.personal_info_viewer))
-            .child(
-                html!("h3", {
-                  .class(&*SECTION_HEADER)
-                  .text(" Descarga de formulario 720 ")
-                })
             )
             .child(App::render_download_button(&this))
         })

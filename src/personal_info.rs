@@ -24,15 +24,12 @@ impl PersonalInfoViewer {
             .child(html!("span", {
                 .class(&*FLEX_CONTAINER_ITEM_20_CLASS)
                 .children(&mut [
-                    html!("label", {
-                        .attr("for", "name")
-                        .text("Nombre: ")
-                    }),
                     html!("input" => HtmlInputElement, {
                         .attr("id", "name")
                         .attr("alt", "Nombre")
                         .attr("type", "text")
                         .attr("autocomplete", "given-name")
+                        .attr("placeholder", "Nombre")
                         .with_node!(element => {
                             .event(clone!(this => move |_: events::Input| {
                                 this.personal_info.lock_mut().name = element.value().to_uppercase();
@@ -44,15 +41,12 @@ impl PersonalInfoViewer {
             .child(html!("span", {
                 .class(&*FLEX_CONTAINER_ITEM_20_CLASS)
                 .children(&mut [
-                    html!("label", {
-                        .attr("for", "surname")
-                        .text("Apellidos: ")
-                    }),
                     html!("input" => HtmlInputElement, {
                         .attr("id", "surname")
                         .attr("alt", "Apellidos")
                         .attr("type", "text")
                         .attr("autocomplete", "family-name")
+                        .attr("placeholder", "Apellidos")
                         .with_node!(element => {
                             .event(clone!(this => move |_: events::Input| {
                                 this.personal_info.lock_mut().surname = element.value().to_uppercase();
@@ -64,14 +58,12 @@ impl PersonalInfoViewer {
             .child(html!("span", {
                 .class(&*FLEX_CONTAINER_ITEM_20_CLASS)
                 .children(&mut [
-                    html!("label", {
-                        .attr("for", "nif")
-                        .text("NIF: ")
-                    }),
                     html!("input" => HtmlInputElement, {
                         .attr("id", "nif")
                         .attr("alt", "NIF")
                         .attr("type", "text")
+                        .attr("max-length", "9")
+                        .attr("placeholder", "DNI con letra")
                         .with_node!(element => {
                             .event(clone!(this => move |_: events::Input| {
                                 this.personal_info.lock_mut().nif = element.value().to_uppercase();
@@ -83,14 +75,11 @@ impl PersonalInfoViewer {
             .child(html!("span", {
                 .class(&*FLEX_CONTAINER_ITEM_20_CLASS)
                 .children(&mut [
-                    html!("label", {
-                        .attr("for", "year")
-                        .text("Año: ")
-                    }),
                     html!("input" => HtmlInputElement, {
                         .attr("id", "year")
                         .attr("alt", "Año")
                         .attr("type", "text")
+                        .attr("maxlength", "4")
                         .attr("value", &DEFAULT_YEAR.to_string())
                         .with_node!(element => {
                             .event(clone!(this => move |_: events::Input| {
@@ -103,15 +92,13 @@ impl PersonalInfoViewer {
             .child(html!("span", {
                 .class(&*FLEX_CONTAINER_ITEM_20_CLASS)
                 .children(&mut [
-                    html!("label", {
-                        .attr("for", "phone")
-                        .text("Teléfono: ")
-                    }),
                     html!("input" => HtmlInputElement, {
                         .attr("id", "phone")
                         .attr("alt", "Teléfono")
                         .attr("type", "text")
                         .attr("autocomplete", "tel")
+                        .attr("maxlength", "9")
+                        .attr("placeholder", "Teléfono")
                         .with_node!(element => {
                             .event(clone!(this => move |_: events::Input| {
                                 this.personal_info.lock_mut().phone = element.value().to_uppercase();

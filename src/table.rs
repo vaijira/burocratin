@@ -10,7 +10,7 @@ use futures_signals::{
 use web_sys::{HtmlElement, HtmlInputElement};
 
 use crate::{
-    css::TABLE_ROW,
+    css::{TABLE_CAPTION, TABLE_ROW, TABLE_STYLE},
     data::{Aeat720Record, BrokerInformation},
     utils::{icons::render_svg_trash_icon, usize_to_date},
 };
@@ -350,15 +350,11 @@ impl Table {
 
     pub fn render(this: &Arc<Self>) -> Dom {
         html!("table", {
-          .style("overflow", "auto")
-          .style("width", "100%")
-          .style("height", "400px")
-          .style("border-collapse", "collapse")
-          .style("border", "1px solid #8c8c8c")
-          .style("margin-bottom" ,"1em")
-          .child(
+         .class(&*TABLE_STYLE)
+         .child(
             html!("caption", {
-              .text("Movimientos importados.")
+              .class(&*TABLE_CAPTION)
+              .text("Movimientos importados/creados.")
             })
 
           )

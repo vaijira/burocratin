@@ -20,14 +20,15 @@ pub static FLEX_CONTAINER_CLASS: Lazy<String> = Lazy::new(|| {
     class! {
         .style("display", "flex")
         .style("flex-flow", "wrap")
+        .style("gap", "5px")
     }
 });
 
 pub static FLEX_CONTAINER_ITEM_20_CLASS: Lazy<String> = Lazy::new(|| {
     class! {
-        .style("flex", "20%")
+        .style("flex", "auto")
+        .style("margin", "5px")
         .style("max-width", "20%")
-        .style("margin-bottom", "5px")
     }
 });
 
@@ -35,7 +36,7 @@ pub static FLEX_CONTAINER_ITEM_40_CLASS: Lazy<String> = Lazy::new(|| {
     class! {
         .style("flex", "40%")
         .style("max-width", "40%")
-        .style("margin-bottom", "5px")
+        .style("margin", "5px")
     }
 });
 
@@ -58,6 +59,25 @@ pub static SECTION_HEADER: Lazy<String> = Lazy::new(|| {
             .style("margin", "auto")
             .style("margin-right", "10px")
         })
+    }
+});
+
+pub static TABLE_STYLE: Lazy<String> = Lazy::new(|| {
+    class! {
+        .style("overflow", "auto")
+        .style("width", "100%")
+        .style("height", "400px")
+        .style("border-collapse", "collapse")
+        .style("border", "1px solid #8c8c8c")
+        .style("margin-bottom" ,"1em")
+    }
+});
+
+pub static TABLE_CAPTION: Lazy<String> = Lazy::new(|| {
+    class! {
+        .style("font-size", "large")
+        .style("font-weight", "bold")
+        .style("margin", "20px")
     }
 });
 
