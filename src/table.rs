@@ -97,7 +97,7 @@ impl Table {
                   .style("vertical-align", "bottom")
                   .style("font-weight", "bold")
                   .style("background-color", "#ddd")
-                  .text("")
+                  .text("#")
                 })
               )
               .children(Self::render_header_cells(this))

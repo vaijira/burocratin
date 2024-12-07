@@ -179,9 +179,12 @@ impl App {
     pub fn render(this: Arc<Self>) -> Dom {
         html!("div", {
             .child(html!("h3", {
-                .text("Datos personales")
+                .text("Paso 1: Rellena datos personales.")
             }))
             .child(PersonalInfoViewer::render(&this.personal_info_viewer))
+            .child(html!("h3", {
+                .text("Paso 2: Descarga los informes de Interactive brokers y/o Degiro e importalos.")
+            }))
             .child(
                Table::render(&this.table)
             )
@@ -191,7 +194,23 @@ impl App {
             .child(
                 App::render_clear_button(&this)
             )
+            .child(html!("h3", {
+                .text("Paso 3: Revisa las fechas de 1º adquisición y los datos importados y descarga el fichero generado.")
+            }))
             .child(App::render_download_button(&this))
+            .child(html!("h3", {
+                .text("Paso 4: Finalmente importe el fichero descargado con el modelo 720 en la ")
+                .child(html!("a", {
+                  .attr("alt", "enlace presentación modelo 720 AEAT")
+                  .attr("target", "_blank")
+                  .attr("rel", "noopener external nofollow")
+                  .attr("href", "https://sede.agenciatributaria.gob.es/Sede/procedimientoini/GI34.shtml")
+                  .text("página correspondiente de la AEAT")
+                }))
+                .text(" y revise el código de domiciliación del país de las empresas, por defecto cogerá el del ISIN, pero esto no siempre es correcto.")
+            }))
+        //<p>Finalmente suba el fichero descargado con el modelo 720 a <a alt="enlace modelo 720 AEAT" target="_blank" rel="noopener external nofollow"
+        // href="https://sede.agenciatributaria.gob.es/Sede/procedimientoini/GI34.shtml">página correspondiente de la AEAT</a> y comparta en redes sociales si le ha resultado de utilidad.</p>
         })
     }
 }

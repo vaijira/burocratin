@@ -76,7 +76,6 @@ pub static TABLE_STYLE: Lazy<String> = Lazy::new(|| {
 pub static TABLE_CAPTION: Lazy<String> = Lazy::new(|| {
     class! {
         .style("font-size", "large")
-        .style("font-weight", "bold")
         .style("margin", "20px")
     }
 });
