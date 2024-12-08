@@ -11,8 +11,8 @@ use web_sys::{HtmlElement, HtmlInputElement};
 
 use crate::{
     css::{TABLE_CAPTION, TABLE_ROW, TABLE_STYLE},
-    data::{Aeat720Record, BrokerInformation},
-    utils::{icons::render_svg_trash_icon, usize_to_date},
+    data::{Aeat720Record, BrokerInformation, DEFAULT_LOCALE},
+    utils::{decimal::decimal_to_str_locale, icons::render_svg_trash_icon, usize_to_date},
 };
 
 const ISIN_NOT_VALID_ERR_MSG: &str = "ISIN no válido";
@@ -250,7 +250,7 @@ impl Table {
                 .attr("type", "text")
                 .attr("size", "15")
                 .attr("maxlength", "15")
-                .attr("value", &r.record.value_in_euro.to_string())
+                .attr("value", &decimal_to_str_locale(&r.record.value_in_euro, DEFAULT_LOCALE))
               }))
             }))
         })
@@ -264,7 +264,7 @@ impl Table {
                 .attr("type", "text")
                 .attr("size", "15")
                 .attr("maxlength", "15")
-                .attr("value", &r.record.quantity.to_string())
+                .attr("value", &decimal_to_str_locale(&r.record.quantity, DEFAULT_LOCALE))
               }))
             }))
         })

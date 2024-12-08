@@ -1,4 +1,5 @@
 use chrono::NaiveDate;
+use num_format::Locale;
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 use std::{convert::From, sync::Arc};
@@ -7,7 +8,9 @@ pub type AccountNotes = Vec<AccountNote>;
 pub type BalanceNotes = Vec<BalanceNote>;
 pub type Aeat720Records = Vec<Aeat720Record>;
 
+pub const DEFAULT_YEAR: usize = 2024;
 pub const SPAIN_COUNTRY_CODE: &str = "ES";
+pub const DEFAULT_LOCALE: &Locale = &Locale::es;
 
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub enum BrokerOperation {
@@ -141,8 +144,6 @@ pub struct Aeat720Information {
     pub records: Vec<Aeat720Record>,
     pub personal_info: PersonalInformation,
 }
-
-pub const DEFAULT_YEAR: usize = 2024;
 
 impl Aeat720Information {
     pub fn full_name(&self) -> String {
