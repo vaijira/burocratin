@@ -209,8 +209,6 @@ impl App {
                 }))
                 .text(" y revise el código de domiciliación del país de las empresas, por defecto cogerá el del ISIN, pero esto no siempre es correcto.")
             }))
-        //<p>Finalmente suba el fichero descargado con el modelo 720 a <a alt="enlace modelo 720 AEAT" target="_blank" rel="noopener external nofollow"
-        // href="https://sede.agenciatributaria.gob.es/Sede/procedimientoini/GI34.shtml">página correspondiente de la AEAT</a> y comparta en redes sociales si le ha resultado de utilidad.</p>
         })
     }
 }

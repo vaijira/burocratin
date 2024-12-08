@@ -10,16 +10,18 @@ use futures_signals::{
 use web_sys::{HtmlElement, HtmlInputElement};
 
 use crate::{
-    css::{TABLE_CAPTION, TABLE_ROW, TABLE_STYLE},
+    css::{TABLE_CAPTION, TABLE_HEADER, TABLE_ROW, TABLE_STYLE},
     data::{Aeat720Record, BrokerInformation, DEFAULT_LOCALE},
     utils::{decimal::decimal_to_str_locale, icons::render_svg_trash_icon, usize_to_date},
 };
 
+const NAME_NOT_VALID_ERR_MSG: &str = "Nombre no válido";
 const ISIN_NOT_VALID_ERR_MSG: &str = "ISIN no válido";
 
 #[derive(Debug, Clone)]
 struct Aeat720RecordInfo {
     record: Aeat720Record,
+    name_err_msg: Mutable<Option<&'static str>>,
     isin_err_msg: Mutable<Option<&'static str>>,
 }
 pub struct Table {
@@ -33,9 +35,9 @@ impl Table {
             headers: vec![
                 "Nombre compañía",
                 "ISIN",
-                "Código país",
+                "Cód. país",
                 "Fecha 1ª adquisición",
-                "Valor Euros",
+                "Valor (€)",
                 "Nº acciones",
                 "Porcentaje",
             ],
@@ -55,6 +57,7 @@ impl Table {
                 .lock_mut()
                 .push_cloned(Mutable::new(Aeat720RecordInfo {
                     record,
+                    name_err_msg: Mutable::new(None),
                     isin_err_msg: Mutable::new(None),
                 }));
         }
@@ -89,6 +92,7 @@ impl Table {
 
     fn render_header(this: &Arc<Self>) -> Dom {
         html!("thead", {
+          .class(&*TABLE_HEADER)
           .child(
             html!("tr", {
               .child(
@@ -117,24 +121,31 @@ impl Table {
 
     fn company_name_cell(record: &Mutable<Aeat720RecordInfo>) -> impl Signal<Item = Option<Dom>> {
         record.signal_ref(clone!(record => move |r| {
-          let err_msg: Mutable<Option<&str>> = Mutable::new(None);
-          let name_error_msg = "Nombre no válido";
             Some(
               html!("td", {
                 .child(
                   html!("input" => HtmlInputElement, {
                     .style("display", "block")
                     .attr("type", "text")
-                    .attr("size", "40")
+                    .attr("size", "30")
                     .attr("maxlength", "40")
                     .attr("value", &r.record.company.name)
+                    .with_node!(element =>  {
+                      .event(clone!(record  => move |_: events::Input| {
+                        if !element.value().is_empty() {
+                          *record.lock_mut().name_err_msg.lock_mut() = None;
+                        } else {
+                          *record.lock_mut().name_err_msg.lock_mut() = Some(NAME_NOT_VALID_ERR_MSG);
+                        }
+                      }))
+                    })
                     .with_node!(element => {
-                      .event(clone!(record, err_msg => move |_: events::Change| {
+                     .event(clone!(record => move |_: events::Change| {
                         let name = element.value();
                         if !name.is_empty() {
-                          *err_msg.lock_mut() = None;
+                          *record.lock_mut().name_err_msg.lock_mut() = None;
                         } else {
-                          *err_msg.lock_mut() = Some(name_error_msg);
+                          *record.lock_mut().name_err_msg.lock_mut() = Some(NAME_NOT_VALID_ERR_MSG);
                           let _ = element.focus();
                         }
                         record.lock_mut().record.company.name = name;
@@ -146,7 +157,7 @@ impl Table {
                   html!("span", {
                     .style("color", "red")
                     .style("font-size", "small")
-                    .text_signal(err_msg.signal_ref(|t| t.unwrap_or("")))
+                    .text_signal(record.lock_ref().name_err_msg.signal_ref(|t| t.unwrap_or("")))
                   })
                 )
               })
@@ -165,6 +176,17 @@ impl Table {
                     .attr("size", "12")
                     .attr("maxlength", "12")
                     .attr("value", &r.record.company.isin)
+                    .with_node!(element => {
+                      .event(clone!(record => move |_: events::Input| {
+                        let isin = element.value();
+                        if isin::parse(&isin).is_ok() {
+                          *record.lock_mut().isin_err_msg.lock_mut() = None;
+                        } else {
+                          *record.lock_mut().isin_err_msg.lock_mut() = Some(ISIN_NOT_VALID_ERR_MSG);
+                          let _ = element.focus();
+                        }
+                      }))
+                    })
                     .with_node!(element => {
                       .event(clone!(record => move |_: events::Change| {
                         let isin = element.value();
@@ -248,7 +270,7 @@ impl Table {
               .child(html!("input", {
                 .style("text-align", "right")
                 .attr("type", "text")
-                .attr("size", "15")
+                .attr("size", "9")
                 .attr("maxlength", "15")
                 .attr("value", &decimal_to_str_locale(&r.record.value_in_euro, DEFAULT_LOCALE))
               }))
@@ -262,7 +284,7 @@ impl Table {
               .child(html!("input", {
                 .style("text-align", "right")
                 .attr("type", "text")
-                .attr("size", "15")
+                .attr("size", "6")
                 .attr("maxlength", "15")
                 .attr("value", &decimal_to_str_locale(&r.record.quantity, DEFAULT_LOCALE))
               }))
@@ -276,7 +298,7 @@ impl Table {
               .child(html!("input", {
                 .style("text-align", "right")
                 .attr("type", "text")
-                .attr("size", "6")
+                .attr("size", "4")
                 .attr("maxlength", "6")
                 .attr("value", &r.record.percentage.to_string())
               }))

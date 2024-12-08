@@ -28,7 +28,8 @@ pub static FLEX_CONTAINER_ITEM_20_CLASS: Lazy<String> = Lazy::new(|| {
     class! {
         .style("flex", "auto")
         .style("margin", "5px")
-        .style("max-width", "20%")
+        .style("font-size", "small")
+        // .style("max-width", "20%")
     }
 });
 
@@ -80,8 +81,15 @@ pub static TABLE_CAPTION: Lazy<String> = Lazy::new(|| {
     }
 });
 
+pub static TABLE_HEADER: Lazy<String> = Lazy::new(|| {
+    class! {
+        .style("font-size", "small")
+    }
+});
+
 pub static TABLE_ROW: Lazy<String> = Lazy::new(|| {
     class! {
+        .style("font-size", "small")
         .pseudo!(":nth-child(even)", {
             .style("background-color", "#f2f2f2")
         })

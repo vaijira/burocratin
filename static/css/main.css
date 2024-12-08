@@ -46,9 +46,14 @@ img.opacity:hover {
   border-color: #ffecb5;
   display: inline-block;
 }
- 
+
+input, select, textarea, button{
+  font-size: inherit;
+}
+
+/* 
 th,
 td{
     padding:0.5em;
     border:1px solid #ccc;
-}
+}*/
