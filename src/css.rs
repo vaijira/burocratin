@@ -20,14 +20,13 @@ pub static FLEX_CONTAINER_CLASS: Lazy<String> = Lazy::new(|| {
     class! {
         .style("display", "flex")
         .style("flex-flow", "wrap")
-        .style("gap", "5px")
+        .style("gap", "2px")
     }
 });
 
 pub static FLEX_CONTAINER_ITEM_20_CLASS: Lazy<String> = Lazy::new(|| {
     class! {
         .style("flex", "auto")
-        .style("margin", "5px")
         .style("font-size", "small")
         // .style("max-width", "20%")
     }
