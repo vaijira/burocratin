@@ -7,22 +7,33 @@ use futures_signals::{
     signal::{Mutable, Signal, SignalExt},
     signal_vec::{MutableVec, SignalVecExt},
 };
+use rust_decimal::Decimal;
 use web_sys::{HtmlElement, HtmlInputElement};
 
 use crate::{
     css::{TABLE_CAPTION, TABLE_HEADER, TABLE_ROW, TABLE_STYLE},
-    data::{Aeat720Record, BrokerInformation, DEFAULT_LOCALE},
-    utils::{decimal::decimal_to_str_locale, icons::render_svg_trash_icon, usize_to_date},
+    data::{Aeat720Record, BrokerInformation, DEFAULT_LOCALE, DEFAULT_NUMBER_OF_DECIMALS},
+    utils::{
+        decimal::{decimal_to_str_locale, valid_str_number_with_decimals},
+        icons::render_svg_trash_icon,
+        usize_to_date,
+    },
 };
 
 const NAME_NOT_VALID_ERR_MSG: &str = "Nombre no válido";
 const ISIN_NOT_VALID_ERR_MSG: &str = "ISIN no válido";
+const VALUE_NOT_VALID_ERR_MSG: &str = "Valor (€) no válido";
+const QUANTITY_NOT_VALID_ERR_MSG: &str = "Nº acciones no válido";
+const PERCENT_NOT_VALID_ERR_MSG: &str = "Porcentaje no válido";
 
 #[derive(Debug, Clone)]
 struct Aeat720RecordInfo {
     record: Aeat720Record,
     name_err_msg: Mutable<Option<&'static str>>,
     isin_err_msg: Mutable<Option<&'static str>>,
+    value_err_msg: Mutable<Option<&'static str>>,
+    quantity_err_msg: Mutable<Option<&'static str>>,
+    percent_err_msg: Mutable<Option<&'static str>>,
 }
 pub struct Table {
     headers: Vec<&'static str>,
@@ -59,6 +70,9 @@ impl Table {
                     record,
                     name_err_msg: Mutable::new(None),
                     isin_err_msg: Mutable::new(None),
+                    value_err_msg: Mutable::new(None),
+                    quantity_err_msg: Mutable::new(None),
+                    percent_err_msg: Mutable::new(None),
                 }));
         }
     }
@@ -169,8 +183,7 @@ impl Table {
         record.signal_ref(clone!(record => move |r| {
             Some(
               html!("td", {
-                .child(
-                  html!("input" => HtmlInputElement, {
+                .child(html!("input" => HtmlInputElement, {
                     .style("display", "block")
                     .attr("type", "text")
                     .attr("size", "12")
@@ -199,15 +212,12 @@ impl Table {
                         record.lock_mut().record.company.isin = isin;
                       }))
                     })
-                  })
-                )
-                .child(
-                  html!("span", {
+                }))
+                .child(html!("span", {
                     .style("color", "red")
                     .style("font-size", "small")
                     .text_signal(record.lock_ref().isin_err_msg.signal_ref(|t| t.unwrap_or("")))
-                  })
-                )
+                }))
               })
             )
         }))
@@ -265,46 +275,135 @@ impl Table {
     }
 
     fn value_cell(record: &Mutable<Aeat720RecordInfo>) -> impl Signal<Item = Option<Dom>> {
-        record.signal_ref(move |r| {
+        record.signal_ref(clone!(record => move |r| {
             Some(html!("td", {
-              .child(html!("input", {
+              .child(html!("input" => HtmlInputElement, {
                 .style("text-align", "right")
                 .attr("type", "text")
                 .attr("size", "9")
                 .attr("maxlength", "15")
                 .attr("value", &decimal_to_str_locale(&r.record.value_in_euro, DEFAULT_LOCALE))
+                .with_node!(element => {
+                  .event(clone!(record => move |_: events::Input| {
+                    if valid_str_number_with_decimals(&element.value(), DEFAULT_NUMBER_OF_DECIMALS, DEFAULT_LOCALE) {
+                        *record.lock_mut().value_err_msg.lock_mut() = None;
+                    } else {
+                        *record.lock_mut().value_err_msg.lock_mut() = Some(VALUE_NOT_VALID_ERR_MSG);
+                    }
+                  }))
+                })
+                .with_node!(element => {
+                  .event(clone!(record => move |_: events::Change| {
+                    let money_str = element.value();
+                    if valid_str_number_with_decimals(&money_str, DEFAULT_NUMBER_OF_DECIMALS, DEFAULT_LOCALE) {
+                      if let Ok(money) = money_str.parse::<Decimal>() {
+                        *record.lock_mut().value_err_msg.lock_mut() = None;
+                        record.lock_mut().record.value_in_euro = money;
+                        return
+                      }
+                    }
+                    *record.lock_mut().value_err_msg.lock_mut() = Some(VALUE_NOT_VALID_ERR_MSG);
+                    record.lock_mut().record.value_in_euro = Decimal::ZERO;
+                    let _ = element.focus();
+                  }))
+                })
+              }))
+              .child(html!("span", {
+                .style("color", "red")
+                .style("font-size", "small")
+                .text_signal(record.lock_ref().value_err_msg.signal_ref(|t| t.unwrap_or("")))
               }))
             }))
-        })
+        }))
     }
 
     fn quantity_cell(record: &Mutable<Aeat720RecordInfo>) -> impl Signal<Item = Option<Dom>> {
-        record.signal_ref(move |r| {
+        record.signal_ref(clone!(record => move |r| {
             Some(html!("td", {
-              .child(html!("input", {
+              .child(html!("input" => HtmlInputElement, {
                 .style("text-align", "right")
                 .attr("type", "text")
                 .attr("size", "6")
                 .attr("maxlength", "15")
                 .attr("value", &decimal_to_str_locale(&r.record.quantity, DEFAULT_LOCALE))
+                .with_node!(element => {
+                  .event(clone!(record => move |_: events::Input| {
+                    if valid_str_number_with_decimals(&element.value(), DEFAULT_NUMBER_OF_DECIMALS, DEFAULT_LOCALE) {
+                        *record.lock_mut().quantity_err_msg.lock_mut() = None;
+                    } else {
+                        *record.lock_mut().quantity_err_msg.lock_mut() = Some(QUANTITY_NOT_VALID_ERR_MSG);
+                    }
+                  }))
+                })
+                .with_node!(element => {
+                  .event(clone!(record => move |_: events::Change| {
+                    let quantity_str = element.value();
+                    if valid_str_number_with_decimals(&quantity_str, DEFAULT_NUMBER_OF_DECIMALS, DEFAULT_LOCALE) {
+                      if let Ok(quantity) = quantity_str.parse::<Decimal>() {
+                        *record.lock_mut().quantity_err_msg.lock_mut() = None;
+                        record.lock_mut().record.quantity = quantity;
+                        return
+                      }
+                    }
+                    *record.lock_mut().quantity_err_msg.lock_mut() = Some(QUANTITY_NOT_VALID_ERR_MSG);
+                    record.lock_mut().record.quantity = Decimal::ONE_HUNDRED;
+                    let _ = element.focus();
+                  }))
+                })
+              }))
+              .child(html!("span", {
+                .style("color", "red")
+                .style("font-size", "small")
+                .text_signal(record.lock_ref().quantity_err_msg.signal_ref(|t| t.unwrap_or("")))
               }))
             }))
-        })
+        }))
     }
 
     fn percentage_cell(record: &Mutable<Aeat720RecordInfo>) -> impl Signal<Item = Option<Dom>> {
-        record.signal_ref(move |r| {
+        record.signal_ref(clone!(record => move |r| {
             Some(html!("td", {
-              .child(html!("input", {
+              .child(html!("input" => HtmlInputElement, {
                 .style("text-align", "right")
                 .attr("type", "text")
                 .attr("size", "4")
                 .attr("maxlength", "6")
                 .attr("value", &r.record.percentage.to_string())
+                .with_node!(element => {
+                  .event(clone!(record => move |_: events::Input| {
+                    if valid_str_number_with_decimals(&element.value(), DEFAULT_NUMBER_OF_DECIMALS, DEFAULT_LOCALE) {
+                        *record.lock_mut().percent_err_msg.lock_mut() = None;
+                    } else {
+                        *record.lock_mut().percent_err_msg.lock_mut() = Some(PERCENT_NOT_VALID_ERR_MSG);
+                    }
+                  }))
+                })
+                .with_node!(element => {
+                  .event(clone!(record => move |_: events::Change| {
+                    let percentage_str = element.value().replace(DEFAULT_LOCALE.decimal(), ".");
+                    if valid_str_number_with_decimals(&percentage_str, DEFAULT_NUMBER_OF_DECIMALS, DEFAULT_LOCALE) {
+                      if let Ok(percentage) = percentage_str.parse::<Decimal>() {
+                        if percentage.gt(&Decimal::ZERO) && percentage.le(&Decimal::ONE_HUNDRED) {
+                          *record.lock_mut().percent_err_msg.lock_mut() = None;
+                          record.lock_mut().record.percentage = percentage;
+                          return;
+                        }
+                      }
+                    }
+                    *record.lock_mut().percent_err_msg.lock_mut() = Some(PERCENT_NOT_VALID_ERR_MSG);
+                    record.lock_mut().record.percentage = Decimal::ONE_HUNDRED;
+                    let _ = element.focus();
+                  }))
+                })
               }))
-              .text("%")
+              .text(" % ")
+              .child(html!("span", {
+                .style("color", "red")
+                .style("font-size", "small")
+                .text_signal(record.lock_ref().percent_err_msg.signal_ref(|t| t.unwrap_or("")))
+              }))
             }))
-        })
+        }))
     }
 
     fn actions_cell(
