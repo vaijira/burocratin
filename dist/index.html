@@ -29,36 +29,49 @@
         <div id="burocratinApp" ><script src="js/index.js"></script></div>
       </div>
       <div class="item">
-        <p>
-          Burocratin utiliza la tecnología <a href="https://en.wikipedia.org/wiki/WebAssembly" alt="WebAssembly" target="_blank" rel="noopener external nofollow">WebAssembly</a>
-          con lo cual una vez la página realiza la carga inicial toda acción es local y ningún dato viaja por la red.
-        </p>
-        <p>
-          El modelo 720 generado se puede presentar si es la primera declaración o
-          <a href="https://sede.agenciatributaria.gob.es/Sede/todas-gestiones/impuestos-tasas/declaraciones-informativas/modelo-720-decla_____sobre-bienes-derechos-extranjero_/preguntas-frecuentes/otras-cuestiones.html?faqId=d466ff1d82d8f710VgnVCM100000dc381e0aRCRD" target="_blank" rel="noopener external nofollow" alt="720 FAQ">
-          si se ha realizado alguna venta y reinvertido el importe</a>.
-        </p>
-        <div class="alert-warning"><strong>Limitaciones:</strong>
-          <ul>
-            <li>No olvide seleccionar el idioma inglés cuando descargue informes de interactive brokers.</li>
-            <li>Sólo rellena información de acciones, no líquidez del broker.</li>
-            <li>El código de país que usará para Degiro será NL y para interactive brokers IE.</li>
-            <li>Modelo 720: Revisar el código de domiciliación del país, por defecto cogerá el del ISIN, pero esto no siempre es correcto.</li>
-            <li>Modelo 720: Revisar la fecha de primera incorporación si tu primera transacción fue antes del año a declarar.</li>
-          </ul>
-        </div>
-        <p>El autor no se hace responsable del uso resultante de esta aplicación.</p>
+        <div class="faq">
+          <h3>Preguntas frecuentes</h3>
+          <details>
+            <summary>¿Cu&aacute;ndo se puede usar esta app para generar el modelo 720?</summary>
+            <p>El modelo 720 generado solo contendr&aacute; informaci&oacute;n de acciones y se puede presentar si es la primera declaración o
+               <a href="https://sede.agenciatributaria.gob.es/Sede/todas-gestiones/impuestos-tasas/declaraciones-informativas/modelo-720-decla_____sobre-bienes-derechos-extranjero_/preguntas-frecuentes/otras-cuestiones.html?faqId=d466ff1d82d8f710VgnVCM100000dc381e0aRCRD" target="_blank" rel="noopener external nofollow" alt="720 FAQ">
+               si se ha realizado alguna venta y reinvertido el importe</a>.
+            </p>
+         </details>
+         <details>
+            <summary>¿Es seguro utilizar esta app?</summary>
+            <p>Esta p&aacute;gina utiliza la tecnología <a href="https://en.wikipedia.org/wiki/WebAssembly" alt="WebAssembly" target="_blank" rel="noopener external nofollow">WebAssembly</a>
+               con lo cual una vez la página realiza la carga inicial toda acción es local en el navegador y ningún dato viaja por la red. Tampoco se utilizan cookies ni propias ni de terceros.
+            </p>
+         </details>
+         <details>
+            <summary>¿Qu&eacute; informes son soportados por la app?</summary>
+            <p>Para el broker Degiro los informes soportados son los formatos PDF y CSV con las posiciones a 31 de Diciembre del año que se quiera importar, se recomienda no obstante usar el informe en formato PDF.
+              Para Interactive brokers los formatos soportados son los informes anuales de actividad en formato CSV &oacute; HTML en ingl&eacute;s o español.
+            </p>
+         </details>
+          <details>
+            <summary>¿C&oacute;mo puedo descargarme el informe anual de Degiro en formato PDF?</summary>
+            <p>Entre en la p&aacute;gina de Degiro con su usuario. En el men&uacute; izquierdo pulse "Actividad" y seguidamente "informes".
+               En "informes" seleccione el informe anual del año a declarar y pulse descargar.
+            </p>
+         </details>
+         <details>
+            <summary>¿C&oacute;mo puedo descargarme el informe anual de Degiro en formato CSV?</summary>
+            <p>Entre en la p&aacute;gina de Degiro con su usuario. En el men&uacute; izquierdo pulse "Cartera". Arriba a la derecha pulse el bot&oacute;n exportar.
+               Seleccione la fecha de 31 de Diciembre del año a declarar y pulse CSV.
+            </p>
+         </details>
+          <details>
+            <summary>¿C&oacute;mo puedo descargme el informe anual de Interactive brokers en formato CSV &oacute; HTML?</summary>
+            <p>Entre en la p&aacute;gina de Interactive brokers con su usuario. En el men&uacute; superior seleccione "Rendimientos e informes" y seguidamente "extractos".
+               En "extractos predeterminados" pulse en "actividad", seleccione el per&iacute;odo anual, el formato HTML &oacute; CSV con idioma ingl&eacute;s &oacute; español.
+               Pulse descargar.
+            </p>
+         </details>
+         <p>El autor no se hace responsable del uso resultante de esta aplicación.</p>
       </div>
-      <div class="item">
-        <h2>Instrucciones para la generación del modelo 720.</h2>
-        <p>Determine los ficheros a subir dependiendo de si su broker es Degiro, Interactive brokers o ambos.
-          Para Degiro se recomienda el informe anual en PDF. Para Interactive Brokers a la hora de descargar cualquiera de los informes anulaes bien en CSV ó HTML no olvide seleccionar el idioma <strong><u>INGLÉS</u></strong>.</p>
-        <p>Sólo tendrá que subir un fichero por broker, aunque se dé la opción de distintos formatos.</p>
-        <p>Tiene más información de cómo descargar los informes si desliza el puntero por el signo de interrogación adjunto a cada opción de subida de fichero.</p>
-        <p>Introduzca los datos personales para la generación del fichero del modelo 720, de otra forma al importarlo dará error.</p>
-        <p>Pulse "Descargar informe AEAT 720" y guarde el fichero en el disco duro.</p>
-        <p>Finalmente suba el fichero descargado con el modelo 720 a <a alt="enlace modelo 720 AEAT" target="_blank" rel="noopener external nofollow" href="https://sede.agenciatributaria.gob.es/Sede/procedimientoini/GI34.shtml">página correspondiente de la AEAT</a> y comparta en redes sociales si le ha resultado de utilidad.</p>
-      </div>
+    </div>
    </main>
     <footer>
       <p>Comparte en tus redes sociales si te ha sido de utilidad.</p>
