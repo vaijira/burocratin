@@ -178,11 +178,11 @@ impl App {
 
     pub fn render(this: Arc<Self>) -> Dom {
         html!("div", {
-            .child(html!("h3", {
+            .child(html!("h2", {
                 .text("Paso 1: Rellena datos personales.")
             }))
             .child(PersonalInfoViewer::render(&this.personal_info_viewer))
-            .child(html!("h3", {
+            .child(html!("h2", {
                 .text("Paso 2: Descarga los informes de Interactive brokers y/o Degiro e importalos.")
             }))
             .child(
@@ -194,11 +194,11 @@ impl App {
             .child(
                 App::render_clear_button(&this)
             )
-            .child(html!("h3", {
+            .child(html!("h2", {
                 .text("Paso 3: Revisa las fechas de 1º adquisición y los datos importados y descarga el fichero generado.")
             }))
             .child(App::render_download_button(&this))
-            .child(html!("h3", {
+            .child(html!("h2", {
                 .text("Paso 4: Finalmente importe el fichero descargado con el modelo 720 en la ")
                 .child(html!("a", {
                   .attr("alt", "enlace presentación modelo 720 AEAT")

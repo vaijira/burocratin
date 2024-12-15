@@ -80,6 +80,7 @@ impl PersonalInfoViewer {
                         .attr("alt", "Año")
                         .attr("type", "text")
                         .attr("maxlength", "4")
+                        .attr("placeholder", "Año")
                         .attr("value", &DEFAULT_YEAR.to_string())
                         .with_node!(element => {
                             .event(clone!(this => move |_: events::Input| {
