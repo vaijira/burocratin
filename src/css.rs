@@ -1,13 +1,13 @@
 use dominator::{class, pseudo};
-use once_cell::sync::Lazy;
+use std::sync::LazyLock;
 
-pub static ROOT_CLASS: Lazy<String> = Lazy::new(|| {
+pub static ROOT_CLASS: LazyLock<String> = LazyLock::new(|| {
     class! {
         .style("padding", "10px")
     }
 });
 
-pub static ERROR_PARAGRAPH_CLASS: Lazy<String> = Lazy::new(|| {
+pub static ERROR_PARAGRAPH_CLASS: LazyLock<String> = LazyLock::new(|| {
     class! {
         .style("color", "#ba3939")
         .style("background", "#ffe0e0")
@@ -16,7 +16,7 @@ pub static ERROR_PARAGRAPH_CLASS: Lazy<String> = Lazy::new(|| {
     }
 });
 
-pub static FLEX_CONTAINER_CLASS: Lazy<String> = Lazy::new(|| {
+pub static FLEX_CONTAINER_CLASS: LazyLock<String> = LazyLock::new(|| {
     class! {
         .style("display", "flex")
         .style("flex-flow", "wrap")
@@ -24,7 +24,7 @@ pub static FLEX_CONTAINER_CLASS: Lazy<String> = Lazy::new(|| {
     }
 });
 
-pub static FLEX_CONTAINER_ITEM_20_CLASS: Lazy<String> = Lazy::new(|| {
+pub static FLEX_CONTAINER_ITEM_20_CLASS: LazyLock<String> = LazyLock::new(|| {
     class! {
         .style("flex", "auto")
         .style("font-size", "small")
@@ -32,7 +32,7 @@ pub static FLEX_CONTAINER_ITEM_20_CLASS: Lazy<String> = Lazy::new(|| {
     }
 });
 
-pub static FLEX_CONTAINER_ITEM_40_CLASS: Lazy<String> = Lazy::new(|| {
+pub static FLEX_CONTAINER_ITEM_40_CLASS: LazyLock<String> = LazyLock::new(|| {
     class! {
         .style("flex", "40%")
         .style("max-width", "40%")
@@ -40,7 +40,7 @@ pub static FLEX_CONTAINER_ITEM_40_CLASS: Lazy<String> = Lazy::new(|| {
     }
 });
 
-pub static SECTION_HEADER: Lazy<String> = Lazy::new(|| {
+pub static SECTION_HEADER: LazyLock<String> = LazyLock::new(|| {
     class! {
         .style("display", "flex")
         .style("flex-direction", "row")
@@ -62,7 +62,7 @@ pub static SECTION_HEADER: Lazy<String> = Lazy::new(|| {
     }
 });
 
-pub static TABLE_STYLE: Lazy<String> = Lazy::new(|| {
+pub static TABLE_STYLE: LazyLock<String> = LazyLock::new(|| {
     class! {
         .style("overflow", "auto")
         .style("width", "100%")
@@ -73,20 +73,20 @@ pub static TABLE_STYLE: Lazy<String> = Lazy::new(|| {
     }
 });
 
-pub static TABLE_CAPTION: Lazy<String> = Lazy::new(|| {
+pub static TABLE_CAPTION: LazyLock<String> = LazyLock::new(|| {
     class! {
         .style("font-size", "large")
         .style("margin", "20px")
     }
 });
 
-pub static TABLE_HEADER: Lazy<String> = Lazy::new(|| {
+pub static TABLE_HEADER: LazyLock<String> = LazyLock::new(|| {
     class! {
         .style("font-size", "small")
     }
 });
 
-pub static TABLE_ROW: Lazy<String> = Lazy::new(|| {
+pub static TABLE_ROW: LazyLock<String> = LazyLock::new(|| {
     class! {
         .style("font-size", "small")
         .pseudo!(":nth-child(even)", {

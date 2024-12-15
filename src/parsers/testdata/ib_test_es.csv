@@ -7,9 +7,8 @@ Statement,Data,WhenGenerated,"2024-12-14, 13:55:23 EST"
 Disclaimer,Header,Field Name,Field Value
 Disclaimer,Data,Disclaimer,"Este extracto de actividad proporcionado resulta especialmente conveniente para áquellos clientes que tengan cuentas en multiples companías de Interactive Brokers bajo multiples jurisdicciones. Las posiciones y efectivo que aparecen en este Resumen de actividad pueden corresponder a diferentes companías de Interactive Brokers en diferentes países, sujeto a reglamentaciones y protecciones distintas. Este Resumen de Actividad no sirve como un extracto de cliente formal. Existen extractos de cliente para cada companía de IB y y están a su disposición en Menú Gestión de Cuenta cuando inicia la sesión desde nuestra Website"
 Información sobre la cuenta,Header,Nombre del campo,Valor del campo
-Información sobre la cuenta,Data,Nombre,Jorge Perez Burgos
-Información sobre la cuenta,Data,Cuenta,U7135957 (Personal consolidado)
-Información sobre la cuenta,Data,Cuentas incluidas,"U7135957, U2135957"
+Información sobre la cuenta,Data,Cuenta,U1111111 (Personal consolidado)
+Información sobre la cuenta,Data,Cuentas incluidas,"U1111111, U2111111"
 Información sobre la cuenta,Data,Tipo de cuenta,Individual
 Información sobre la cuenta,Data,Tipo de cliente,Individual
 Información sobre la cuenta,Data,Capacidades de la cuenta,Efectivo
@@ -227,219 +226,219 @@ Resumen de las posiciones de acciones netas,Data,Acciones,USD,ILMN,ILLUMINA INC,
 Resumen de las posiciones de acciones netas,Data,Acciones,USD,LPRO,OPEN LENDING CORP - CL A,250,0,0,250
 Resumen de las posiciones de acciones netas,Data,Acciones,USD,MIND,MIND TECHNOLOGY INC,2350,0,0,2350
 Operaciones,Header,DataDiscriminator,Categoría de activo,Divisa,Cuenta,Símbolo,Fecha/Hora,Cantidad,Precio trans.,Precio de cier.,Productos,Tarifa/com.,Básico,PyG realizadas,MTM P/G,Código
-Operaciones,Data,Order,Warrants,USD,U7135957,CRSAW,"2021-04-01, 09:30:00","3,100",1.12,1.18,-3472,-15.5,3487.5,0,186,O
-Operaciones,Data,Order,Warrants,USD,U7135957,CRSAW,"2021-04-28, 12:40:57","1,300",1,0.9997,-1300,-6.5,1306.5,0,-0.39,O;P
+Operaciones,Data,Order,Warrants,USD,U1111111,CRSAW,"2021-04-01, 09:30:00","3,100",1.12,1.18,-3472,-15.5,3487.5,0,186,O
+Operaciones,Data,Order,Warrants,USD,U1111111,CRSAW,"2021-04-28, 12:40:57","1,300",1,0.9997,-1300,-6.5,1306.5,0,-0.39,O;P
 Operaciones,SubTotal,,Warrants,USD,CRSAW,,,4400,,,-4772,-22,4794,0,185.61,
 Operaciones,Total,,Warrants,USD,,,,,,,-4772,-22,4794,0,185.61, 
 Operaciones,Total,,Warrants,EUR,,,,,,,-4020.14176,-18.52142,4038.66318,0,157.6072392, 
 Operaciones,Header,DataDiscriminator,Categoría de activo,Divisa,Cuenta,Símbolo,Fecha/Hora,Cantidad,Precio trans.,Precio de cier.,Productos,Tarifa/com.,Básico,PyG realizadas,MTM P/G,Código
-Operaciones,Data,Order,Acciones,AUD,U7135957,ANO,"2021-01-13, 17:59:58",950,4.33,4.14,-4113.5,-6,4119.5,0,-180.5,O;P
-Operaciones,Data,Order,Acciones,AUD,U7135957,ANO,"2021-01-18, 18:00:05","1,424",3.91,3.96,-5567.84,-6,5573.84,0,71.2,O;P
-Operaciones,Data,Order,Acciones,AUD,U7135957,ANO,"2021-01-28, 18:43:06",26,3.91,3.98,-101.66,-6,107.66,0,1.82,O
-Operaciones,Data,Order,Acciones,AUD,U7135957,ANO,"2021-02-25, 17:59:56","1,200",4.09,4,-4908,-6,4914,0,-108,O;P
-Operaciones,Data,Order,Acciones,AUD,U7135957,ANO,"2021-03-17, 19:30:03",900,4.4,4.05,-3960,-6,3966,0,-315,O
-Operaciones,Data,Order,Acciones,AUD,U7135957,ANO,"2021-06-24, 20:00:13","1,410",3.7,3.7,-5217,-6,5223,0,0,O
-Operaciones,Data,Order,Acciones,AUD,U7135957,ANO,"2021-06-30, 20:00:12",180,3.75,3.77,-675,-6,681,0,3.6,O;P
-Operaciones,Data,Order,Acciones,AUD,U7135957,ANO,"2021-07-07, 19:59:46","1,850",3.7,3.71,-6845,-6,6851,0,18.5,O;P
-Operaciones,Data,Order,Acciones,AUD,U7135957,ANO,"2021-08-02, 19:59:51","2,300",3.6,3.6,-8280,-6.624,8286.624,0,0,O;P
+Operaciones,Data,Order,Acciones,AUD,U1111111,ANO,"2021-01-13, 17:59:58",950,4.33,4.14,-4113.5,-6,4119.5,0,-180.5,O;P
+Operaciones,Data,Order,Acciones,AUD,U1111111,ANO,"2021-01-18, 18:00:05","1,424",3.91,3.96,-5567.84,-6,5573.84,0,71.2,O;P
+Operaciones,Data,Order,Acciones,AUD,U1111111,ANO,"2021-01-28, 18:43:06",26,3.91,3.98,-101.66,-6,107.66,0,1.82,O
+Operaciones,Data,Order,Acciones,AUD,U1111111,ANO,"2021-02-25, 17:59:56","1,200",4.09,4,-4908,-6,4914,0,-108,O;P
+Operaciones,Data,Order,Acciones,AUD,U1111111,ANO,"2021-03-17, 19:30:03",900,4.4,4.05,-3960,-6,3966,0,-315,O
+Operaciones,Data,Order,Acciones,AUD,U1111111,ANO,"2021-06-24, 20:00:13","1,410",3.7,3.7,-5217,-6,5223,0,0,O
+Operaciones,Data,Order,Acciones,AUD,U1111111,ANO,"2021-06-30, 20:00:12",180,3.75,3.77,-675,-6,681,0,3.6,O;P
+Operaciones,Data,Order,Acciones,AUD,U1111111,ANO,"2021-07-07, 19:59:46","1,850",3.7,3.71,-6845,-6,6851,0,18.5,O;P
+Operaciones,Data,Order,Acciones,AUD,U1111111,ANO,"2021-08-02, 19:59:51","2,300",3.6,3.6,-8280,-6.624,8286.624,0,0,O;P
 Operaciones,SubTotal,,Acciones,AUD,ANO,,,10240,,,-39668,-54.624,39722.624,0,-508.38,
-Operaciones,Data,Order,Acciones,AUD,U7135957,CTT,"2021-03-17, 19:04:03","5,000",1.28,1.265,-6400,-6,6406,0,-75,O
-Operaciones,Data,Order,Acciones,AUD,U7135957,CTT,"2021-06-08, 20:02:06","-2,500",2.77,2.85,6925,-6,-3203,3716,-200,C
+Operaciones,Data,Order,Acciones,AUD,U1111111,CTT,"2021-03-17, 19:04:03","5,000",1.28,1.265,-6400,-6,6406,0,-75,O
+Operaciones,Data,Order,Acciones,AUD,U1111111,CTT,"2021-06-08, 20:02:06","-2,500",2.77,2.85,6925,-6,-3203,3716,-200,C
 Operaciones,SubTotal,,Acciones,AUD,CTT,,,2500,,,525,-12,3203,3716,-275,
-Operaciones,Data,Order,Acciones,AUD,U7135957,RBL,"2021-06-24, 20:06:48","1,000",3.32,3.43,-3320,-6,3326,0,110,O
+Operaciones,Data,Order,Acciones,AUD,U1111111,RBL,"2021-06-24, 20:06:48","1,000",3.32,3.43,-3320,-6,3326,0,110,O
 Operaciones,SubTotal,,Acciones,AUD,RBL,,,1000,,,-3320,-6,3326,0,110,
 Operaciones,Total,,Acciones,AUD,,,,,,,-42463,-72.624,46251.624,3716,-673.38, 
 Operaciones,Total,,Acciones,EUR,,,,,,,-27023.4120956,-46.18698048,29428.62735608,2359.02828,-435.2094126, 
-Operaciones,Data,Order,Acciones,CAD,U7135957,ILA,"2021-01-28, 12:52:55","5,700",0.55,0.51,-3135,-17.895,3152.895,0,-228,O;P
+Operaciones,Data,Order,Acciones,CAD,U1111111,ILA,"2021-01-28, 12:52:55","5,700",0.55,0.51,-3135,-17.895,3152.895,0,-228,O;P
 Operaciones,SubTotal,,Acciones,CAD,ILA,,,5700,,,-3135,-17.895,3152.895,0,-228,
 Operaciones,Total,,Acciones,CAD,,,,,,,-3135,-17.895,3152.895,0,-228, 
 Operaciones,Total,,Acciones,EUR,,,,,,,-2015.77365,-11.50630605,2027.27995605,0,-146.60172, 
-Operaciones,Data,Order,Acciones,EUR,U7135957,ALUMS,"2021-01-14, 03:14:20",-300,9.044,8.9,2713.2,-4,-2611.259999,97.940001,43.2,C;P
+Operaciones,Data,Order,Acciones,EUR,U1111111,ALUMS,"2021-01-14, 03:14:20",-300,9.044,8.9,2713.2,-4,-2611.259999,97.940001,43.2,C;P
 Operaciones,SubTotal,,Acciones,EUR,ALUMS,,,-300,,,2713.2,-4,-2611.259999,97.940001,43.2,
-Operaciones,Data,Order,Acciones,EUR,U7135957,TFF,"2021-03-17, 10:02:47",-90,28.3,28.6,2547,-4,-3193.5,-650.5,-27,C
+Operaciones,Data,Order,Acciones,EUR,U1111111,TFF,"2021-03-17, 10:02:47",-90,28.3,28.6,2547,-4,-3193.5,-650.5,-27,C
 Operaciones,SubTotal,,Acciones,EUR,TFF,,,-90,,,2547,-4,-3193.5,-650.5,-27,
 Operaciones,Total,,Acciones,EUR,,,,,,,5260.2,-8,-5804.759999,-552.559999,16.2, 
-Operaciones,Data,Order,Acciones,SEK,U7135957,EVOs,"2021-12-07, 11:22:59",20,987.1,988.7,-19742,-49,19791,0,32,O
+Operaciones,Data,Order,Acciones,SEK,U1111111,EVOs,"2021-12-07, 11:22:59",20,987.1,988.7,-19742,-49,19791,0,32,O
 Operaciones,SubTotal,,Acciones,SEK,EVOs,,,20,,,-19742,-49,19791,0,32,
 Operaciones,Total,,Acciones,SEK,,,,,,,-19742,-49,19791,0,32, 
 Operaciones,Total,,Acciones,EUR,,,,,,,-1924.845,-4.7775,1929.6225,0,3.12, 
-Operaciones,Data,Order,Acciones,USD,U7135957,AMZN,"2021-05-12, 13:59:30",2,3139.64,3151.94,-6279.28,-1,6280.28,0,24.6,O
+Operaciones,Data,Order,Acciones,USD,U1111111,AMZN,"2021-05-12, 13:59:30",2,3139.64,3151.94,-6279.28,-1,6280.28,0,24.6,O
 Operaciones,SubTotal,,Acciones,USD,AMZN,,,2,,,-6279.28,-1,6280.28,0,24.6,
-Operaciones,Data,Order,Acciones,USD,U7135957,CNNE,"2021-05-11, 14:30:30",-66.1549,36.16,36.05,2392.161184,-1.020072455,-2500.996769,-109.855658,7.277,C;FPA;P
+Operaciones,Data,Order,Acciones,USD,U1111111,CNNE,"2021-05-11, 14:30:30",-66.1549,36.16,36.05,2392.161184,-1.020072455,-2500.996769,-109.855658,7.277,C;FPA;P
 Operaciones,SubTotal,,Acciones,USD,CNNE,,,-66.1549,,,2392.161184,-1.020072455,-2500.996769,-109.855658,7.277,
-Operaciones,Data,Order,Acciones,USD,U7135957,IDN,"2021-03-30, 15:14:41",430,7.958104651,7.91,-3421.985,-2.15,3424.135,0,-20.685,O;P
-Operaciones,Data,Order,Acciones,USD,U7135957,IDN,"2021-05-12, 13:54:17",-430,7.329302326,7.18,3151.6,-2.21724316,-3424.135,-274.752245,64.2,C;P
+Operaciones,Data,Order,Acciones,USD,U1111111,IDN,"2021-03-30, 15:14:41",430,7.958104651,7.91,-3421.985,-2.15,3424.135,0,-20.685,O;P
+Operaciones,Data,Order,Acciones,USD,U1111111,IDN,"2021-05-12, 13:54:17",-430,7.329302326,7.18,3151.6,-2.21724316,-3424.135,-274.752245,64.2,C;P
 Operaciones,SubTotal,,Acciones,USD,IDN,,,0,,,-270.385,-4.36724316,0,-274.752245,43.515,
-Operaciones,Data,Order,Acciones,USD,U7135957,LILAK,"2021-01-14, 09:30:02",-100,11.32,11.17,1132,-1.0369172,-2066.919903,-935.95682,15,C
+Operaciones,Data,Order,Acciones,USD,U1111111,LILAK,"2021-01-14, 09:30:02",-100,11.32,11.17,1132,-1.0369172,-2066.919903,-935.95682,15,C
 Operaciones,SubTotal,,Acciones,USD,LILAK,,,-100,,,1132,-1.0369172,-2066.919903,-935.95682,15,
-Operaciones,Data,Order,Acciones,USD,U7135957,MIND,"2021-05-12, 14:00:27",350,2.248657143,2.2,-787.03,-1.75,788.78,0,-17.03,O;P
+Operaciones,Data,Order,Acciones,USD,U1111111,MIND,"2021-05-12, 14:00:27",350,2.248657143,2.2,-787.03,-1.75,788.78,0,-17.03,O;P
 Operaciones,SubTotal,,Acciones,USD,MIND,,,350,,,-787.03,-1.75,788.78,0,-17.03,
-Operaciones,Data,Order,Acciones,USD,U7135957,TDOC,"2021-05-12, 13:58:49",-10.656,140.739384384,140.08,1499.71888,-1.00891663,-2171.329999,-672.620036,7.0264,C;FPA;P
+Operaciones,Data,Order,Acciones,USD,U1111111,TDOC,"2021-05-12, 13:58:49",-10.656,140.739384384,140.08,1499.71888,-1.00891663,-2171.329999,-672.620036,7.0264,C;FPA;P
 Operaciones,SubTotal,,Acciones,USD,TDOC,,,-10.656,,,1499.71888,-1.00891663,-2171.329999,-672.620036,7.0264,
-Operaciones,Data,Order,Acciones,USD,U7135957,TK,"2021-03-17, 10:05:20","-1,744",3.556880734,3.68,6203.2,-8.95917232,-9340.78408,-3146.543254,-214.72,C;P
+Operaciones,Data,Order,Acciones,USD,U1111111,TK,"2021-03-17, 10:05:20","-1,744",3.556880734,3.68,6203.2,-8.95917232,-9340.78408,-3146.543254,-214.72,C;P
 Operaciones,SubTotal,,Acciones,USD,TK,,,-1744,,,6203.2,-8.95917232,-9340.78408,-3146.543254,-214.72,
 Operaciones,Total,,Acciones,USD,,,,,,,3890.385064,-19.142321765,-9010.970751,-5139.728013,-134.3316, 
 Operaciones,Total,,Acciones,EUR,,,,,,,3156.732450407,-15.957046358,-7412.478894542,-4271.70349401,-113.276410784, 
 Operaciones,Header,DataDiscriminator,Categoría de activo,Divisa,Cuenta,Símbolo,Fecha/Hora,Cantidad,Precio trans.,,Productos,Com. entrante EUR,,,MTM in EUR,Código
-Operaciones,Data,Order,Fórex,AUD,U7135957,EUR.AUD,"2021-01-13, 03:45:14","-2,700",1.5724,,4245.48,-1.6383,,,0.719647,
-Operaciones,Data,Order,Fórex,AUD,U7135957,EUR.AUD,"2021-01-18, 01:25:41","-2,600",1.5713,,4085.38,-1.6562,,,-1.69832,
-Operaciones,Data,Order,Fórex,AUD,U7135957,EUR.AUD,"2021-02-18, 18:02:59",0.5525,1.55655,,-0.859993875,0,,,-0.005963,
-Operaciones,Data,Order,Fórex,AUD,U7135957,EUR.AUD,"2021-02-25, 13:25:13","-3,300",1.5409,,5084.97,-1.64352,,,-12.668594,
-Operaciones,Data,Order,Fórex,AUD,U7135957,EUR.AUD,"2021-03-17, 10:07:45","-7,000",1.54225,,10795.75,-1.6803,,,25.766142,
-Operaciones,Data,Order,Fórex,AUD,U7135957,EUR.AUD,"2021-03-30, 15:12:12",385,1.5435,,-594.2475,-1.69996,,,-0.286309,
-Operaciones,Data,Order,Fórex,AUD,U7135957,EUR.AUD,"2021-04-01, 19:56:21",0.3056,1.54615,,-0.47250344,0,,,-0.000034,
-Operaciones,Data,Order,Fórex,AUD,U7135957,EUR.AUD,"2021-06-03, 02:58:56","-1,700",1.5779,,2682.43,-1.63792,,,-5.669915,
-Operaciones,Data,Order,Fórex,AUD,U7135957,EUR.AUD,"2021-07-07, 13:28:10","-4,500",1.57695,,7096.275,-1.6916,,,3.15419,
-Operaciones,Data,Order,Fórex,AUD,U7135957,EUR.AUD,"2021-08-02, 12:45:44","-5,000",1.61145,,8057.25,-1.6853,,,-2.812977,
+Operaciones,Data,Order,Fórex,AUD,U1111111,EUR.AUD,"2021-01-13, 03:45:14","-2,700",1.5724,,4245.48,-1.6383,,,0.719647,
+Operaciones,Data,Order,Fórex,AUD,U1111111,EUR.AUD,"2021-01-18, 01:25:41","-2,600",1.5713,,4085.38,-1.6562,,,-1.69832,
+Operaciones,Data,Order,Fórex,AUD,U1111111,EUR.AUD,"2021-02-18, 18:02:59",0.5525,1.55655,,-0.859993875,0,,,-0.005963,
+Operaciones,Data,Order,Fórex,AUD,U1111111,EUR.AUD,"2021-02-25, 13:25:13","-3,300",1.5409,,5084.97,-1.64352,,,-12.668594,
+Operaciones,Data,Order,Fórex,AUD,U1111111,EUR.AUD,"2021-03-17, 10:07:45","-7,000",1.54225,,10795.75,-1.6803,,,25.766142,
+Operaciones,Data,Order,Fórex,AUD,U1111111,EUR.AUD,"2021-03-30, 15:12:12",385,1.5435,,-594.2475,-1.69996,,,-0.286309,
+Operaciones,Data,Order,Fórex,AUD,U1111111,EUR.AUD,"2021-04-01, 19:56:21",0.3056,1.54615,,-0.47250344,0,,,-0.000034,
+Operaciones,Data,Order,Fórex,AUD,U1111111,EUR.AUD,"2021-06-03, 02:58:56","-1,700",1.5779,,2682.43,-1.63792,,,-5.669915,
+Operaciones,Data,Order,Fórex,AUD,U1111111,EUR.AUD,"2021-07-07, 13:28:10","-4,500",1.57695,,7096.275,-1.6916,,,3.15419,
+Operaciones,Data,Order,Fórex,AUD,U1111111,EUR.AUD,"2021-08-02, 12:45:44","-5,000",1.61145,,8057.25,-1.6853,,,-2.812977,
 Operaciones,SubTotal,,Fórex,AUD,EUR.AUD,,,-26414.1419,,,41451.955002685,-13.3331,,,6.497867,
 Operaciones,Total,,Fórex,AUD,,,,,,,41451.955002685,-13.3331,,,6.497867, 
 Operaciones,Total,,Fórex,EUR,,,,,,,26420.639766452,-13.3331,,,6.497867, 
-Operaciones,Data,Order,Fórex,CAD,U7135957,EUR.CAD,"2021-01-28, 12:50:31","-2,100",1.5532,,3261.72,-1.65126,,,-2.746657,
-Operaciones,Data,Order,Fórex,CAD,U7135957,EUR.CAD,"2021-04-30, 19:50:12",0.122,1.47745,,-0.1802489,0,,,0.000291,
+Operaciones,Data,Order,Fórex,CAD,U1111111,EUR.CAD,"2021-01-28, 12:50:31","-2,100",1.5532,,3261.72,-1.65126,,,-2.746657,
+Operaciones,Data,Order,Fórex,CAD,U1111111,EUR.CAD,"2021-04-30, 19:50:12",0.122,1.47745,,-0.1802489,0,,,0.000291,
 Operaciones,SubTotal,,Fórex,CAD,EUR.CAD,,,-2099.878,,,3261.5397511,-1.65126,,,-2.746366,
-Operaciones,Data,Order,Fórex,CAD,U7135957,USD.CAD,"2021-04-28, 12:39:18",88,1.2346,,-108.6448,-1.65398,,,-0.199273,
+Operaciones,Data,Order,Fórex,CAD,U1111111,USD.CAD,"2021-04-28, 12:39:18",88,1.2346,,-108.6448,-1.65398,,,-0.199273,
 Operaciones,SubTotal,,Fórex,CAD,USD.CAD,,,88,,,-108.6448,-1.65398,,,-0.199273,
 Operaciones,Total,,Fórex,CAD,,,,,,,3152.8949511,-3.30524,,,-2.945639, 
 Operaciones,Total,,Fórex,EUR,,,,,,,2024.357000503,-3.30524,,,-2.945639, 
-Operaciones,Data,Order,Fórex,SEK,U7135957,EUR.SEK,"2021-12-07, 11:20:04","-2,000",10.25445,,20508.9,-1.77218,,,-0.38225,
+Operaciones,Data,Order,Fórex,SEK,U1111111,EUR.SEK,"2021-12-07, 11:20:04","-2,000",10.25445,,20508.9,-1.77218,,,-0.38225,
 Operaciones,SubTotal,,Fórex,SEK,EUR.SEK,,,-2000,,,20508.9,-1.77218,,,-0.38225,
 Operaciones,Total,,Fórex,SEK,,,,,,,20508.9,-1.77218,,,-0.38225, 
 Operaciones,Total,,Fórex,EUR,,,,,,,1999.61775,-1.77218,,,-0.38225, 
-Operaciones,Data,Order,Fórex,USD,U7135957,AUD.USD,"2021-01-18, 01:25:15","1,471",0.76855,,-1130.53705,-1.6562,,,-0.528677,
+Operaciones,Data,Order,Fórex,USD,U1111111,AUD.USD,"2021-01-18, 01:25:15","1,471",0.76855,,-1130.53705,-1.6562,,,-0.528677,
 Operaciones,SubTotal,,Fórex,USD,AUD.USD,,,1471,,,-1130.53705,-1.6562,,,-0.528677,
-Operaciones,Data,Order,Fórex,USD,U7135957,EUR.USD,"2021-02-17, 05:07:09",-2,1.206,,2.412,-1.65228,,,0.00319,
-Operaciones,Data,Order,Fórex,USD,U7135957,EUR.USD,"2021-02-19, 18:01:49",-0.9589,1.21175,,1.161947075,0,,,-0.003187,
-Operaciones,Data,Order,Fórex,USD,U7135957,EUR.USD,"2021-03-17, 10:07:08","5,203",1.1905,,-6194.1715,-1.6803,,,32.663107,P
-Operaciones,Data,Order,Fórex,USD,U7135957,EUR.USD,"2021-03-19, 19:54:43",0.0582,1.19045,,-0.06928419,0,,,0.000138,
-Operaciones,Data,Order,Fórex,USD,U7135957,EUR.USD,"2021-03-30, 15:13:43","-3,000",1.17215,,3516.45,-1.69996,,,1.465897,
-Operaciones,Data,Order,Fórex,USD,U7135957,EUR.USD,"2021-03-31, 02:31:23","-3,000",1.17145,,3514.35,-1.7071,,,-4.016625,
-Operaciones,Data,Order,Fórex,USD,U7135957,EUR.USD,"2021-04-28, 12:39:05",-950,1.2089,,1148.455,-1.65398,,,-2.846192,
-Operaciones,Data,Order,Fórex,USD,U7135957,EUR.USD,"2021-11-16, 14:02:31",-447,1.133,,506.451,-1.75938,,,0.388684,
-Operaciones,Data,Order,Fórex,USD,U7135957,EUR.USD,"2021-11-18, 19:48:10",-1.1037,1.13725,,1.255182825,0,,,0.008869,
-Operaciones,Data,Order,Fórex,USD,U7135957,EUR.USD,"2021-12-06, 19:58:16",-0.124,1.12855,,0.1399402,0,,,0.000193,
+Operaciones,Data,Order,Fórex,USD,U1111111,EUR.USD,"2021-02-17, 05:07:09",-2,1.206,,2.412,-1.65228,,,0.00319,
+Operaciones,Data,Order,Fórex,USD,U1111111,EUR.USD,"2021-02-19, 18:01:49",-0.9589,1.21175,,1.161947075,0,,,-0.003187,
+Operaciones,Data,Order,Fórex,USD,U1111111,EUR.USD,"2021-03-17, 10:07:08","5,203",1.1905,,-6194.1715,-1.6803,,,32.663107,P
+Operaciones,Data,Order,Fórex,USD,U1111111,EUR.USD,"2021-03-19, 19:54:43",0.0582,1.19045,,-0.06928419,0,,,0.000138,
+Operaciones,Data,Order,Fórex,USD,U1111111,EUR.USD,"2021-03-30, 15:13:43","-3,000",1.17215,,3516.45,-1.69996,,,1.465897,
+Operaciones,Data,Order,Fórex,USD,U1111111,EUR.USD,"2021-03-31, 02:31:23","-3,000",1.17145,,3514.35,-1.7071,,,-4.016625,
+Operaciones,Data,Order,Fórex,USD,U1111111,EUR.USD,"2021-04-28, 12:39:05",-950,1.2089,,1148.455,-1.65398,,,-2.846192,
+Operaciones,Data,Order,Fórex,USD,U1111111,EUR.USD,"2021-11-16, 14:02:31",-447,1.133,,506.451,-1.75938,,,0.388684,
+Operaciones,Data,Order,Fórex,USD,U1111111,EUR.USD,"2021-11-18, 19:48:10",-1.1037,1.13725,,1.255182825,0,,,0.008869,
+Operaciones,Data,Order,Fórex,USD,U1111111,EUR.USD,"2021-12-06, 19:58:16",-0.124,1.12855,,0.1399402,0,,,0.000193,
 Operaciones,SubTotal,,Fórex,USD,EUR.USD,,,-2198.1284,,,2496.43428591,-10.153,,,27.664074,
 Operaciones,Total,,Fórex,USD,,,,,,,1365.89723591,-11.8092,,,27.135397, 
 Operaciones,Total,,Fórex,EUR,,,,,,,1289.707796976,-11.8092,,,27.135397, 
 Acciones corporativas,Header,Categoría de activo,Divisa,Cuenta,Fecha del informe,Fecha/Hora,Descripción,Cantidad,Productos,Valor,PyG realizadas,Código
-Acciones corporativas,Data,Warrants,USD,U7135957,2021-06-22,"2021-06-21, 20:25:00","CRSAW(US22564L1136) Fusionado(Compra) WITH US53838L1180 1 para 1 (CRSAW, LVOX 07MAR24 11.5 C, US22564L1136)",-4400,0,-7032.08,0,
-Acciones corporativas,Data,Warrants,USD,U7135957,2021-06-22,"2021-06-21, 20:25:00","CRSAW(US22564L1136) Fusionado(Compra) WITH US53838L1180 1 para 1 (LVOXW, LVOXW 18JUN26 11.5 C, US53838L1180)",4400,0,7150,0,
+Acciones corporativas,Data,Warrants,USD,U1111111,2021-06-22,"2021-06-21, 20:25:00","CRSAW(US22564L1136) Fusionado(Compra) WITH US53838L1180 1 para 1 (CRSAW, LVOX 07MAR24 11.5 C, US22564L1136)",-4400,0,-7032.08,0,
+Acciones corporativas,Data,Warrants,USD,U1111111,2021-06-22,"2021-06-21, 20:25:00","CRSAW(US22564L1136) Fusionado(Compra) WITH US53838L1180 1 para 1 (LVOXW, LVOXW 18JUN26 11.5 C, US53838L1180)",4400,0,7150,0,
 Acciones corporativas,Data,Total,,,,,,,0,117.92,0,
 Acciones corporativas,Data,Total en EUR,,,,,,,0,98.7485664,0,
-Acciones corporativas,Data,Acciones,AUD,U7135957,2021-05-31,"2021-05-28, 20:25:00","ANO(AU000000ANO7) Emisión de derechos de suscripción  1 para 50 (ANO.RTS, ADVANCE NANOTEK LTD - RIGHTS, AU0000151565)",90,0,0,0,
-Acciones corporativas,Data,Acciones,AUD,U7135957,2021-06-23,"2021-06-22, 19:45:00","ANO.RTS (AU0000151565) Subscribe a  (ANO.RTS, ADVANCE NANOTEK LTD - RIGHTS, AU0000151565)",-90,-354.6,0,0,
-Acciones corporativas,Data,Acciones,AUD,U7135957,2021-06-23,"2021-06-22, 19:45:00","ANO.RTS (AU0000151565) Subscribe a  (ANO.SUB6, ADVANCE NANOTEK LTD - RIGHTS SUBSCRIPTION, AU00ANO7SUB6)",90,0,354.6,0,
-Acciones corporativas,Data,Acciones,AUD,U7135957,2021-07-05,"2021-07-01, 20:25:00","ANO.SUB6(AU00ANO7SUB6) Fusionado(Voluntary Offer Allocation) WITH AU000000ANO7 1 para 1 (ANO, ADVANCE NANOTEK LTD, AU000000ANO7)",90,0,335.7,0,
-Acciones corporativas,Data,Acciones,AUD,U7135957,2021-07-05,"2021-07-01, 20:25:00","ANO.SUB6(AU00ANO7SUB6) Fusionado(Voluntary Offer Allocation) WITH AU000000ANO7 1 para 1 (ANO.SUB6, ADVANCE NANOTEK LTD - RIGHTS SUBSCRIPTION, AU00ANO7SUB6)",-90,0,-354.6,0,
+Acciones corporativas,Data,Acciones,AUD,U1111111,2021-05-31,"2021-05-28, 20:25:00","ANO(AU000000ANO7) Emisión de derechos de suscripción  1 para 50 (ANO.RTS, ADVANCE NANOTEK LTD - RIGHTS, AU0000151565)",90,0,0,0,
+Acciones corporativas,Data,Acciones,AUD,U1111111,2021-06-23,"2021-06-22, 19:45:00","ANO.RTS (AU0000151565) Subscribe a  (ANO.RTS, ADVANCE NANOTEK LTD - RIGHTS, AU0000151565)",-90,-354.6,0,0,
+Acciones corporativas,Data,Acciones,AUD,U1111111,2021-06-23,"2021-06-22, 19:45:00","ANO.RTS (AU0000151565) Subscribe a  (ANO.SUB6, ADVANCE NANOTEK LTD - RIGHTS SUBSCRIPTION, AU00ANO7SUB6)",90,0,354.6,0,
+Acciones corporativas,Data,Acciones,AUD,U1111111,2021-07-05,"2021-07-01, 20:25:00","ANO.SUB6(AU00ANO7SUB6) Fusionado(Voluntary Offer Allocation) WITH AU000000ANO7 1 para 1 (ANO, ADVANCE NANOTEK LTD, AU000000ANO7)",90,0,335.7,0,
+Acciones corporativas,Data,Acciones,AUD,U1111111,2021-07-05,"2021-07-01, 20:25:00","ANO.SUB6(AU00ANO7SUB6) Fusionado(Voluntary Offer Allocation) WITH AU000000ANO7 1 para 1 (ANO.SUB6, ADVANCE NANOTEK LTD - RIGHTS SUBSCRIPTION, AU00ANO7SUB6)",-90,0,-354.6,0,
 Acciones corporativas,Data,Total,,,,,,,-354.6,335.7,0,
 Acciones corporativas,Data,Total en EUR,,,,,,,-225.263196,213.267366,0,
-Acciones corporativas,Data,Acciones,CAD,U7135957,2021-02-05,"2021-02-04, 20:25:00","ILA(CA45236R1010) CUSIP/ISIN Cambia a (CA9290821052) (ILA.OLD, ILOOKABOUT CORP, CA45236R1010)",-5700,0,0,0,
-Acciones corporativas,Data,Acciones,CAD,U7135957,2021-02-05,"2021-02-04, 20:25:00","ILA(CA45236R1010) CUSIP/ISIN Cambia a (CA9290821052) (VXTR, VOXTUR ANALYTICS CORP, CA9290821052)",5700,0,0,0,
+Acciones corporativas,Data,Acciones,CAD,U1111111,2021-02-05,"2021-02-04, 20:25:00","ILA(CA45236R1010) CUSIP/ISIN Cambia a (CA9290821052) (ILA.OLD, ILOOKABOUT CORP, CA45236R1010)",-5700,0,0,0,
+Acciones corporativas,Data,Acciones,CAD,U1111111,2021-02-05,"2021-02-04, 20:25:00","ILA(CA45236R1010) CUSIP/ISIN Cambia a (CA9290821052) (VXTR, VOXTUR ANALYTICS CORP, CA9290821052)",5700,0,0,0,
 Acciones corporativas,Data,Total,,,,,,,0,0,0,
 Acciones corporativas,Data,Total en EUR,,,,,,,0,0,0,
-Acciones corporativas,Data,Acciones,EUR,U7135957,2021-10-28,"2021-10-27, 20:25:00","PRX(NL0013654783) Emisión de derechos de dividendos  1 para 1 (PRX.RTS, PROSUS NV - RIGHTS, NL0015000LD0)",45,0,0,0,
-Acciones corporativas,Data,Acciones,EUR,U7135957,2021-12-01,"2021-11-19, 20:25:00","(NL0015000LD0) Retirado de cotización (PRX.RTS, PROSUS NV - RIGHTS, NL0015000LD0)",-45,0,0,0,
+Acciones corporativas,Data,Acciones,EUR,U1111111,2021-10-28,"2021-10-27, 20:25:00","PRX(NL0013654783) Emisión de derechos de dividendos  1 para 1 (PRX.RTS, PROSUS NV - RIGHTS, NL0015000LD0)",45,0,0,0,
+Acciones corporativas,Data,Acciones,EUR,U1111111,2021-12-01,"2021-11-19, 20:25:00","(NL0015000LD0) Retirado de cotización (PRX.RTS, PROSUS NV - RIGHTS, NL0015000LD0)",-45,0,0,0,
 Acciones corporativas,Data,Total,,,,,,,0,0,0,
-Acciones corporativas,Data,Acciones,HKD,U7135957,2021-11-18,"2021-11-17, 20:25:00","JD.CNV(US47215PCNV0) Fusionado(Voluntary Offer Allocation) WITH 9618 2 para 1 (9618, JD.COM INC - CL A, KYG8208B1014)",400,0,134000,0,
+Acciones corporativas,Data,Acciones,HKD,U1111111,2021-11-18,"2021-11-17, 20:25:00","JD.CNV(US47215PCNV0) Fusionado(Voluntary Offer Allocation) WITH 9618 2 para 1 (9618, JD.COM INC - CL A, KYG8208B1014)",400,0,134000,0,
 Acciones corporativas,Data,Total,,,,,,,0,134000,0,
 Acciones corporativas,Data,Total en EUR,,,,,,,0,15127.26,0,
-Acciones corporativas,Data,Acciones,USD,U7135957,2021-11-11,"2021-11-11, 19:45:00","JD(US47215P1066) Ofrecido a US47215PCNV0 1 FOR 1 (JD, JD.COM INC-ADR, US47215P1066)",-200,0,0,0,
-Acciones corporativas,Data,Acciones,USD,U7135957,2021-11-11,"2021-11-11, 19:45:00","JD(US47215P1066) Ofrecido a US47215PCNV0 1 FOR 1 (JD.CNV, JD.COM INC-ADR - TENDER, US47215PCNV0)",200,0,0,0,
-Acciones corporativas,Data,Acciones,USD,U7135957,2021-11-18,"2021-11-17, 20:25:00","JD.CNV(US47215PCNV0) Fusionado(Voluntary Offer Allocation) WITH 9618 2 para 1 (JD.CNV, JD.COM INC-ADR - TENDER, US47215PCNV0)",-200,0,-16346,0,
+Acciones corporativas,Data,Acciones,USD,U1111111,2021-11-11,"2021-11-11, 19:45:00","JD(US47215P1066) Ofrecido a US47215PCNV0 1 FOR 1 (JD, JD.COM INC-ADR, US47215P1066)",-200,0,0,0,
+Acciones corporativas,Data,Acciones,USD,U1111111,2021-11-11,"2021-11-11, 19:45:00","JD(US47215P1066) Ofrecido a US47215PCNV0 1 FOR 1 (JD.CNV, JD.COM INC-ADR - TENDER, US47215PCNV0)",200,0,0,0,
+Acciones corporativas,Data,Acciones,USD,U1111111,2021-11-18,"2021-11-17, 20:25:00","JD.CNV(US47215PCNV0) Fusionado(Voluntary Offer Allocation) WITH 9618 2 para 1 (JD.CNV, JD.COM INC-ADR - TENDER, US47215PCNV0)",-200,0,-16346,0,
 Acciones corporativas,Data,Total,,,,,,,0,-16346,0,
 Acciones corporativas,Data,Total en EUR,,,,,,,0,-14373.20126,0,
 Transferencias,Header,Categoría de activo,Divisa,Cuenta,Símbolo,Fecha,Tipo,Dirección,Empresa de transferencia,Transferir cuenta,Cant.,Transferir precio,Valor de mercado,PyG realizadas,Cantidad en efectivo,Código
-Transferencias,Data,Acciones,AUD,U7135957,RBL,2021-01-12,Inter-Compañía,En,--,U2135957,800,--,"5,248.00",0.00,0.00,
-Transferencias,Data,Acciones,AUD,U2135957,RBL,2021-01-12,Inter-Compañía,Fuera,--,U7135957,-800,--,"-5,248.00",0.00,0.00,
+Transferencias,Data,Acciones,AUD,U1111111,RBL,2021-01-12,Inter-Compañía,En,--,U2111111,800,--,"5,248.00",0.00,0.00,
+Transferencias,Data,Acciones,AUD,U2111111,RBL,2021-01-12,Inter-Compañía,Fuera,--,U1111111,-800,--,"-5,248.00",0.00,0.00,
 Transferencias,Data,Total,,,,,,,,,,,0,0,0,
 Transferencias,Data,Total en EUR,,,,,,,,,,,0,0,0,
-Transferencias,Data,Acciones,EUR,U7135957,ADYEN,2021-01-12,Inter-Compañía,En,--,U2135957,1,--,"1,744.50",0.00,0.00,
-Transferencias,Data,Acciones,EUR,U2135957,ADYEN,2021-01-12,Inter-Compañía,Fuera,--,U7135957,-1,--,"-1,744.50",0.00,0.00,
-Transferencias,Data,Acciones,EUR,U7135957,ALUMS,2021-01-12,Inter-Compañía,En,--,U2135957,300,--,"2,820.00",0.00,0.00,
-Transferencias,Data,Acciones,EUR,U2135957,ALUMS,2021-01-12,Inter-Compañía,Fuera,--,U7135957,-300,--,"-2,820.00",0.00,0.00,
-Transferencias,Data,Acciones,EUR,U7135957,PRX,2021-01-12,Inter-Compañía,En,--,U2135957,45,--,"3,925.80",0.00,0.00,
-Transferencias,Data,Acciones,EUR,U2135957,PRX,2021-01-12,Inter-Compañía,Fuera,--,U7135957,-45,--,"-3,925.80",0.00,0.00,
-Transferencias,Data,Acciones,EUR,U7135957,TFF,2021-01-12,Inter-Compañía,En,--,U2135957,90,--,"2,286.00",0.00,0.00,
-Transferencias,Data,Acciones,EUR,U2135957,TFF,2021-01-12,Inter-Compañía,Fuera,--,U7135957,-90,--,"-2,286.00",0.00,0.00,
+Transferencias,Data,Acciones,EUR,U1111111,ADYEN,2021-01-12,Inter-Compañía,En,--,U2111111,1,--,"1,744.50",0.00,0.00,
+Transferencias,Data,Acciones,EUR,U2111111,ADYEN,2021-01-12,Inter-Compañía,Fuera,--,U1111111,-1,--,"-1,744.50",0.00,0.00,
+Transferencias,Data,Acciones,EUR,U1111111,ALUMS,2021-01-12,Inter-Compañía,En,--,U2111111,300,--,"2,820.00",0.00,0.00,
+Transferencias,Data,Acciones,EUR,U2111111,ALUMS,2021-01-12,Inter-Compañía,Fuera,--,U1111111,-300,--,"-2,820.00",0.00,0.00,
+Transferencias,Data,Acciones,EUR,U1111111,PRX,2021-01-12,Inter-Compañía,En,--,U2111111,45,--,"3,925.80",0.00,0.00,
+Transferencias,Data,Acciones,EUR,U2111111,PRX,2021-01-12,Inter-Compañía,Fuera,--,U1111111,-45,--,"-3,925.80",0.00,0.00,
+Transferencias,Data,Acciones,EUR,U1111111,TFF,2021-01-12,Inter-Compañía,En,--,U2111111,90,--,"2,286.00",0.00,0.00,
+Transferencias,Data,Acciones,EUR,U2111111,TFF,2021-01-12,Inter-Compañía,Fuera,--,U1111111,-90,--,"-2,286.00",0.00,0.00,
 Transferencias,Data,Total,,,,,,,,,,,-0,0,0,
-Transferencias,Data,Acciones,JPY,U7135957,3328.T,2021-01-12,Inter-Compañía,En,--,U2135957,100,--,"272,800",0,0,
-Transferencias,Data,Acciones,JPY,U2135957,3328.T,2021-01-12,Inter-Compañía,Fuera,--,U7135957,-100,--,"-272,800",0,0,
+Transferencias,Data,Acciones,JPY,U1111111,3328.T,2021-01-12,Inter-Compañía,En,--,U2111111,100,--,"272,800",0,0,
+Transferencias,Data,Acciones,JPY,U2111111,3328.T,2021-01-12,Inter-Compañía,Fuera,--,U1111111,-100,--,"-272,800",0,0,
 Transferencias,Data,Total,,,,,,,,,,,0,0,0,
 Transferencias,Data,Total en EUR,,,,,,,,,,,0,0,0,
-Transferencias,Data,Acciones,USD,U7135957,CNNE,2021-01-12,Inter-Compañía,En,--,U2135957,66.1549,--,"2,958.45",0.00,0.00,
-Transferencias,Data,Acciones,USD,U2135957,CNNE,2021-01-12,Inter-Compañía,Fuera,--,U7135957,-66.1549,--,"-2,958.45",0.00,0.00,
-Transferencias,Data,Acciones,USD,U7135957,GLNG,2021-01-12,Inter-Compañía,En,--,U2135957,250,--,"2,745.00",0.00,0.00,
-Transferencias,Data,Acciones,USD,U2135957,GLNG,2021-01-12,Inter-Compañía,Fuera,--,U7135957,-250,--,"-2,745.00",0.00,0.00,
-Transferencias,Data,Acciones,USD,U7135957,ILMN,2021-01-12,Inter-Compañía,En,--,U2135957,8,--,"2,979.84",0.00,0.00,
-Transferencias,Data,Acciones,USD,U2135957,ILMN,2021-01-12,Inter-Compañía,Fuera,--,U7135957,-8,--,"-2,979.84",0.00,0.00,
-Transferencias,Data,Acciones,USD,U7135957,JD,2021-01-12,Inter-Compañía,En,--,U2135957,200,--,"18,076.00",0.00,0.00,
-Transferencias,Data,Acciones,USD,U2135957,JD,2021-01-12,Inter-Compañía,Fuera,--,U7135957,-200,--,"-18,076.00",0.00,0.00,
-Transferencias,Data,Acciones,USD,U7135957,LILAK,2021-01-12,Inter-Compañía,En,--,U2135957,100,--,"1,108.00",0.00,0.00,
-Transferencias,Data,Acciones,USD,U2135957,LILAK,2021-01-12,Inter-Compañía,Fuera,--,U7135957,-100,--,"-1,108.00",0.00,0.00,
-Transferencias,Data,Acciones,USD,U7135957,LPRO,2021-01-12,Inter-Compañía,En,--,U2135957,250,--,"8,865.00",0.00,0.00,
-Transferencias,Data,Acciones,USD,U2135957,LPRO,2021-01-12,Inter-Compañía,Fuera,--,U7135957,-250,--,"-8,865.00",0.00,0.00,
-Transferencias,Data,Acciones,USD,U7135957,MIND,2021-01-12,Inter-Compañía,En,--,U2135957,"2,000",--,"4,280.20",0.00,0.00,
-Transferencias,Data,Acciones,USD,U2135957,MIND,2021-01-12,Inter-Compañía,Fuera,--,U7135957,"-2,000",--,"-4,280.20",0.00,0.00,
-Transferencias,Data,Acciones,USD,U7135957,TDOC,2021-01-12,Inter-Compañía,En,--,U2135957,10.656,--,"2,353.48",0.00,0.00,
-Transferencias,Data,Acciones,USD,U2135957,TDOC,2021-01-12,Inter-Compañía,Fuera,--,U7135957,-10.656,--,"-2,353.48",0.00,0.00,
-Transferencias,Data,Acciones,USD,U7135957,TK,2021-01-12,Inter-Compañía,En,--,U2135957,"1,744",--,"4,325.12",0.00,0.00,
-Transferencias,Data,Acciones,USD,U2135957,TK,2021-01-12,Inter-Compañía,Fuera,--,U7135957,"-1,744",--,"-4,325.12",0.00,0.00,
+Transferencias,Data,Acciones,USD,U1111111,CNNE,2021-01-12,Inter-Compañía,En,--,U2111111,66.1549,--,"2,958.45",0.00,0.00,
+Transferencias,Data,Acciones,USD,U2111111,CNNE,2021-01-12,Inter-Compañía,Fuera,--,U1111111,-66.1549,--,"-2,958.45",0.00,0.00,
+Transferencias,Data,Acciones,USD,U1111111,GLNG,2021-01-12,Inter-Compañía,En,--,U2111111,250,--,"2,745.00",0.00,0.00,
+Transferencias,Data,Acciones,USD,U2111111,GLNG,2021-01-12,Inter-Compañía,Fuera,--,U1111111,-250,--,"-2,745.00",0.00,0.00,
+Transferencias,Data,Acciones,USD,U1111111,ILMN,2021-01-12,Inter-Compañía,En,--,U2111111,8,--,"2,979.84",0.00,0.00,
+Transferencias,Data,Acciones,USD,U2111111,ILMN,2021-01-12,Inter-Compañía,Fuera,--,U1111111,-8,--,"-2,979.84",0.00,0.00,
+Transferencias,Data,Acciones,USD,U1111111,JD,2021-01-12,Inter-Compañía,En,--,U2111111,200,--,"18,076.00",0.00,0.00,
+Transferencias,Data,Acciones,USD,U2111111,JD,2021-01-12,Inter-Compañía,Fuera,--,U1111111,-200,--,"-18,076.00",0.00,0.00,
+Transferencias,Data,Acciones,USD,U1111111,LILAK,2021-01-12,Inter-Compañía,En,--,U2111111,100,--,"1,108.00",0.00,0.00,
+Transferencias,Data,Acciones,USD,U2111111,LILAK,2021-01-12,Inter-Compañía,Fuera,--,U1111111,-100,--,"-1,108.00",0.00,0.00,
+Transferencias,Data,Acciones,USD,U1111111,LPRO,2021-01-12,Inter-Compañía,En,--,U2111111,250,--,"8,865.00",0.00,0.00,
+Transferencias,Data,Acciones,USD,U2111111,LPRO,2021-01-12,Inter-Compañía,Fuera,--,U1111111,-250,--,"-8,865.00",0.00,0.00,
+Transferencias,Data,Acciones,USD,U1111111,MIND,2021-01-12,Inter-Compañía,En,--,U2111111,"2,000",--,"4,280.20",0.00,0.00,
+Transferencias,Data,Acciones,USD,U2111111,MIND,2021-01-12,Inter-Compañía,Fuera,--,U1111111,"-2,000",--,"-4,280.20",0.00,0.00,
+Transferencias,Data,Acciones,USD,U1111111,TDOC,2021-01-12,Inter-Compañía,En,--,U2111111,10.656,--,"2,353.48",0.00,0.00,
+Transferencias,Data,Acciones,USD,U2111111,TDOC,2021-01-12,Inter-Compañía,Fuera,--,U1111111,-10.656,--,"-2,353.48",0.00,0.00,
+Transferencias,Data,Acciones,USD,U1111111,TK,2021-01-12,Inter-Compañía,En,--,U2111111,"1,744",--,"4,325.12",0.00,0.00,
+Transferencias,Data,Acciones,USD,U2111111,TK,2021-01-12,Inter-Compañía,Fuera,--,U1111111,"-1,744",--,"-4,325.12",0.00,0.00,
 Transferencias,Data,Total,,,,,,,,,,,0,0,0,
 Transferencias,Data,Total en EUR,,,,,,,,,,,0,0,0,
 Depósitos y retiradas,Header,Divisa,Cuenta,Fecha de liquidación,Descripción,Cantidad
-Depósitos y retiradas,Data,AUD,U7135957,2021-01-13,Interno (Transfer to U7135957),0.0000655
-Depósitos y retiradas,Data,AUD,U2135957,2021-01-13,Interno (Transfer to U7135957),-0.0000655
+Depósitos y retiradas,Data,AUD,U1111111,2021-01-13,Interno (Transfer to U1111111),0.0000655
+Depósitos y retiradas,Data,AUD,U2111111,2021-01-13,Interno (Transfer to U1111111),-0.0000655
 Depósitos y retiradas,Data,Total,,,,0
 Depósitos y retiradas,Data,Total en EUR,,,,0
-Depósitos y retiradas,Data,CAD,U7135957,2021-01-13,Interno (Transfer to U7135957),0.000068835
-Depósitos y retiradas,Data,CAD,U2135957,2021-01-13,Interno (Transfer to U7135957),-0.000068835
+Depósitos y retiradas,Data,CAD,U1111111,2021-01-13,Interno (Transfer to U1111111),0.000068835
+Depósitos y retiradas,Data,CAD,U2111111,2021-01-13,Interno (Transfer to U1111111),-0.000068835
 Depósitos y retiradas,Data,Total,,,,0
 Depósitos y retiradas,Data,Total en EUR,,,,0
-Depósitos y retiradas,Data,EUR,U2135957,2021-01-12,Transferencia de Fondos Electrónica,2500
-Depósitos y retiradas,Data,EUR,U7135957,2021-01-13,Interno (Transfer to U7135957),2879.68082
-Depósitos y retiradas,Data,EUR,U2135957,2021-01-13,Interno (Transfer to U7135957),-2879.68082
-Depósitos y retiradas,Data,EUR,U7135957,2021-01-28,Transferencia de Fondos Electrónica,2000
-Depósitos y retiradas,Data,EUR,U7135957,2021-02-25,Transferencia de Fondos Electrónica,3500
-Depósitos y retiradas,Data,EUR,U7135957,2021-03-30,Transferencia de Fondos Electrónica,5623
-Depósitos y retiradas,Data,EUR,U7135957,2021-06-01,Transferencia de Fondos Electrónica,2000
-Depósitos y retiradas,Data,EUR,U7135957,2021-06-30,Transferencia de Fondos Electrónica,4500
-Depósitos y retiradas,Data,EUR,U7135957,2021-08-02,Transferencia de Fondos Electrónica,5000
-Depósitos y retiradas,Data,EUR,U7135957,2021-12-07,Transferencia de Fondos Electrónica,2000
+Depósitos y retiradas,Data,EUR,U2111111,2021-01-12,Transferencia de Fondos Electrónica,2500
+Depósitos y retiradas,Data,EUR,U1111111,2021-01-13,Interno (Transfer to U1111111),2879.68082
+Depósitos y retiradas,Data,EUR,U2111111,2021-01-13,Interno (Transfer to U1111111),-2879.68082
+Depósitos y retiradas,Data,EUR,U1111111,2021-01-28,Transferencia de Fondos Electrónica,2000
+Depósitos y retiradas,Data,EUR,U1111111,2021-02-25,Transferencia de Fondos Electrónica,3500
+Depósitos y retiradas,Data,EUR,U1111111,2021-03-30,Transferencia de Fondos Electrónica,5623
+Depósitos y retiradas,Data,EUR,U1111111,2021-06-01,Transferencia de Fondos Electrónica,2000
+Depósitos y retiradas,Data,EUR,U1111111,2021-06-30,Transferencia de Fondos Electrónica,4500
+Depósitos y retiradas,Data,EUR,U1111111,2021-08-02,Transferencia de Fondos Electrónica,5000
+Depósitos y retiradas,Data,EUR,U1111111,2021-12-07,Transferencia de Fondos Electrónica,2000
 Depósitos y retiradas,Data,Total,,,,27123
-Depósitos y retiradas,Data,GBP,U7135957,2021-01-13,Interno (Transfer to U7135957),-0.000028176
-Depósitos y retiradas,Data,GBP,U2135957,2021-01-13,Interno (Transfer to U7135957),0.000028176
+Depósitos y retiradas,Data,GBP,U1111111,2021-01-13,Interno (Transfer to U1111111),-0.000028176
+Depósitos y retiradas,Data,GBP,U2111111,2021-01-13,Interno (Transfer to U1111111),0.000028176
 Depósitos y retiradas,Data,Total,,,,0
 Depósitos y retiradas,Data,Total en EUR,,,,0
-Depósitos y retiradas,Data,JPY,U7135957,2021-01-13,Interno (Transfer to U7135957),0.00228
-Depósitos y retiradas,Data,JPY,U2135957,2021-01-13,Interno (Transfer to U7135957),-0.00228
+Depósitos y retiradas,Data,JPY,U1111111,2021-01-13,Interno (Transfer to U1111111),0.00228
+Depósitos y retiradas,Data,JPY,U2111111,2021-01-13,Interno (Transfer to U1111111),-0.00228
 Depósitos y retiradas,Data,Total,,,,0
 Depósitos y retiradas,Data,Total en EUR,,,,0
-Depósitos y retiradas,Data,USD,U7135957,2021-01-13,Interno (Transfer to U7135957),0.000010595
-Depósitos y retiradas,Data,USD,U2135957,2021-01-13,Interno (Transfer to U7135957),-0.000010595
+Depósitos y retiradas,Data,USD,U1111111,2021-01-13,Interno (Transfer to U1111111),0.000010595
+Depósitos y retiradas,Data,USD,U2111111,2021-01-13,Interno (Transfer to U1111111),-0.000010595
 Depósitos y retiradas,Data,Total,,,,0
 Depósitos y retiradas,Data,Total en EUR,,,,0
 Depósitos y retiradas,Data,Total Depósitos y retiradas en EUR,,,,27123
 Tarifas,Header,Subtitle,Divisa,Cuenta,Fecha,Descripción,Cantidad
-Tarifas,Data,Otras comisiones,EUR,U2135957,2021-01-05,Balance tarifa mensual mínima para Dic 2020,-2.73
-Tarifas,Data,Otras comisiones,EUR,U7135957,2021-06-03,Balance tarifa mensual mínima para May 2021,-2.46
+Tarifas,Data,Otras comisiones,EUR,U2111111,2021-01-05,Balance tarifa mensual mínima para Dic 2020,-2.73
+Tarifas,Data,Otras comisiones,EUR,U1111111,2021-06-03,Balance tarifa mensual mínima para May 2021,-2.46
 Tarifas,Data,Total,,,,,-5.19
-Tarifas,Data,Otras comisiones,USD,U7135957,2021-02-09,JD(47215P106) Tarifa ADR USD 0.02 por acción,-4
-Tarifas,Data,Otras comisiones,USD,U7135957,2021-11-11,FEE ADR REDEMPTION JD/US47215P1066 FOR NOV 2021,-527
+Tarifas,Data,Otras comisiones,USD,U1111111,2021-02-09,JD(47215P106) Tarifa ADR USD 0.02 por acción,-4
+Tarifas,Data,Otras comisiones,USD,U1111111,2021-11-11,FEE ADR REDEMPTION JD/US47215P1066 FOR NOV 2021,-527
 Tarifas,Data,Total,,,,,-531
 Tarifas,Data,Total en EUR,,,,,-463.77407
 Tarifas,Data,Total Otras comisiones en EUR,,,,,-468.96407
 Dividendos,Header,Divisa,Cuenta,Fecha,Descripción,Cantidad
-Dividendos,Data,EUR,U7135957,2021-11-23,PRX.RTS(NL0015000LD0) Dividendo en efectivo EUR 0.14 por acción (Retorno del capital),6.3
+Dividendos,Data,EUR,U1111111,2021-11-23,PRX.RTS(NL0015000LD0) Dividendo en efectivo EUR 0.14 por acción (Retorno del capital),6.3
 Dividendos,Data,Total,,,,6.3
-Dividendos,Data,JPY,U7135957,2021-12-03,3328.T(JP3758110005) Dividendo en efectivo JPY 25 por acción (Dividendo ordinario),2500
+Dividendos,Data,JPY,U1111111,2021-12-03,3328.T(JP3758110005) Dividendo en efectivo JPY 25 por acción (Dividendo ordinario),2500
 Dividendos,Data,Total,,,,2500
 Dividendos,Data,Total en EUR,,,,19.5905
 Dividendos,Data,Total Dividendos en EUR,,,,25.8905
 Retención de impuestos,Header,Divisa,Cuenta,Fecha,Descripción,Cantidad,Código
-Retención de impuestos,Data,JPY,U7135957,2021-12-03,3328.T(JP3758110005) Dividendo en efectivo JPY 25 por acción - JP Impuestos,-383,
+Retención de impuestos,Data,JPY,U1111111,2021-12-03,3328.T(JP3758110005) Dividendo en efectivo JPY 25 por acción - JP Impuestos,-383,
 Retención de impuestos,Data,Total,,,,-383,
 Retención de impuestos,Data,Total en EUR,,,,-3.0012646,
 Interés,Header,Divisa,Cuenta,Fecha,Descripción,Cantidad
-Interés,Data,USD,U7135957,2021-12-03,USD Interés deudor para Nov-2021,-0.14
+Interés,Data,USD,U1111111,2021-12-03,USD Interés deudor para Nov-2021,-0.14
 Interés,Data,Total,,,,-0.14
 Interés,Data,Total en EUR,,,,-0.1237684
 Devengo de intereses,Header,Divisa,Nombre del campo,Valor del campo
@@ -455,12 +454,12 @@ Devengo de intereses,Data,USD,Balance devengado final,0
 Devengo de intereses,Data,USD,Balance devengado final enEUR,0
 Modificación en los dividendos devengados,Header,Categoría de activo,Divisa,Cuenta,Símbolo,Fecha,Fecha exdividendo,Fecha de pago,Cantidad,Impuestos,Tarifa,Tasa bruta,Cantidad bruta,Cantidad neta,Código
 Modificación en los dividendos devengados,Data,Dividendos devengados iniciales enEUR,,,,,,,,,,,,0,
-Modificación en los dividendos devengados,Data,Acciones,JPY,U7135957,3328.T,2021-09-28,2021-09-29,-,100,382,0,25,2499,2117,Po
-Modificación en los dividendos devengados,Data,Acciones,JPY,U7135957,3328.T,2021-12-03,2021-09-29,2021-12-03,100,-383,0,25,-2500,-2117,Re
+Modificación en los dividendos devengados,Data,Acciones,JPY,U1111111,3328.T,2021-09-28,2021-09-29,-,100,382,0,25,2499,2117,Po
+Modificación en los dividendos devengados,Data,Acciones,JPY,U1111111,3328.T,2021-12-03,2021-09-29,2021-12-03,100,-383,0,25,-2500,-2117,Re
 Modificación en los dividendos devengados,Data,Total,,,,,,,,-1,0,,-1,0,
 Modificación en los dividendos devengados,Data,Total en EUR,,,,,,,,-0.0597882,0,,-0.3477002,-0.287912,
-Modificación en los dividendos devengados,Data,Acciones,USD,U7135957,JD,2021-01-18,2021-01-19,2021-02-09,200,0,4,0.02,0,-4,ADR;Po
-Modificación en los dividendos devengados,Data,Acciones,USD,U7135957,JD,2021-02-09,2021-01-19,2021-02-09,200,0,-4,0.02,0,4,ADR;Re
+Modificación en los dividendos devengados,Data,Acciones,USD,U1111111,JD,2021-01-18,2021-01-19,2021-02-09,200,0,4,0.02,0,-4,ADR;Po
+Modificación en los dividendos devengados,Data,Acciones,USD,U1111111,JD,2021-02-09,2021-01-19,2021-02-09,200,0,-4,0.02,0,4,ADR;Re
 Modificación en los dividendos devengados,Data,Total,,,,,,,,0,0,,0,0,
 Modificación en los dividendos devengados,Data,Total en EUR,,,,,,,,0,0.00076,,0,-0.00076,
 Modificación en los dividendos devengados,Data,Total Acciones en EUR,,,,,,,,-0.0597882,0.00076,,-0.3477002,-0.288672,

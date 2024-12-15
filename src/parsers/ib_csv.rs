@@ -282,6 +282,11 @@ impl IBCSVParser {
 mod tests {
     use super::*;
 
+    #[ctor::ctor]
+    fn init() {
+        let _ = env_logger::builder().is_test(true).try_init();
+    }
+
     fn compare_vectors_by_item<T>(vec1: &[T], vec2: &[T])
     where
         T: std::fmt::Debug + std::cmp::PartialEq,

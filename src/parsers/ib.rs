@@ -1,4 +1,8 @@
-use std::{collections::HashMap, str::FromStr, sync::Arc};
+use std::{
+    collections::{HashMap, HashSet},
+    str::FromStr,
+    sync::{Arc, LazyLock},
+};
 
 use crate::{
     data::{
@@ -10,23 +14,24 @@ use crate::{
 };
 use anyhow::{anyhow, bail, Result};
 use chrono::NaiveDate;
-use once_cell::sync::Lazy;
 use rust_decimal::Decimal;
 use scraper::{node::Element, ElementRef, Html, Selector};
 use selectors::attr::CaseSensitivity;
 
-static OPEN_POSITIONS_SELECTOR: Lazy<Selector> =
-    Lazy::new(|| Selector::parse(r#"div[id^="tblOpenPositions_"] div table"#).unwrap());
+static OPEN_POSITIONS_SELECTOR: LazyLock<Selector> =
+    LazyLock::new(|| Selector::parse(r#"div[id^="tblOpenPositions_"] div table"#).unwrap());
 
-static CONTRACT_INFO_SELECTOR: Lazy<Selector> =
-    Lazy::new(|| Selector::parse(r#"div[id^="tblContractInfo"] div table"#).unwrap());
+static CONTRACT_INFO_SELECTOR: LazyLock<Selector> =
+    LazyLock::new(|| Selector::parse(r#"div[id^="tblContractInfo"] div table"#).unwrap());
 
-static TRANSACTIONS_SELECTOR: Lazy<Selector> =
-    Lazy::new(|| Selector::parse(r#"div[id^="tblTransactions_"] div table"#).unwrap());
+static TRANSACTIONS_SELECTOR: LazyLock<Selector> =
+    LazyLock::new(|| Selector::parse(r#"div[id^="tblTransactions_"] div table"#).unwrap());
 
-static THEAD_TH_TR_SELECTOR: Lazy<Selector> = Lazy::new(|| Selector::parse(r#"thead tr"#).unwrap());
-static TBODY_TR_SELECTOR: Lazy<Selector> = Lazy::new(|| Selector::parse(r#"tbody tr"#).unwrap());
-static TR_SELECTOR: Lazy<Selector> = Lazy::new(|| Selector::parse(r#"tr"#).unwrap());
+static THEAD_TH_TR_SELECTOR: LazyLock<Selector> =
+    LazyLock::new(|| Selector::parse(r#"thead tr"#).unwrap());
+static TBODY_TR_SELECTOR: LazyLock<Selector> =
+    LazyLock::new(|| Selector::parse(r#"tbody tr"#).unwrap());
+static TR_SELECTOR: LazyLock<Selector> = LazyLock::new(|| Selector::parse(r#"tr"#).unwrap());
 
 enum NoteState {
     Invalid,
@@ -41,8 +46,10 @@ pub struct IBParser {
     companies_info: HashMap<String, CompanyInfo>,
 }
 
+static STOCKS_STRS: LazyLock<HashSet<Option<&'static str>>> =
+    LazyLock::new(|| HashSet::from([Some("Stocks"), Some("Acciones")]));
+
 impl IBParser {
-    const STOCKS_STR: &'static str = "Stocks";
     const EUR_CURRENCY_STR: &'static str = "EUR";
 
     pub fn new(data: &str, broker: &Arc<BrokerInformation>) -> Result<Self> {
@@ -137,7 +144,7 @@ impl IBParser {
                 match state {
                     NoteState::Invalid => {
                         log::debug!("Invalid state");
-                        if table_row.text().next() == Some(IBParser::STOCKS_STR) {
+                        if STOCKS_STRS.contains(&table_row.text().next()) {
                             state = NoteState::Stocks;
                         }
                     }
@@ -201,8 +208,7 @@ impl IBParser {
 
                 if let Some(element) = table_row.first_child().unwrap().value().as_element() {
                     if element.has_class("header-asset", CaseSensitivity::AsciiCaseInsensitive) {
-                        start_parsing_symbols =
-                            table_row.text().next() == Some(IBParser::STOCKS_STR);
+                        start_parsing_symbols = STOCKS_STRS.contains(&table_row.text().next());
                         continue;
                     }
                 }
@@ -293,7 +299,7 @@ impl IBParser {
                 match state {
                     NoteState::Invalid => {
                         log::debug!("Invalid state");
-                        if table_row.text().next() == Some(IBParser::STOCKS_STR) {
+                        if STOCKS_STRS.contains(&table_row.text().next()) {
                             state = NoteState::Stocks;
                         }
                     }
