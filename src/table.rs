@@ -12,10 +12,14 @@ use web_sys::{HtmlElement, HtmlInputElement};
 
 use crate::{
     css::{TABLE_CAPTION, TABLE_HEADER, TABLE_ROW, TABLE_STYLE},
-    data::{Aeat720Record, BrokerInformation, DEFAULT_LOCALE, DEFAULT_NUMBER_OF_DECIMALS},
+    data::{
+        Aeat720Record, BrokerInformation, CompanyInfo, DEFAULT_BROKER, DEFAULT_LOCALE,
+        DEFAULT_NUMBER_OF_DECIMALS, DEFAULT_YEAR,
+    },
     utils::{
+        date_to_usize,
         decimal::{decimal_to_str_locale, valid_str_number_with_decimals},
-        icons::render_svg_trash_icon,
+        icons::{render_svg_plus_icon, render_svg_trash_icon},
         usize_to_date,
     },
 };
@@ -77,6 +81,33 @@ impl Table {
         }
     }
 
+    fn create_default_record() -> Aeat720RecordInfo {
+        let record = Aeat720Record {
+            company: CompanyInfo {
+                name: "Nueva compañía".to_string(),
+                isin: "".to_string(),
+            },
+            quantity: Decimal::ONE_HUNDRED,
+            value_in_euro: Decimal::ZERO,
+            first_tx_date: date_to_usize(DEFAULT_YEAR as i32, 1, 1),
+            broker: DEFAULT_BROKER.clone(),
+            percentage: Decimal::ONE_HUNDRED,
+        };
+        Aeat720RecordInfo {
+            record,
+            name_err_msg: Mutable::new(None),
+            isin_err_msg: Mutable::new(Some(ISIN_NOT_VALID_ERR_MSG)),
+            value_err_msg: Mutable::new(Some(VALUE_NOT_VALID_ERR_MSG)),
+            quantity_err_msg: Mutable::new(None),
+            percent_err_msg: Mutable::new(None),
+        }
+    }
+
+    pub fn add_default(&self) {
+        let record = Self::create_default_record();
+        self.data.lock_mut().insert_cloned(0, Mutable::new(record));
+    }
+
     pub fn get_records(&self) -> Vec<Aeat720Record> {
         let mut result = vec![];
         for record in self.data.lock_ref().iter() {
@@ -125,7 +156,15 @@ impl Table {
                   .style("vertical-align", "bottom")
                   .style("font-weight", "bold")
                   .style("background-color", "#ddd")
-                  .text("")
+                  .child(html!("span" => HtmlElement, {
+                    .child(render_svg_plus_icon("red", "24"))
+                    .with_node!(_element => {
+                      .event(clone!(this => move |_: events::Click| {
+                        let record_info = Mutable::new(Self::create_default_record());
+                        this.data.lock_mut().insert_cloned(0, record_info);
+                      }))
+                    })
+                  }))
                 })
               )
             })

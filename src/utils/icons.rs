@@ -7,11 +7,12 @@ fn svg_icon_attrs(icon: DomBuilder<SvgElement>) -> DomBuilder<SvgElement> {
         .attr("stroke-width", "2")
         .attr("stroke-linecap", "round")
         .attr("stroke-linejoin", "round")
+        .attr("cursor", "pointer")
 }
 
 pub fn render_svg_trash_icon(color: &str, size: &str) -> Dom {
     svg!("svg", {
-        .attr("alt", "trash icon")
+        .attr("alt", "Borrar registro")
         .attr("width", size)
         .attr("height", size)
         .attr("stroke", color)
@@ -35,6 +36,31 @@ pub fn render_svg_trash_icon(color: &str, size: &str) -> Dom {
                 .attr("x2", "14")
                 .attr("y2", "17")
             }),
+        ])
+    })
+}
+
+pub fn render_svg_plus_icon(color: &str, size: &str) -> Dom {
+    svg!("svg", {
+        .attr("alt", "Añadir registro")
+        .attr("width", size)
+        .attr("height", size)
+        .attr("stroke", color)
+        .apply(svg_icon_attrs)
+        .children(&mut[
+            svg!("line", {
+                .attr("x1", "12")
+                .attr("y1", "5")
+                .attr("x2", "12")
+                .attr("y2", "19")
+            }),
+            svg!("line", {
+                .attr("x1", "5")
+                .attr("y1", "12")
+                .attr("x2", "19")
+                .attr("y2", "12")
+            }),
+
         ])
     })
 }

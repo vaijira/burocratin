@@ -138,6 +138,20 @@ impl App {
         })
     }
 
+    fn render_insert_button(this: &Arc<Self>) -> Dom {
+        html!("span", {
+          .child(html!("input" => HtmlInputElement, {
+            .attr("type", "button")
+            .attr("value", "Insertar movimiento")
+            .with_node!(_element => {
+              .event(clone!(this => move |_: events::Click| {
+                this.table.add_default();
+              }))
+            })
+          }))
+        })
+    }
+
     fn render_download_button(this: &Arc<Self>) -> Dom {
         html!("section", {
          .child_signal(
@@ -183,7 +197,8 @@ impl App {
             }))
             .child(PersonalInfoViewer::render(&this.personal_info_viewer))
             .child(html!("h2", {
-                .text("Paso 2: Descarga los informes de Interactive brokers y/o Degiro e importalos.")
+                .text("Paso 2: Descarga los informes de Interactive brokers y/o Degiro ")
+                .text("e importalos o añade movimientos manualmente.")
             }))
             .child(
                Table::render(&this.table)
@@ -193,6 +208,9 @@ impl App {
             )
             .child(
                 App::render_clear_button(&this)
+            )
+            .child(
+                App::render_insert_button(&this)
             )
             .child(html!("h2", {
                 .text("Paso 3: Revisa las fechas de 1º adquisición y los datos importados y descarga el fichero generado.")

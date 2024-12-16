@@ -90,6 +90,14 @@ fn read_degiro_csv(content: Vec<u8>) -> Result<(BalanceNotes, AccountNotes)> {
     }
 }
 
+pub(crate) fn date_to_usize(year: i32, month: u32, day: u32) -> usize {
+    let date = NaiveDate::from_ymd_opt(year, month, day)
+        .unwrap()
+        .format("%Y%m%d")
+        .to_string();
+    date.parse::<usize>().unwrap_or(0)
+}
+
 fn transform_to_aeat720_records(notes: (BalanceNotes, AccountNotes)) -> Result<Aeat720Records> {
     let mut result = vec![];
 

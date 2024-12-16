@@ -2,7 +2,10 @@ use chrono::NaiveDate;
 use num_format::Locale;
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
-use std::{convert::From, sync::Arc};
+use std::{
+    convert::From,
+    sync::{Arc, LazyLock},
+};
 
 pub type AccountNotes = Vec<AccountNote>;
 pub type BalanceNotes = Vec<BalanceNote>;
@@ -12,6 +15,13 @@ pub const DEFAULT_YEAR: usize = 2024;
 pub const SPAIN_COUNTRY_CODE: &str = "ES";
 pub const DEFAULT_LOCALE: &Locale = &Locale::es;
 pub const DEFAULT_NUMBER_OF_DECIMALS: u16 = 2;
+
+pub static DEFAULT_BROKER: LazyLock<Arc<BrokerInformation>> = LazyLock::new(|| {
+    Arc::new(BrokerInformation {
+        name: "Desconocido".to_string(),
+        country_code: "IE".to_string(),
+    })
+});
 
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub enum BrokerOperation {
