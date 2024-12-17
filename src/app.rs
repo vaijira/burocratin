@@ -12,10 +12,7 @@ use wasm_bindgen_futures::spawn_local;
 use web_sys::{Element, HtmlAnchorElement, HtmlElement, HtmlInputElement};
 
 use crate::{
-    data::{Aeat720Information, PersonalInformation},
-    personal_info::PersonalInfoViewer,
-    table::Table,
-    utils::{file_importer, web},
+    css::MODAL_STYLE, data::{Aeat720Information, PersonalInformation}, personal_info::PersonalInfoViewer, table::Table, utils::{file_importer, web}
 };
 
 pub struct App {
@@ -24,6 +21,7 @@ pub struct App {
     aeat720_form_path: Mutable<Option<String>>,
     personal_info_viewer: Arc<PersonalInfoViewer>,
     table: Arc<Table>,
+    modal_visible: Mutable<bool>,
 }
 
 impl App {
@@ -36,6 +34,7 @@ impl App {
             aeat720_form_path: Mutable::new(None),
             personal_info_viewer: PersonalInfoViewer::new(personal_info.clone()),
             table: Table::new(),
+            modal_visible: Mutable::new(false),
         })
     }
 
@@ -55,6 +54,7 @@ impl App {
             }
             Err(error) => {
                 *this.current_error.lock_mut() = Some(error.to_string());
+                this.modal_visible.set(true);
             }
         }
     }
@@ -64,7 +64,7 @@ impl App {
         let old_path = old_path.map_or("".to_owned(), |x| x);
         let path = web::generate_720(&Aeat720Information {
             records: this.table.get_records(),
-            personal_info: PersonalInformation::default(),
+            personal_info: this.personal_info.get_cloned(),
         })?;
         if !old_path.is_empty() {
             let _ = web::delete_path(old_path);
@@ -101,6 +101,7 @@ impl App {
                     None => {
                       *this.current_error.lock_mut() = Some(
                         "Error subiendo fichero".to_string());
+                      this.modal_visible.set(true);
                       return;
                     }
                   };
@@ -109,6 +110,7 @@ impl App {
                     None => {
                       *this.current_error.lock_mut() = Some(
                         "Error obteniendo fichero".to_string());
+                      this.modal_visible.set(true);
                       return;
                     }
                   };
@@ -142,7 +144,7 @@ impl App {
         html!("span", {
           .child(html!("input" => HtmlInputElement, {
             .attr("type", "button")
-            .attr("value", "Insertar movimiento")
+            .attr("value", "Añadir movimiento")
             .with_node!(_element => {
               .event(clone!(this => move |_: events::Click| {
                 this.table.add_default();
@@ -192,6 +194,14 @@ impl App {
 
     pub fn render(this: Arc<Self>) -> Dom {
         html!("div", {
+            .child(html!("div", {
+                .class(&*MODAL_STYLE)
+                .visible_signal(this.modal_visible.signal())
+                .event(clone!(this => move |_: events::Click| {
+                    this.modal_visible.set_neq(false);
+                }))
+                .text_signal(this.current_error.signal_ref(|v| v.clone().unwrap_or("".to_string())))
+            }))
             .child(html!("h2", {
                 .text("Paso 1: Rellena datos personales.")
             }))

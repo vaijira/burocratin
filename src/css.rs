@@ -7,6 +7,19 @@ pub static ROOT_CLASS: LazyLock<String> = LazyLock::new(|| {
     }
 });
 
+pub static MODAL_STYLE: LazyLock<String> = LazyLock::new(|| {
+    class! {
+        .style("position", "fixed")
+        .style("left", "0")
+        .style("top", "0")
+        .style("width", "100%")
+        .style("height", "100%")
+        .style("z-index", "1")
+        .style("color", "red")
+        .style("background-color", "gray")
+    }
+});
+
 pub static ERROR_PARAGRAPH_CLASS: LazyLock<String> = LazyLock::new(|| {
     class! {
         .style("color", "#ba3939")
