@@ -11,7 +11,7 @@ pub static MODAL_STYLE: LazyLock<String> = LazyLock::new(|| {
     class! {
         .style("position", "fixed")
         .style("left", "0")
-        .style("top", "35%")
+        .style("top", "0")
         .style("width", "100%")
         .style("height", "100%")
         .style("z-index", "1")
@@ -21,6 +21,8 @@ pub static MODAL_STYLE: LazyLock<String> = LazyLock::new(|| {
 
 pub static MODAL_CONTENT_STYLE: LazyLock<String> = LazyLock::new(|| {
     class! {
+        .style("position", "relative")
+        .style("top", "35%")
         .style("padding", "15px")
         .style("background", "#eee")
         .style("border-radius", "5px")
