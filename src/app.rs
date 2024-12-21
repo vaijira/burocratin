@@ -12,7 +12,11 @@ use wasm_bindgen_futures::spawn_local;
 use web_sys::{Element, HtmlAnchorElement, HtmlElement, HtmlInputElement};
 
 use crate::{
-    css::MODAL_STYLE, data::{Aeat720Information, PersonalInformation}, personal_info::PersonalInfoViewer, table::Table, utils::{file_importer, web}
+    css::{MODAL_CONTENT_STYLE, MODAL_STYLE},
+    data::{Aeat720Information, PersonalInformation},
+    personal_info::PersonalInfoViewer,
+    table::Table,
+    utils::{file_importer, web},
 };
 
 pub struct App {
@@ -192,16 +196,22 @@ impl App {
         })
     }
 
+    fn render_modal_error(this: &Arc<Self>) -> Dom {
+        html!("div", {
+            .class(&*MODAL_STYLE)
+            .visible_signal(this.modal_visible.signal())
+            .event(clone!(this => move |_: events::Click| {
+                this.modal_visible.set_neq(false);
+             }))
+            .child(html!("p", {
+              .class(&*MODAL_CONTENT_STYLE)
+              .text_signal(this.current_error.signal_ref(|v| v.clone().unwrap_or("".to_string())))
+            }))
+        })
+    }
     pub fn render(this: Arc<Self>) -> Dom {
         html!("div", {
-            .child(html!("div", {
-                .class(&*MODAL_STYLE)
-                .visible_signal(this.modal_visible.signal())
-                .event(clone!(this => move |_: events::Click| {
-                    this.modal_visible.set_neq(false);
-                }))
-                .text_signal(this.current_error.signal_ref(|v| v.clone().unwrap_or("".to_string())))
-            }))
+            .child(App::render_modal_error(&this))
             .child(html!("h2", {
                 .text("Paso 1: Rellena datos personales.")
             }))

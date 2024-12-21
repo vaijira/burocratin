@@ -11,12 +11,24 @@ pub static MODAL_STYLE: LazyLock<String> = LazyLock::new(|| {
     class! {
         .style("position", "fixed")
         .style("left", "0")
-        .style("top", "0")
+        .style("top", "35%")
         .style("width", "100%")
         .style("height", "100%")
         .style("z-index", "1")
         .style("color", "red")
-        .style("background-color", "gray")
+    }
+});
+
+pub static MODAL_CONTENT_STYLE: LazyLock<String> = LazyLock::new(|| {
+    class! {
+        .style("padding", "15px")
+        .style("background", "#eee")
+        .style("border-radius", "5px")
+        .style("display", "inline-block")
+        .style("vertical-align", "middle")
+        .style("font-size", "large")
+        .style("max-width", "400px")
+        .style("margin", "20px")
     }
 });
 
