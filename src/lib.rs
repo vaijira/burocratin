@@ -32,7 +32,11 @@ pub async fn main_js() -> Result<(), JsValue> {
 
     let app = App::new();
 
-    dominator::append_dom(&dominator::get_id("burocratinApp"), App::render(app));
+    dominator::replace_dom(
+        &dominator::get_id("burocratinApp"),
+        &dominator::get_id("burocratinApp").last_child().unwrap(),
+        App::render(app),
+    );
 
     Ok(())
 }

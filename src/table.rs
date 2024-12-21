@@ -126,6 +126,7 @@ impl Table {
             .map(|header_cell| {
                 html!("th", {
                   .attr("scope", "col")
+                  .attr("role", "columnheader")
                   .style("vertical-align", "bottom")
                   .style("font-weight", "bold")
                   .style("background-color", "#ddd")
@@ -143,6 +144,7 @@ impl Table {
               .child(
                 html!("th", {
                   .attr("scope", "col")
+                  .attr("role", "columnheader")
                   .style("vertical-align", "bottom")
                   .style("font-weight", "bold")
                   .style("background-color", "#ddd")
@@ -153,6 +155,7 @@ impl Table {
               .child(
                 html!("th", {
                   .attr("scope", "col")
+                  .attr("role", "columnheader")
                   .style("vertical-align", "bottom")
                   .style("font-weight", "bold")
                   .style("background-color", "#ddd")

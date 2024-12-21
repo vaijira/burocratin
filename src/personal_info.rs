@@ -30,6 +30,7 @@ impl PersonalInfoViewer {
                         .attr("type", "text")
                         .attr("autocomplete", "given-name")
                         .attr("placeholder", "Nombre")
+                        .style("height", "24px")
                         .with_node!(element => {
                             .event(clone!(this => move |_: events::Input| {
                                 this.personal_info.lock_mut().name = element.value().to_uppercase();
@@ -47,6 +48,7 @@ impl PersonalInfoViewer {
                         .attr("type", "text")
                         .attr("autocomplete", "family-name")
                         .attr("placeholder", "Apellidos")
+                        .style("height", "24px")
                         .with_node!(element => {
                             .event(clone!(this => move |_: events::Input| {
                                 this.personal_info.lock_mut().surname = element.value().to_uppercase();
@@ -64,6 +66,7 @@ impl PersonalInfoViewer {
                         .attr("type", "text")
                         .attr("max-length", "9")
                         .attr("placeholder", "DNI con letra")
+                        .style("height", "24px")
                         .with_node!(element => {
                             .event(clone!(this => move |_: events::Input| {
                                 this.personal_info.lock_mut().nif = element.value().to_uppercase();
@@ -82,6 +85,7 @@ impl PersonalInfoViewer {
                         .attr("maxlength", "4")
                         .attr("placeholder", "Año")
                         .attr("value", &DEFAULT_YEAR.to_string())
+                        .style("height", "24px")
                         .with_node!(element => {
                             .event(clone!(this => move |_: events::Input| {
                                 this.personal_info.lock_mut().year = element.value().parse::<usize>().unwrap_or(DEFAULT_YEAR);
@@ -100,6 +104,7 @@ impl PersonalInfoViewer {
                         .attr("autocomplete", "tel")
                         .attr("maxlength", "9")
                         .attr("placeholder", "Teléfono")
+                        .style("height", "24px")
                         .with_node!(element => {
                             .event(clone!(this => move |_: events::Input| {
                                 this.personal_info.lock_mut().phone = element.value().to_uppercase();
