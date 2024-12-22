@@ -182,10 +182,20 @@ impl IBCSVParser {
         let company_info = self
             .companies_info
             .get(symbol)
-            .ok_or_else(|| anyhow!("Not company info found"))?;
+            .cloned()
+            .or_else({
+                || {
+                    log::error!("Not company info found for {}", symbol);
+                    Some(CompanyInfo {
+                        name: symbol.to_string(),
+                        isin: "".to_string(),
+                    })
+                }
+            })
+            .unwrap();
 
         Ok(BalanceNote::new(
-            company_info.clone(),
+            company_info,
             String::from(""),
             Decimal::from_str(&decimal::normalize_str(quantity))?
                 * Decimal::from_str(&decimal::normalize_str(mult))?,
