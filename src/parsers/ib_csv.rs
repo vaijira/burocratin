@@ -37,11 +37,12 @@ impl IBCSVParser {
     const TRADE_BEGIN__NO_ACCOUNT_STR: usize = 7;
     const TRADE_END_STR: usize = 8;
     const TRADE_STOCK_STR: usize = 9;
+    const STOCK_COMPANY_INFO_SECTOR_START_OLD_STR: usize = 10;
 
     const ES_HEADER_CONTENT: &str = "Statement,Header,Nombre del campo,Valor del campo";
 
     const EN_MSGS: &'static [&'static str] = &[
-        "Financial Instrument Information,Header,Asset Category,Symbol,Description,Conid,Security ID,Listing Exch,Multiplier,Type,Code", // STOCK_COMPANY_INFO_SECTOR_START_STR
+        "Financial Instrument Information,Header,Asset Category,Symbol,Description,Conid,Security ID,Underlying,Listing Exch,Multiplier,Type,Code", // STOCK_COMPANY_INFO_SECTOR_START_STR
         "Financial Instrument Information,Data,Stocks,", // STOCK_COMPANY_INFO_SECTOR_END_STR
         "Open Positions,Header,DataDiscriminator,Asset Category,Currency,Symbol,Quantity,Mult,Cost Price,Cost Basis,Close Price,Value,Unrealized P/L,Code", // OPEN_POSITIONS_BEGIN_STR
         "Open Positions,Total,,Stocks,EUR,", // OPEN_POSITIONS_END_STR
@@ -50,7 +51,8 @@ impl IBCSVParser {
         "Trades,Header,DataDiscriminator,Asset Category,Currency,Account,Symbol,Date/Time,Quantity,T. Price,C. Price,Proceeds,Comm/Fee,Basis,Realized P/L,MTM P/L,Code", // TRADE_BEGIN_STR
         "Trades,Header,DataDiscriminator,Asset Category,Currency,Symbol,Date/Time,Quantity,T. Price,C. Price,Proceeds,Comm/Fee,Basis,Realized P/L,MTM P/L,Code", // TRADE_BEGIN_NO_ACCOUNT_STR
         "Trades,Total,", // TRADE_END_STR
-        "Trades,Data,Order,Stocks," // TRADE_STOCK_STR
+        "Trades,Data,Order,Stocks,", // TRADE_STOCK_STR
+        "Financial Instrument Information,Header,Asset Category,Symbol,Description,Conid,Security ID,Listing Exch,Multiplier,Type,Code", // STOCK_COMPANY_INFO_SECTOR_START_OLD_STR
     ];
 
     const ES_MSGS: &'static [&'static str] = &[
@@ -64,6 +66,7 @@ impl IBCSVParser {
         "Operaciones,Header,DataDiscriminator,Categoría de activo,Divisa,Símbolo,Fecha/Hora,Cantidad,Precio trans.,Precio de cier.,Productos,Tarifa/com.,Básico,PyG realizadas,MTM P/G,Código", // TRADE_BEGIN_NO_ACCOUNT_STR
         "Operaciones,Total,", // TRADE_END_STR
         "Operaciones,Data,Order,Acciones,", // TRADE_STOCK_STR
+        "Información de instrumento financiero,Header,Categoría de activo,Símbolo,Descripción,Conid,Id. de seguridad,Merc. de cotización,Multiplicador,Tipo,Código",  // STOCK_COMPANY_INFO_SECTOR_START_OLD_STR
     ];
 
     fn parse_companies_info(
@@ -75,6 +78,7 @@ impl IBCSVParser {
 
         let start = content
             .find(locale[IBCSVParser::STOCK_COMPANY_INFO_SECTOR_START_STR])
+            .or_else(|| content.find(locale[IBCSVParser::STOCK_COMPANY_INFO_SECTOR_START_OLD_STR]))
             .ok_or_else(|| anyhow!("Not found beginning of companies info section"))?;
 
         let end_left = content

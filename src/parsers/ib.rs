@@ -31,6 +31,8 @@ static THEAD_TH_TR_SELECTOR: LazyLock<Selector> =
     LazyLock::new(|| Selector::parse(r#"thead tr"#).unwrap());
 static TBODY_TR_SELECTOR: LazyLock<Selector> =
     LazyLock::new(|| Selector::parse(r#"tbody tr"#).unwrap());
+static TBODY_ACCOUNT_TR_SELECTOR: LazyLock<Selector> =
+    LazyLock::new(|| Selector::parse(r#"tbody tr:not(.subtotal):not(.total)"#).unwrap());
 static TR_SELECTOR: LazyLock<Selector> = LazyLock::new(|| Selector::parse(r#"tr"#).unwrap());
 
 enum NoteState {
@@ -140,7 +142,7 @@ impl IBParser {
                 }
             }
 
-            for table_row in transactions.select(&TBODY_TR_SELECTOR) {
+            for table_row in transactions.select(&TBODY_ACCOUNT_TR_SELECTOR) {
                 match state {
                     NoteState::Invalid => {
                         log::debug!("Invalid state");
@@ -168,22 +170,32 @@ impl IBParser {
                     }
                     NoteState::Note => {
                         log::debug!("Note state");
-                        let has_class = |x: &Element| {
+                        let has_asset_class = |x: &Element| {
                             x.has_class("header-asset", CaseSensitivity::AsciiCaseInsensitive)
                         };
-                        let element = table_row.value();
+                        let has_currency_class = |x: &Element| {
+                            x.has_class("header-currency", CaseSensitivity::AsciiCaseInsensitive)
+                        };
+                        // let element = table_row.value();
 
-                        if element.has_class("row-summary", CaseSensitivity::AsciiCaseInsensitive) {
-                            result.push(self.parse_account_note(&table_row, with_account_field)?);
+                        if table_row
+                            .first_child()
+                            .map(|x| x.value())
+                            .unwrap()
+                            .as_element()
+                            .map(has_asset_class)
+                            == Some(true)
+                        {
+                            state = NoteState::Invalid;
                         } else if table_row
                             .first_child()
                             .map(|x| x.value())
                             .unwrap()
                             .as_element()
-                            .map(has_class)
-                            == Some(true)
+                            .map(has_currency_class)
+                            != Some(true)
                         {
-                            state = NoteState::Invalid;
+                            result.push(self.parse_account_note(&table_row, with_account_field)?);
                         }
                     }
                     NoteState::Total => {
