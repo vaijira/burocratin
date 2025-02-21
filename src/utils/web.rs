@@ -1,6 +1,6 @@
 use crate::{data::Aeat720Information, reports::aeat_720::Aeat720Report};
 
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 use js_sys::{Array, Uint8Array};
 use wasm_bindgen::JsValue;
 use web_sys::{Blob, BlobPropertyBag, Url};

@@ -1,7 +1,7 @@
 use crate::data::{Aeat720Information, Aeat720Record};
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 use encoding_rs::ISO_8859_15;
-use rust_decimal::{prelude::ToPrimitive, Decimal};
+use rust_decimal::{Decimal, prelude::ToPrimitive};
 use std::io::Write;
 
 /*
@@ -597,20 +597,24 @@ mod tests {
     fn test_write_numeric_field() {
         let mut fields: AeatRegisterArray = [b' '; AEAT_720_REGISTER_SIZE_BYTES];
 
-        assert!(Aeat720Field::write_numeric_field(
-            &mut fields,
-            DetailRegister::DOCUMENT_ID_FIELD,
-            AEAT_720_DOCUMENT_ID,
-        )
-        .is_ok());
+        assert!(
+            Aeat720Field::write_numeric_field(
+                &mut fields,
+                DetailRegister::DOCUMENT_ID_FIELD,
+                AEAT_720_DOCUMENT_ID,
+            )
+            .is_ok()
+        );
         assert_eq!(fields[1..4], [b'7', b'2', b'0'],);
 
-        assert!(Aeat720Field::write_numeric_field(
-            &mut fields,
-            DetailRegister::REGISTER_TYPE_FIELD,
-            DetailRegister::AEAT_720_DETAIL_REGISTER_TYPE,
-        )
-        .is_ok());
+        assert!(
+            Aeat720Field::write_numeric_field(
+                &mut fields,
+                DetailRegister::REGISTER_TYPE_FIELD,
+                DetailRegister::AEAT_720_DETAIL_REGISTER_TYPE,
+            )
+            .is_ok()
+        );
         assert_eq!(fields[0], b'2');
 
         assert!(
@@ -637,12 +641,10 @@ mod tests {
             [b'2', b'0', b'2', b'0', b'2', b'0', b'2', b'0', b'A']
         );
 
-        assert!(Aeat720Field::write_field(
-            &mut fields,
-            DetailRegister::DECLARED_NIF_FIELD,
-            "20202020"
-        )
-        .is_ok());
+        assert!(
+            Aeat720Field::write_field(&mut fields, DetailRegister::DECLARED_NIF_FIELD, "20202020")
+                .is_ok()
+        );
         assert_eq!(
             fields[17..26],
             [b'2', b'0', b'2', b'0', b'2', b'0', b'2', b'0', b' ']
@@ -661,21 +663,25 @@ mod tests {
     fn test_write_string_field() {
         let mut fields: AeatRegisterArray = [b' '; AEAT_720_REGISTER_SIZE_BYTES];
 
-        assert!(Aeat720Field::write_field(
-            &mut fields,
-            DetailRegister::STOCK_REPRESENTATION_FIELD,
-            DetailRegister::AEAT_720_ASSET_REPRESENTATON,
-        )
-        .is_ok());
+        assert!(
+            Aeat720Field::write_field(
+                &mut fields,
+                DetailRegister::STOCK_REPRESENTATION_FIELD,
+                DetailRegister::AEAT_720_ASSET_REPRESENTATON,
+            )
+            .is_ok()
+        );
 
         assert_eq!(fields[461..462], [b'A']);
 
-        assert!(Aeat720Field::write_field(
-            &mut fields,
-            DetailRegister::REAL_STATE_REPRESENTATION_FIELD,
-            "",
-        )
-        .is_ok());
+        assert!(
+            Aeat720Field::write_field(
+                &mut fields,
+                DetailRegister::REAL_STATE_REPRESENTATION_FIELD,
+                "",
+            )
+            .is_ok()
+        );
 
         assert_eq!(fields[474..475], [b' ']);
     }

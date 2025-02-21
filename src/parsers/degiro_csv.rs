@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use rust_decimal::Decimal;
 use std::{str::FromStr, sync::Arc};
 

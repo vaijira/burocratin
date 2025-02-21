@@ -2,7 +2,7 @@
 name = "burocratin"
 version = "0.2.0"
 authors = ["Jorge Perez Burgos <vaijira@gmail.com>"]
-edition = "2021"
+edition = "2024"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
@@ -68,4 +68,4 @@ opt-level = "z"  # 3 => fast, s/z => small
 lto = true
 
 [package.metadata.wasm-pack.profile.release]
-wasm-opt = ["-Oz"]  # O4 => fast, Oz/Os => small
+wasm-opt = ["--enable-bulk-memory", "-Oz"]  # O4 => fast, Oz/Os => small

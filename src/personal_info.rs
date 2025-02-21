@@ -1,12 +1,12 @@
 use std::sync::Arc;
 
-use dominator::{clone, events, html, with_node, Dom};
+use dominator::{Dom, clone, events, html, with_node};
 use futures_signals::signal::Mutable;
 use web_sys::HtmlInputElement;
 
 use crate::{
     css::{FLEX_CONTAINER_CLASS, FLEX_CONTAINER_ITEM_20_CLASS},
-    data::{PersonalInformation, DEFAULT_YEAR},
+    data::{DEFAULT_YEAR, PersonalInformation},
 };
 
 pub struct PersonalInfoViewer {

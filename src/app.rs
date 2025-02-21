@@ -1,12 +1,12 @@
 use std::sync::Arc;
 
 use anyhow::Result;
-use dominator::{clone, events, html, with_node, Dom};
+use dominator::{Dom, clone, events, html, with_node};
 use futures_signals::{
     map_ref,
     signal::{Mutable, Signal, SignalExt},
 };
-use gloo_file::{futures::read_as_bytes, Blob};
+use gloo_file::{Blob, futures::read_as_bytes};
 use wasm_bindgen::{JsCast, UnwrapThrowExt};
 use wasm_bindgen_futures::spawn_local;
 use web_sys::{Element, HtmlAnchorElement, HtmlElement, HtmlInputElement};
@@ -42,7 +42,7 @@ impl App {
         })
     }
 
-    fn is_needed_to_generate_report(this: &Arc<Self>) -> impl Signal<Item = bool> {
+    fn is_needed_to_generate_report(this: &Arc<Self>) -> impl Signal<Item = bool> + use<> {
         map_ref! {
             let _personal_info_changed = this.personal_info.signal_ref(|_| true),
             let records_changed = this.table.table_rows_not_empty() =>

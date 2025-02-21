@@ -1,4 +1,4 @@
-use dominator::{svg, Dom, DomBuilder};
+use dominator::{Dom, DomBuilder, svg};
 use web_sys::SvgElement;
 
 fn svg_icon_attrs(icon: DomBuilder<SvgElement>) -> DomBuilder<SvgElement> {

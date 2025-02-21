@@ -7,11 +7,15 @@ use crate::data::{
 
 use crate::utils::decimal;
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use chrono::NaiveDate;
 use nom::character::complete::anychar;
 use nom::multi::many_till;
 use nom::sequence::{preceded, separated_pair};
+use nom::{
+    IResult,
+    error::{VerboseError, context},
+};
 use nom::{
     branch::alt,
     bytes::complete::{is_a, take},
@@ -25,10 +29,6 @@ use nom::{
     bytes::complete::{tag, tag_no_case},
     character::complete::{char, one_of},
     multi::many_m_n,
-};
-use nom::{
-    error::{context, VerboseError},
-    IResult,
 };
 
 use rust_decimal::prelude::*;
@@ -401,8 +401,8 @@ impl DegiroParser {
 mod tests {
     use super::*;
     use nom::{
-        error::{ErrorKind, VerboseError, VerboseErrorKind},
         Err as NomErr,
+        error::{ErrorKind, VerboseError, VerboseErrorKind},
     };
 
     #[test]

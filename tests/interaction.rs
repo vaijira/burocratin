@@ -1,6 +1,6 @@
 mod common;
 
-use thirtyfour::{http::reqwest_async::ReqwestDriverAsync, prelude::*, GenericWebDriver};
+use thirtyfour::{GenericWebDriver, http::reqwest_async::ReqwestDriverAsync, prelude::*};
 
 async fn fill_all_fields(driver: &GenericWebDriver<ReqwestDriverAsync>) -> WebDriverResult<String> {
     driver.get("http://localhost:8080").await?;

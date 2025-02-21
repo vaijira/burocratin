@@ -1,6 +1,6 @@
 use std::sync::{Arc, LazyLock};
 
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 use chrono::NaiveDate;
 use rust_decimal::Decimal;
 use zip::read_zip;

@@ -12,10 +12,10 @@ use crate::{
     parsers::util,
     utils::decimal,
 };
-use anyhow::{anyhow, bail, Result};
+use anyhow::{Result, anyhow, bail};
 use chrono::NaiveDate;
 use rust_decimal::Decimal;
-use scraper::{node::Element, ElementRef, Html, Selector};
+use scraper::{ElementRef, Html, Selector, node::Element};
 use selectors::attr::CaseSensitivity;
 
 static OPEN_POSITIONS_SELECTOR: LazyLock<Selector> =

@@ -16,7 +16,11 @@ export default {
         sourcemap: true,
     },
     plugins: [
-        rust(),
+        rust({
+            extraArgs: {
+              wasmOpt: [ "-Oz", "--enable-bulk-memory-opt", "--enable-nontrapping-float-to-int" ],
+            },
+        }),
 
         copy({
             targets: [

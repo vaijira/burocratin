@@ -1,7 +1,7 @@
 use std::fs;
 
 use anyhow::Result;
-use thirtyfour::{http::reqwest_async::ReqwestDriverAsync, prelude::*, GenericWebDriver};
+use thirtyfour::{GenericWebDriver, http::reqwest_async::ReqwestDriverAsync, prelude::*};
 
 pub fn setup() {
     // docker-compose up -d

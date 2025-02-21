@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use chrono::NaiveDate;
 use rust_decimal::Decimal;
 use std::{collections::HashMap, str::FromStr, sync::Arc};
@@ -47,26 +47,26 @@ impl IBCSVParser {
         "Open Positions,Header,DataDiscriminator,Asset Category,Currency,Symbol,Quantity,Mult,Cost Price,Cost Basis,Close Price,Value,Unrealized P/L,Code", // OPEN_POSITIONS_BEGIN_STR
         "Open Positions,Total,,Stocks,EUR,", // OPEN_POSITIONS_END_STR
         "Open Positions,Data,Summary,Stocks,", // OPEN_POSITIONS_STOCK_STR
-        "Open Positions,Total,,Stocks,", // OPEN_POSITIONS_TOTAL_STR
+        "Open Positions,Total,,Stocks,",     // OPEN_POSITIONS_TOTAL_STR
         "Trades,Header,DataDiscriminator,Asset Category,Currency,Account,Symbol,Date/Time,Quantity,T. Price,C. Price,Proceeds,Comm/Fee,Basis,Realized P/L,MTM P/L,Code", // TRADE_BEGIN_STR
         "Trades,Header,DataDiscriminator,Asset Category,Currency,Symbol,Date/Time,Quantity,T. Price,C. Price,Proceeds,Comm/Fee,Basis,Realized P/L,MTM P/L,Code", // TRADE_BEGIN_NO_ACCOUNT_STR
-        "Trades,Total,", // TRADE_END_STR
+        "Trades,Total,",             // TRADE_END_STR
         "Trades,Data,Order,Stocks,", // TRADE_STOCK_STR
         "Financial Instrument Information,Header,Asset Category,Symbol,Description,Conid,Security ID,Listing Exch,Multiplier,Type,Code", // STOCK_COMPANY_INFO_SECTOR_START_OLD_STR
     ];
 
     const ES_MSGS: &'static [&'static str] = &[
-        "Información de instrumento financiero,Header,Categoría de activo,Símbolo,Descripción,Conid,Id. de seguridad,Underlying,Merc. de cotización,Multiplicador,Tipo,Código",  // STOCK_COMPANY_INFO_SECTOR_START_STR
+        "Información de instrumento financiero,Header,Categoría de activo,Símbolo,Descripción,Conid,Id. de seguridad,Underlying,Merc. de cotización,Multiplicador,Tipo,Código", // STOCK_COMPANY_INFO_SECTOR_START_STR
         "Información de instrumento financiero,Data,Acciones,", // STOCK_COMPANY_INFO_SECTOR_END_STR
-        "Posiciones abiertas,Header,DataDiscriminator,Categoría de activo,Divisa,Símbolo,Cantidad,Mult.,Precio de coste,Base de coste,Precio de cierre,Valor,PyG no realizadas,Código",  // OPEN_POSITIONS_BEGIN_STR
+        "Posiciones abiertas,Header,DataDiscriminator,Categoría de activo,Divisa,Símbolo,Cantidad,Mult.,Precio de coste,Base de coste,Precio de cierre,Valor,PyG no realizadas,Código", // OPEN_POSITIONS_BEGIN_STR
         "Posiciones abiertas,Total,,Acciones,EUR,", // OPEN_POSITIONS_END_STR
         "Posiciones abiertas,Data,Summary,Acciones,", // OPEN_POSITIONS_STOCK_STR
-        "Posiciones abiertas,Total,,Acciones,", // OPEN_POSITIONS_TOTAL_STR
+        "Posiciones abiertas,Total,,Acciones,",     // OPEN_POSITIONS_TOTAL_STR
         "Operaciones,Header,DataDiscriminator,Categoría de activo,Divisa,Cuenta,Símbolo,Fecha/Hora,Cantidad,Precio trans.,Precio de cier.,Productos,Tarifa/com.,Básico,PyG realizadas,MTM P/G,Código", // TRADE_BEGIN_STR
         "Operaciones,Header,DataDiscriminator,Categoría de activo,Divisa,Símbolo,Fecha/Hora,Cantidad,Precio trans.,Precio de cier.,Productos,Tarifa/com.,Básico,PyG realizadas,MTM P/G,Código", // TRADE_BEGIN_NO_ACCOUNT_STR
-        "Operaciones,Total,", // TRADE_END_STR
+        "Operaciones,Total,",               // TRADE_END_STR
         "Operaciones,Data,Order,Acciones,", // TRADE_STOCK_STR
-        "Información de instrumento financiero,Header,Categoría de activo,Símbolo,Descripción,Conid,Id. de seguridad,Merc. de cotización,Multiplicador,Tipo,Código",  // STOCK_COMPANY_INFO_SECTOR_START_OLD_STR
+        "Información de instrumento financiero,Header,Categoría de activo,Símbolo,Descripción,Conid,Id. de seguridad,Merc. de cotización,Multiplicador,Tipo,Código", // STOCK_COMPANY_INFO_SECTOR_START_OLD_STR
     ];
 
     fn parse_companies_info(
@@ -89,7 +89,7 @@ impl IBCSVParser {
             .find('\n')
             .ok_or_else(|| anyhow!("Not found end of companies info section"))?;
 
-        let mut rdr = csv::Reader::from_reader((content[start..end_left + end]).as_bytes());
+        let mut rdr = csv::Reader::from_reader(&content.as_bytes()[start..end_left + end]);
 
         for record_result in rdr.records() {
             let record = record_result?;

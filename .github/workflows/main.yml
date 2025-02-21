@@ -13,7 +13,7 @@ jobs:
     strategy:
       matrix:
         toolchain:
-          - 1.80.1 # MSRV
+          - 1.85 # MSRV
     steps:
       - uses: actions/checkout@v2
       - uses: Swatinem/rust-cache@v2
@@ -43,7 +43,7 @@ jobs:
     strategy:
       matrix:
         toolchain:
-          - 1.80.1 # MSRV
+          - 1.85 # MSRV
 
     steps:
       - uses: actions/checkout@v2
@@ -69,7 +69,7 @@ jobs:
     strategy:
       matrix:
         toolchain:
-          - 1.80.1 # MSRV
+          - 1.85 # MSRV
 
     steps:
       - uses: actions/checkout@v2

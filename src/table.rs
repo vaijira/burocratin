@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use chrono::NaiveDate;
-use dominator::{clone, events, html, with_node, Dom};
+use dominator::{Dom, clone, events, html, with_node};
 use futures_signals::{
     map_ref,
     signal::{Mutable, Signal, SignalExt},
@@ -60,7 +60,7 @@ impl Table {
         })
     }
 
-    pub fn table_rows_not_empty(&self) -> impl Signal<Item = bool> {
+    pub fn table_rows_not_empty(&self) -> impl Signal<Item = bool> + use<> {
         self.data
             .signal_vec_cloned()
             .to_signal_map(|x| !x.is_empty())
@@ -175,7 +175,9 @@ impl Table {
         })
     }
 
-    fn company_name_cell(record: &Mutable<Aeat720RecordInfo>) -> impl Signal<Item = Option<Dom>> {
+    fn company_name_cell(
+        record: &Mutable<Aeat720RecordInfo>,
+    ) -> impl Signal<Item = Option<Dom>> + use<> {
         record.signal_ref(clone!(record => move |r| {
             Some(
               html!("td", {
@@ -221,7 +223,9 @@ impl Table {
         }))
     }
 
-    fn company_isin_cell(record: &Mutable<Aeat720RecordInfo>) -> impl Signal<Item = Option<Dom>> {
+    fn company_isin_cell(
+        record: &Mutable<Aeat720RecordInfo>,
+    ) -> impl Signal<Item = Option<Dom>> + use<> {
         record.signal_ref(clone!(record => move |r| {
             Some(
               html!("td", {
@@ -267,7 +271,7 @@ impl Table {
 
     fn broker_country_code_cell(
         record: &Mutable<Aeat720RecordInfo>,
-    ) -> impl Signal<Item = Option<Dom>> {
+    ) -> impl Signal<Item = Option<Dom>> + use<> {
         record.signal_ref(clone!(record => move |r| {
             Some(
               html!("td", {
@@ -293,7 +297,7 @@ impl Table {
         }))
     }
 
-    fn date_cell(record: &Mutable<Aeat720RecordInfo>) -> impl Signal<Item = Option<Dom>> {
+    fn date_cell(record: &Mutable<Aeat720RecordInfo>) -> impl Signal<Item = Option<Dom>> + use<> {
         record.signal_ref(clone!(record => move |r| {
           let first_tx_date = r.record.first_tx_date;
           let date = usize_to_date(first_tx_date)
@@ -316,7 +320,7 @@ impl Table {
         }))
     }
 
-    fn value_cell(record: &Mutable<Aeat720RecordInfo>) -> impl Signal<Item = Option<Dom>> {
+    fn value_cell(record: &Mutable<Aeat720RecordInfo>) -> impl Signal<Item = Option<Dom>> + use<> {
         record.signal_ref(clone!(record => move |r| {
             Some(html!("td", {
               .child(html!("input" => HtmlInputElement, {
@@ -359,7 +363,9 @@ impl Table {
         }))
     }
 
-    fn quantity_cell(record: &Mutable<Aeat720RecordInfo>) -> impl Signal<Item = Option<Dom>> {
+    fn quantity_cell(
+        record: &Mutable<Aeat720RecordInfo>,
+    ) -> impl Signal<Item = Option<Dom>> + use<> {
         record.signal_ref(clone!(record => move |r| {
             Some(html!("td", {
               .child(html!("input" => HtmlInputElement, {
@@ -402,7 +408,9 @@ impl Table {
         }))
     }
 
-    fn percentage_cell(record: &Mutable<Aeat720RecordInfo>) -> impl Signal<Item = Option<Dom>> {
+    fn percentage_cell(
+        record: &Mutable<Aeat720RecordInfo>,
+    ) -> impl Signal<Item = Option<Dom>> + use<> {
         record.signal_ref(clone!(record => move |r| {
             Some(html!("td", {
               .child(html!("input" => HtmlInputElement, {
@@ -452,7 +460,7 @@ impl Table {
         this: &Arc<Self>,
         index: usize,
         record: &Mutable<Aeat720RecordInfo>,
-    ) -> impl Signal<Item = Option<Dom>> {
+    ) -> impl Signal<Item = Option<Dom>> + use<> {
         record.signal_ref(clone!(this => move |_r| {
          let delete_span = html!("span" => HtmlElement, {
            .child(render_svg_trash_icon("red", "24"))
@@ -501,7 +509,7 @@ impl Table {
         })
     }
 
-    fn is_needed_to_rerender_rows(this: &Arc<Self>) -> impl Signal<Item = bool> {
+    fn is_needed_to_rerender_rows(this: &Arc<Self>) -> impl Signal<Item = bool> + use<> {
         map_ref! {
             // let _editable_changed = this.editable.signal(),
             let records_len = this.data.signal_vec_cloned().to_signal_map(|x| x.len()) => {
