@@ -158,6 +158,6 @@ pub struct Aeat720Information {
 
 impl Aeat720Information {
     pub fn full_name(&self) -> String {
-        self.personal_info.surname.clone() + " " + &self.personal_info.name
+        self.personal_info.surname.clone() + " " + &self.personal_info.name[..]
     }
 }

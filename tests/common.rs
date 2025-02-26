@@ -1,7 +1,7 @@
 use std::fs;
 
 use anyhow::Result;
-use thirtyfour::{GenericWebDriver, http::reqwest_async::ReqwestDriverAsync, prelude::*};
+use thirtyfour::WebDriver;
 
 pub fn setup() {
     // docker-compose up -d
@@ -9,13 +9,7 @@ pub fn setup() {
     let _ = env_logger::builder().is_test(true).try_init();
 }
 
-pub async fn get_file_content(
-    driver: &GenericWebDriver<ReqwestDriverAsync>,
-    uri: &str,
-) -> Result<String> {
-    let mut args = ScriptArgs::new();
-    args.push(uri)?;
-
+pub async fn get_file_content(driver: &WebDriver, uri: &str) -> Result<String> {
     let script = r#"
   var callback = arguments[0];
 
@@ -32,11 +26,11 @@ pub async fn get_file_content(
   xhr.send();
   "#;
 
-    let script = script.replace("{uri}", uri);
+    let args = vec![serde_json::to_value(uri)?];
     log::debug!("Execute remote script: ->{}<-", &script);
 
-    let result = driver.execute_async_script(&script).await?;
-    let element = result.get_element()?;
+    let result = driver.execute_async(script, args).await?;
+    let element = result.element()?;
     let text = element.text().await?;
     log::debug!("text got from script: ->{}<-", &text);
     Ok(text)

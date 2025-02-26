@@ -28,31 +28,32 @@ futures = "0.3"
 futures-signals = "0.3"
 gloo-file = { version = "0.3", features = [ "futures" ] }
 gloo-utils = "0.2"
-html5ever = "0.25"
-infer = "0.16.0"
+html5ever = "0.29"
+infer = "0.19.0"
 instant = { version = "0.1", features =  [ "wasm-bindgen", "inaccurate" ] }
 isin = "0.1.18"
 js-sys = "0.3"
 log = "0.4"
-nom = "6.0"
+nom = "8.0"
 num-format = "0.4.4"
-pdf-extract = "0.7"
+pdf-extract = "0.8"
 rust_decimal = "1.7"
-scraper = "0.12"
-selectors = "0.22"
+scraper = "0.23"
+selectors = "0.26"
 serde = { version = "1.0", features = ["derive", "rc"] }
 xml-rs = "0.8"
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"
 wasm-logger = "0.2"
-zip = { version = "0.5", default-features = false, features = ["deflate"]}
+zip = { version = "2.2", default-features = false, features = ["deflate"]}
 
 [dev-dependencies]
-ctor = "0.1"
-env_logger = "0.9"
-reqwest = { version = "0.11", default-features = false, features = ["json"] }
-thirtyfour = "0.27"
-tokio = { version = "1.0", features = ["fs", "macros", "rt-multi-thread", "io-util"] }
+ctor = "0.4"
+env_logger = "0.11"
+reqwest = { version = "0.12", default-features = false, features = ["json"] }
+serde_json = "1.0.139"
+thirtyfour = "0.35"
+tokio = { version = "1.0", features = ["full"] }
 
 [profile.dev.package."*"]
 opt-level = 3
@@ -67,5 +68,6 @@ opt-level = "z"  # 3 => fast, s/z => small
 # link time optimization using using whole-program analysis
 lto = true
 
-[package.metadata.wasm-pack.profile.release]
-wasm-opt = ["--enable-bulk-memory", "-Oz"]  # O4 => fast, Oz/Os => small
+# [package.metadata.wasm-pack.profile.release]
+# Configured in rollup.config.js
+# wasm-opt = ["--enable-bulk-memory", "-Oz"]  # O4 => fast, Oz/Os => small

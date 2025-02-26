@@ -1,26 +1,26 @@
 mod common;
 
-use thirtyfour::{GenericWebDriver, http::reqwest_async::ReqwestDriverAsync, prelude::*};
+use thirtyfour::prelude::*;
 
-async fn fill_all_fields(driver: &GenericWebDriver<ReqwestDriverAsync>) -> WebDriverResult<String> {
+async fn fill_all_fields(driver: &WebDriver) -> WebDriverResult<String> {
     driver.get("http://localhost:8080").await?;
 
-    let name_input = driver.find_element(By::Id("name")).await?;
+    let name_input = driver.find(By::Id("name")).await?;
     name_input.send_keys("Niles").await?;
 
-    let surname_input = driver.find_element(By::Id("surname")).await?;
+    let surname_input = driver.find(By::Id("surname")).await?;
     surname_input.send_keys("Smith Doncic").await?;
 
-    let nif_input = driver.find_element(By::Id("nif")).await?;
+    let nif_input = driver.find(By::Id("nif")).await?;
     nif_input.send_keys("12345689A").await?;
 
-    let year_input = driver.find_element(By::Id("year")).await?;
+    let year_input = driver.find(By::Id("year")).await?;
     year_input.send_keys("2019").await?;
 
     let degiro_path_string = String::from("/test_data/degiro_2019.pdf");
     log::info!("degiro report path: ->{}<-", degiro_path_string);
 
-    let degiro_report = driver.find_element(By::Id("degiro_report")).await?;
+    let degiro_report = driver.find(By::Id("degiro_report")).await?;
     degiro_report
         .send_keys(TypingData::from(degiro_path_string))
         .await?;
@@ -28,16 +28,16 @@ async fn fill_all_fields(driver: &GenericWebDriver<ReqwestDriverAsync>) -> WebDr
     let ib_path_string = String::from("/test_data/Annuals.2019.zip");
     log::info!("ib report path: ->{}<-", ib_path_string);
 
-    let ib_report = driver.find_element(By::Id("ib_report")).await?;
+    let ib_report = driver.find(By::Id("ib_report")).await?;
     ib_report
         .send_keys(TypingData::from(ib_path_string))
         .await?;
 
     // thread::sleep(time::Duration::from_secs(1));
 
-    let aeat_720_form = driver.find_element(By::Id("aeat_720_form")).await?;
+    let aeat_720_form = driver.find(By::Id("aeat_720_form")).await?;
     let href_aeat_720_form = aeat_720_form
-        .get_attribute("href")
+        .attr("href")
         .await?
         .expect("href for form should have been generated");
 
@@ -64,7 +64,7 @@ async fn test_all_reports_2019_chrome() -> WebDriverResult<()> {
     let mut caps = DesiredCapabilities::chrome();
     caps.set_headless()?;
 
-    let driver = WebDriver::new("http://localhost:4444", &caps).await?;
+    let driver = WebDriver::new("http://localhost:4444", caps).await?;
 
     let result = fill_all_fields(&driver).await;
 
@@ -86,7 +86,7 @@ async fn test_all_reports_2019_firefox() -> WebDriverResult<()> {
     let mut caps = DesiredCapabilities::firefox();
     caps.set_headless()?;
 
-    let driver = WebDriver::new("http://localhost:4444", &caps).await?;
+    let driver = WebDriver::new("http://localhost:4444", caps).await?;
 
     let result = fill_all_fields(&driver).await;
 

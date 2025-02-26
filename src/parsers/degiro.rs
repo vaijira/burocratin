@@ -10,12 +10,10 @@ use crate::utils::decimal;
 use anyhow::{Context, Result, bail};
 use chrono::NaiveDate;
 use nom::character::complete::anychar;
+use nom::error::ErrorKind;
 use nom::multi::many_till;
 use nom::sequence::{preceded, separated_pair};
-use nom::{
-    IResult,
-    error::{VerboseError, context},
-};
+use nom::{IResult, Parser, error::context};
 use nom::{
     branch::alt,
     bytes::complete::{is_a, take},
@@ -23,7 +21,7 @@ use nom::{
     combinator::{map_res, opt, recognize},
     multi::many0,
     multi::many1,
-    sequence::{terminated, tuple},
+    sequence::terminated,
 };
 use nom::{
     bytes::complete::{tag, tag_no_case},
@@ -33,7 +31,7 @@ use nom::{
 
 use rust_decimal::prelude::*;
 
-type Res<T, U> = IResult<T, U, VerboseError<T>>;
+type Res<T, U> = IResult<T, U, (T, ErrorKind)>;
 
 pub struct DegiroParser {
     content: String,
@@ -60,7 +58,8 @@ pérdidas
 impl DegiroParser {
     fn n_to_m_digits<'b>(n: usize, m: usize) -> impl FnMut(&'b str) -> Res<&'b str, String> {
         move |input| {
-            many_m_n(n, m, one_of("0123456789"))(input)
+            many_m_n(n, m, one_of("0123456789"))
+                .parse(input)
                 .map(|(next_input, result)| (next_input, result.into_iter().collect()))
         }
     }
@@ -72,7 +71,8 @@ impl DegiroParser {
                 recognize(many1(terminated(one_of("0123456789"), many0(is_a(",."))))),
                 |out: &str| Decimal::from_str(&decimal::transform_i18n_es_str(out)),
             ),
-        )(input)
+        )
+        .parse(input)
     }
 
     fn number_no_decimal_digits(input: &str) -> Res<&str, Decimal> {
@@ -81,7 +81,8 @@ impl DegiroParser {
             map_res(recognize(many1(one_of("0123456789"))), |out: &str| {
                 Decimal::from_str(out)
             }),
-        )(input)
+        )
+        .parse(input)
     }
 
     fn number_decimal_digits(input: &str, count: usize) -> Res<&str, Decimal> {
@@ -95,35 +96,38 @@ impl DegiroParser {
                 )),
                 |out: &str| Decimal::from_str(&decimal::transform_i18n_es_str(out)),
             ),
-        )(input)
+        )
+        .parse(input)
     }
 
     fn earnings_value(input: &str) -> Res<&str, Decimal> {
         context(
             "earnings value",
             map_res(
-                recognize(tuple((
+                recognize((
                     opt(one_of("+-")),
                     recognize(many1(terminated(one_of("0123456789"), many0(char('.'))))),
                     char(','),
                     recognize(many1(terminated(one_of("0123456789"), many0(char('.'))))),
-                ))),
+                )),
                 |out: &str| Decimal::from_str(&decimal::transform_i18n_es_str(out)),
             ),
-        )(input)
+        )
+        .parse(input)
     }
 
     fn date_concept(input: &str) -> Res<&str, NaiveDate> {
         context(
             "date concept",
-            tuple((
+            (
                 DegiroParser::n_to_m_digits(1, 2),
                 tag("/"),
                 DegiroParser::n_to_m_digits(1, 2),
                 tag("/"),
                 DegiroParser::n_to_m_digits(1, 4),
-            )),
-        )(input)
+            ),
+        )
+        .parse(input)
         .map(|(next_input, res)| {
             let (day, _, month, _, year) = res;
             (
@@ -142,19 +146,21 @@ impl DegiroParser {
         context(
             "broker operation",
             alt((tag_no_case("C"), tag_no_case("V"))),
-        )(input)
+        )
+        .parse(input)
         .map(|(next_input, res)| (next_input, res.into()))
     }
 
     fn isin(input: &str) -> Res<&str, String> {
         context(
             "isin",
-            tuple((
+            (
                 many_m_n(2, 2, none_of("\t \n0123456789")),
                 many_m_n(9, 9, none_of("\t \n")),
                 many1(one_of("0123456789")),
-            )),
-        )(input)
+            ),
+        )
+        .parse(input)
         .map(|(next_input, res)| {
             let (prefix, main, control) = res;
             let mut result: String = prefix.iter().collect();
@@ -165,8 +171,9 @@ impl DegiroParser {
     }
 
     fn company_info(input: &str) -> Res<&str, CompanyInfo> {
-        context("company info", many_till(anychar, DegiroParser::isin))(input).map(
-            |(next_input, res)| {
+        context("company info", many_till(anychar, DegiroParser::isin))
+            .parse(input)
+            .map(|(next_input, res)| {
                 let (company_name, isin) = res;
                 let company_name: String = company_name.into_iter().collect();
                 let company_name = company_name.replace('\n', " ").trim_end().to_string();
@@ -178,8 +185,7 @@ impl DegiroParser {
                         isin,
                     },
                 )
-            },
-        )
+            })
     }
 
     fn account_note<'a>(
@@ -188,7 +194,7 @@ impl DegiroParser {
     ) -> Res<&'a str, AccountNote> {
         context(
             "account note",
-            tuple((
+            (
                 DegiroParser::date_concept,
                 tag(" "),
                 DegiroParser::company_info,
@@ -206,10 +212,11 @@ impl DegiroParser {
                 DegiroParser::decimal_value,
                 tag(" "),
                 DegiroParser::decimal_value,
-                opt(tuple((char(' '), DegiroParser::earnings_value))),
+                opt((char(' '), DegiroParser::earnings_value)),
                 tag("\n"),
-            )),
-        )(input)
+            ),
+        )
+        .parse(input)
         .map(|(next_input, res)| {
             let (
                 date,
@@ -249,7 +256,7 @@ impl DegiroParser {
         log::trace!("balance note: -{}-", input);
         context(
             "balance note",
-            tuple((
+            (
                 tag("\n "),
                 |input| DegiroParser::number_decimal_digits(input, 2), // value in euro
                 |input| DegiroParser::number_decimal_digits(input, 4), // price
@@ -258,8 +265,9 @@ impl DegiroParser {
                 take(3usize),                                          // market
                 alt((tag("Stock"), tag("ETF"))),                       // product type: Stock | ETF
                 DegiroParser::company_info,                            // company info
-            )),
-        )(input)
+            ),
+        )
+        .parse(input)
         .map(|(next_input, res)| {
             let (_, value_in_euro, price, currency, quantity, market, _product_type, company) = res;
 
@@ -287,7 +295,8 @@ impl DegiroParser {
             many0(preceded(char('\n'), |x| {
                 DegiroParser::account_note(x, broker)
             })),
-        )(input)
+        )
+        .parse(input)
     }
 
     fn balance_notes<'a>(
@@ -297,7 +306,8 @@ impl DegiroParser {
         context(
             "balance notes",
             many0(|x| DegiroParser::balance_note(x, broker)),
-        )(input)
+        )
+        .parse(input)
     }
 
     fn parse_account_notes(&self, notes: &str) -> Result<AccountNotes> {
@@ -400,10 +410,7 @@ impl DegiroParser {
 #[allow(clippy::mistyped_literal_suffixes)]
 mod tests {
     use super::*;
-    use nom::{
-        Err as NomErr,
-        error::{ErrorKind, VerboseError, VerboseErrorKind},
-    };
+    use nom::error::ErrorKind;
 
     #[test]
     fn broker_operation_test() {
@@ -417,13 +424,7 @@ mod tests {
         );
         assert_eq!(
             DegiroParser::broker_operation("Z "),
-            Err(NomErr::Error(VerboseError {
-                errors: vec![
-                    ("Z ", VerboseErrorKind::Nom(ErrorKind::Tag)),
-                    ("Z ", VerboseErrorKind::Nom(ErrorKind::Alt)),
-                    ("Z ", VerboseErrorKind::Context("broker operation")),
-                ]
-            }))
+            Err(nom::Err::Error(("Z ", ErrorKind::Tag)))
         );
     }
 
@@ -439,12 +440,7 @@ mod tests {
         );
         assert_eq!(
             DegiroParser::date_concept("32_23_2020 "),
-            Err(NomErr::Error(VerboseError {
-                errors: vec![
-                    ("_23_2020 ", VerboseErrorKind::Nom(ErrorKind::Tag)),
-                    ("32_23_2020 ", VerboseErrorKind::Context("date concept")),
-                ]
-            }))
+            Err(nom::Err::Error(("_23_2020 ", ErrorKind::Tag)))
         );
     }
 
@@ -460,13 +456,7 @@ mod tests {
         );
         assert_eq!(
             DegiroParser::isin("US342342 "),
-            Err(NomErr::Error(VerboseError {
-                errors: vec![
-                    (" ", VerboseErrorKind::Nom(ErrorKind::NoneOf)),
-                    (" ", VerboseErrorKind::Nom(ErrorKind::ManyMN)),
-                    ("US342342 ", VerboseErrorKind::Context("isin")),
-                ]
-            }))
+            Err(nom::Err::Error((" ", ErrorKind::NoneOf)))
         );
     }
 
@@ -516,13 +506,7 @@ STOCK WHEN-ISSUED US36262G1013 "#;
         );
         assert_eq!(
             DegiroParser::decimal_value("a234,23 "),
-            Err(NomErr::Error(VerboseError {
-                errors: vec![
-                    ("a234,23 ", VerboseErrorKind::Nom(ErrorKind::OneOf)),
-                    ("a234,23 ", VerboseErrorKind::Nom(ErrorKind::Many1)),
-                    ("a234,23 ", VerboseErrorKind::Context("decimal value")),
-                ]
-            }))
+            Err(nom::Err::Error(("a234,23 ", ErrorKind::OneOf)))
         );
     }
 
@@ -542,16 +526,7 @@ STOCK WHEN-ISSUED US36262G1013 "#;
         );
         assert_eq!(
             DegiroParser::number_decimal_digits("a234,23 ", 2),
-            Err(NomErr::Error(VerboseError {
-                errors: vec![
-                    ("a234,23 ", VerboseErrorKind::Nom(ErrorKind::OneOf)),
-                    ("a234,23 ", VerboseErrorKind::Nom(ErrorKind::Many1)),
-                    (
-                        "a234,23 ",
-                        VerboseErrorKind::Context("number n decimal digits")
-                    ),
-                ]
-            }))
+            Err(nom::Err::Error(("a234,23 ", ErrorKind::OneOf)))
         );
     }
 
@@ -571,12 +546,7 @@ STOCK WHEN-ISSUED US36262G1013 "#;
         );
         assert_eq!(
             DegiroParser::earnings_value("1234\n"),
-            Err(NomErr::Error(VerboseError {
-                errors: vec![
-                    ("\n", VerboseErrorKind::Char(',')),
-                    ("1234\n", VerboseErrorKind::Context("earnings value")),
-                ]
-            }))
+            Err(nom::Err::Error(("\n", ErrorKind::Char)))
         );
     }
 
