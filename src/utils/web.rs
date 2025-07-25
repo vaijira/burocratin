@@ -7,7 +7,7 @@ use web_sys::{Blob, BlobPropertyBag, Url};
 
 pub fn delete_path(path: String) -> Result<()> {
     if let Err(err) = Url::revoke_object_url(&path) {
-        log::error!("Error deleting old aeat 720 form: {:?}", err);
+        log::error!("Error deleting old aeat 720 form: {err:?}");
         bail!("Error deleting old AEAT 720 form");
     }
 
@@ -19,7 +19,7 @@ pub fn generate_720(info: &Aeat720Information) -> Result<String> {
     let aeat720report = match Aeat720Report::new(info) {
         Ok(report) => report,
         Err(err) => {
-            log::error!("Unable to generate Aeat720 report: {}", err);
+            log::error!("Unable to generate Aeat720 report: {err}");
             bail!("unable to create AEAT 720 report");
         }
     };
@@ -39,13 +39,13 @@ pub fn generate_720(info: &Aeat720Information) -> Result<String> {
                     result = Url::create_object_url_with_blob(&blob_data).unwrap();
                 }
                 Err(err) => {
-                    log::error!("Unable to generate aeat 720 form: {:?}", err);
+                    log::error!("Unable to generate aeat 720 form: {err:?}");
                     bail!("Unable to generate AEAT 720 form blob");
                 }
             }
         }
         Err(err) => {
-            log::error!("Unable to generate Aeat 720 report: {}", err);
+            log::error!("Unable to generate Aeat 720 report: {err}");
             bail!("Unable to generate AEAT 720 from data")
         }
     }

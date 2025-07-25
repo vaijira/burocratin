@@ -253,7 +253,7 @@ impl DegiroParser {
         input: &'a str,
         broker: &Arc<BrokerInformation>,
     ) -> Res<&'a str, BalanceNote> {
-        log::trace!("balance note: -{}-", input);
+        log::trace!("balance note: -{input}-");
         context(
             "balance note",
             (
@@ -311,7 +311,7 @@ impl DegiroParser {
     }
 
     fn parse_account_notes(&self, notes: &str) -> Result<AccountNotes> {
-        log::debug!("account notes:-{}-", notes);
+        log::debug!("account notes:-{notes}-");
         let notes = match DegiroParser::account_notes(notes, &self.broker) {
             Ok((_, notes)) => {
                 log::debug!("Ok parsing {} account notes", notes.len());
@@ -326,15 +326,15 @@ impl DegiroParser {
     }
 
     fn parse_balance_notes(&self, notes: &str) -> Result<BalanceNotes> {
-        log::debug!("balance notes:-{}-", notes);
+        log::debug!("balance notes:-{notes}-");
         let notes = match DegiroParser::balance_notes(notes, &self.broker) {
             Ok((_, notes)) => {
                 log::debug!("Ok parsing {} balance notes", notes.len());
                 notes
             }
             Err(err) => {
-                log::debug!("Unable to parse balance notes:-{}-", err);
-                bail!("Unable to parse balance notes: {}", err);
+                log::debug!("Unable to parse balance notes:-{err}-");
+                bail!("Unable to parse balance notes: {err}");
             }
         };
 

@@ -110,7 +110,7 @@ impl IBCSVParser {
     }
 
     fn parse_account_note(&self, fields: &[&str]) -> Result<AccountNote> {
-        log::debug!("account note fields {:?}", fields);
+        log::debug!("account note fields {fields:?}");
         let offset = if fields.len() == 16 { 0 } else { 1 };
         let symbol = fields[5 + offset];
         let date = fields[6 + offset];
@@ -128,7 +128,7 @@ impl IBCSVParser {
         let company_info = if let Some(company) = self.companies_info.get(symbol) {
             company.clone()
         } else {
-            log::error!("Not company info found for {}", symbol);
+            log::error!("Not company info found for {symbol}");
             CompanyInfo {
                 name: symbol.to_string(),
                 isin: "".to_string(),
@@ -189,7 +189,7 @@ impl IBCSVParser {
             .cloned()
             .or_else({
                 || {
-                    log::error!("Not company info found for {}", symbol);
+                    log::error!("Not company info found for {symbol}");
                     Some(CompanyInfo {
                         name: symbol.to_string(),
                         isin: "".to_string(),
@@ -264,7 +264,7 @@ impl IBCSVParser {
                     let total_in_euro_str = fields[11];
                     let total_in_euro =
                         Decimal::from_str(&decimal::normalize_str(total_in_euro_str))?;
-                    log::debug!("total in eur: {:?}", total_in_euro);
+                    log::debug!("total in eur: {total_in_euro:?}");
                     util::recalculate_balance_notes(&mut current_notes, &total_in_euro)?;
                     balance_notes.append(&mut current_notes);
                 }

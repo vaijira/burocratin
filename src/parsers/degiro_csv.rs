@@ -19,7 +19,7 @@ impl DegiroCSVParser {
 
         for result in rdr.records() {
             let record = result?;
-            log::debug!("{:?}", record);
+            log::debug!("{record:?}");
             if record.get(1) == Some("") {
                 continue;
             }

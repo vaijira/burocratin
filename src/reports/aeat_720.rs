@@ -122,7 +122,7 @@ impl Aeat720Field {
         if let Aeat720Field::Numeric(begin, end) = field {
             let size = (end - begin) + 1;
             let mut slice = &mut fields[begin - 1..end];
-            write!(slice, "{:0width$}", value, width = size)?;
+            write!(slice, "{value:0size$}")?;
         } else {
             bail!("Expected numeric field but it wasn't {:?}", field);
         }

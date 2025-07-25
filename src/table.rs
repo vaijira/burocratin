@@ -513,7 +513,7 @@ impl Table {
         map_ref! {
             // let _editable_changed = this.editable.signal(),
             let records_len = this.data.signal_vec_cloned().to_signal_map(|x| x.len()) => {
-              log::debug!("Rerendering rows, new rows: {}", records_len);
+              log::debug!("Rerendering rows, new rows: {records_len}");
               true
             }
         }

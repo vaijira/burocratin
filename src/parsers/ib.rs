@@ -72,10 +72,7 @@ impl IBParser {
     ) -> Result<AccountNote> {
         let field_values = row.text().filter(|x| *x != "\n").collect::<Vec<_>>();
         let offset = if with_account_field { 1 } else { 0 };
-        log::debug!(
-            "Processing field values for account note:-{:?}-",
-            field_values
-        );
+        log::debug!("Processing field values for account note:-{field_values:?}-");
 
         let symbol = field_values
             .get(offset)
@@ -107,7 +104,7 @@ impl IBParser {
         let company_info = if let Some(company) = self.companies_info.get(*symbol) {
             company.clone()
         } else {
-            log::error!("Not company info found for {}", symbol);
+            log::error!("Not company info found for {symbol}");
             CompanyInfo {
                 name: symbol.to_string(),
                 isin: "".to_string(),
@@ -136,7 +133,7 @@ impl IBParser {
 
             for table_row in transactions.select(&THEAD_TH_TR_SELECTOR) {
                 let row_values = table_row.text().filter(|x| *x != "\n").collect::<Vec<_>>();
-                log::debug!("Processing header in account notes:-{:?}-", row_values);
+                log::debug!("Processing header in account notes:-{row_values:?}-");
                 if row_values[0] == "Account" {
                     with_account_field = true;
                 }
@@ -230,7 +227,7 @@ impl IBParser {
                     if field_values.is_empty() {
                         continue;
                     }
-                    log::debug!("field values: {:?}", field_values);
+                    log::debug!("field values: {field_values:?}");
                     let ticker = field_values
                         .first()
                         .ok_or_else(|| anyhow!("No company ticker found"))?;
@@ -261,10 +258,7 @@ impl IBParser {
         currency: Option<&str>,
     ) -> Result<BalanceNote> {
         let field_values = row.text().filter(|x| *x != "\n").collect::<Vec<_>>();
-        log::debug!(
-            "Processing field values for balance note:-{:?}-",
-            field_values
-        );
+        log::debug!("Processing field values for balance note:-{field_values:?}-");
 
         let symbol = field_values
             .first()
@@ -286,7 +280,7 @@ impl IBParser {
             .get(*symbol)
             .cloned()
             .or_else(|| {
-                log::error!("Not company info found for {}", symbol);
+                log::error!("Not company info found for {symbol}");
                 Some(CompanyInfo {
                     name: symbol.to_string(),
                     isin: "".to_string(),
@@ -362,7 +356,7 @@ impl IBParser {
                             match balance_note_result {
                                 Ok(balance_note) => current_notes.push(balance_note),
                                 Err(msg) => {
-                                    log::error!("Error parsing balance note: {}", msg);
+                                    log::error!("Error parsing balance note: {msg}");
                                     return Err(msg);
                                 }
                             }
@@ -382,7 +376,7 @@ impl IBParser {
                                 .ok_or_else(|| anyhow!("Unable to get total in euro"))?;
                             let total_in_euro =
                                 Decimal::from_str(&decimal::normalize_str(total_in_euro_str))?;
-                            log::debug!("total in eur: {:?}", total_in_euro);
+                            log::debug!("total in eur: {total_in_euro:?}");
                             util::recalculate_balance_notes(&mut current_notes, &total_in_euro)?;
                         } else {
                             state = NoteState::Invalid;
