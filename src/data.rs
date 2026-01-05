@@ -11,7 +11,7 @@ pub type AccountNotes = Vec<AccountNote>;
 pub type BalanceNotes = Vec<BalanceNote>;
 pub type Aeat720Records = Vec<Aeat720Record>;
 
-pub const DEFAULT_YEAR: usize = 2024;
+pub const DEFAULT_YEAR: usize = 2025;
 pub const SPAIN_COUNTRY_CODE: &str = "ES";
 pub const DEFAULT_LOCALE: &Locale = &Locale::es;
 pub const DEFAULT_NUMBER_OF_DECIMALS: u16 = 2;
