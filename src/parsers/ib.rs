@@ -215,11 +215,11 @@ impl IBParser {
             for table_row in table_contract_info.select(&TR_SELECTOR) {
                 log::debug!("table row: {:?}", table_row.inner_html());
 
-                if let Some(element) = table_row.first_child().unwrap().value().as_element() {
-                    if element.has_class("header-asset", CaseSensitivity::AsciiCaseInsensitive) {
-                        start_parsing_symbols = STOCKS_STRS.contains(&table_row.text().next());
-                        continue;
-                    }
+                if let Some(element) = table_row.first_child().unwrap().value().as_element()
+                    && element.has_class("header-asset", CaseSensitivity::AsciiCaseInsensitive)
+                {
+                    start_parsing_symbols = STOCKS_STRS.contains(&table_row.text().next());
+                    continue;
                 }
 
                 if start_parsing_symbols {
@@ -245,6 +245,18 @@ impl IBParser {
                             isin: String::from(*isin),
                         },
                     );
+                    if ticker.contains(',') {
+                        let tickers = ticker.split(',');
+                        for split_ticker in tickers {
+                            result.insert(
+                                String::from(split_ticker.trim()),
+                                CompanyInfo {
+                                    name: String::from(*name),
+                                    isin: String::from(*isin),
+                                },
+                            );
+                        }
+                    }
                 }
             }
         }

@@ -93,17 +93,25 @@ impl IBCSVParser {
 
         for record_result in rdr.records() {
             let record = record_result?;
-            result.insert(
-                String::from(record.get(3).ok_or_else(|| anyhow!("Unknown ticker"))?),
-                CompanyInfo {
-                    name: String::from(
-                        record
-                            .get(4)
-                            .ok_or_else(|| anyhow!("Unknown company name"))?,
-                    ),
-                    isin: String::from(record.get(6).ok_or_else(|| anyhow!("Unknown isin"))?),
-                },
-            );
+            let ticker = String::from(record.get(3).ok_or_else(|| anyhow!("Unknown ticker"))?);
+            let isin = String::from(record.get(6).ok_or_else(|| anyhow!("Unknown isin"))?);
+            let company_info = CompanyInfo {
+                name: String::from(
+                    record
+                        .get(4)
+                        .ok_or_else(|| anyhow!("Unknown company name"))?,
+                ),
+                isin,
+            };
+
+            if ticker.contains(',') {
+                let tickers = ticker.split(',');
+                for split_ticker in tickers {
+                    result.insert(String::from(split_ticker.trim()), company_info.clone());
+                }
+            }
+
+            result.insert(ticker, company_info);
         }
 
         Ok(result)
@@ -743,8 +751,8 @@ mod tests {
             AccountNote::new(
                 NaiveDate::from_ymd_opt(2021, 01, 28).unwrap(),
                 CompanyInfo {
-                    name: String::from("ILA"),
-                    isin: String::from(""),
+                    name: String::from("ILOOKABOUT CORP"),
+                    isin: String::from("CA45236R1010"),
                 },
                 BrokerOperation::Buy,
                 Decimal::new(5700, 0),
@@ -994,6 +1002,20 @@ mod tests {
             ),
             (
                 "ILA.OLD, ILA".to_string(),
+                CompanyInfo {
+                    name: "ILOOKABOUT CORP".to_string(),
+                    isin: "CA45236R1010".to_string(),
+                },
+            ),
+            (
+                "ILA.OLD".to_string(),
+                CompanyInfo {
+                    name: "ILOOKABOUT CORP".to_string(),
+                    isin: "CA45236R1010".to_string(),
+                },
+            ),
+            (
+                "ILA".to_string(),
                 CompanyInfo {
                     name: "ILOOKABOUT CORP".to_string(),
                     isin: "CA45236R1010".to_string(),

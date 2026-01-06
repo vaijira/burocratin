@@ -341,13 +341,12 @@ impl Table {
                 .with_node!(element => {
                   .event(clone!(record => move |_: events::Change| {
                     let money_str = element.value();
-                    if valid_str_number_with_decimals(&money_str, DEFAULT_NUMBER_OF_DECIMALS, DEFAULT_LOCALE) {
-                      if let Ok(money) = money_str.parse::<Decimal>() {
+                    if valid_str_number_with_decimals(&money_str, DEFAULT_NUMBER_OF_DECIMALS, DEFAULT_LOCALE)
+                      && let Ok(money) = money_str.parse::<Decimal>() {
                         *record.lock_mut().value_err_msg.lock_mut() = None;
                         record.lock_mut().record.value_in_euro = money;
                         return
                       }
-                    }
                     *record.lock_mut().value_err_msg.lock_mut() = Some(VALUE_NOT_VALID_ERR_MSG);
                     record.lock_mut().record.value_in_euro = Decimal::ZERO;
                     let _ = element.focus();
@@ -386,13 +385,12 @@ impl Table {
                 .with_node!(element => {
                   .event(clone!(record => move |_: events::Change| {
                     let quantity_str = element.value();
-                    if valid_str_number_with_decimals(&quantity_str, DEFAULT_NUMBER_OF_DECIMALS, DEFAULT_LOCALE) {
-                      if let Ok(quantity) = quantity_str.parse::<Decimal>() {
+                    if valid_str_number_with_decimals(&quantity_str, DEFAULT_NUMBER_OF_DECIMALS, DEFAULT_LOCALE)
+                      && let Ok(quantity) = quantity_str.parse::<Decimal>() {
                         *record.lock_mut().quantity_err_msg.lock_mut() = None;
                         record.lock_mut().record.quantity = quantity;
                         return
                       }
-                    }
                     *record.lock_mut().quantity_err_msg.lock_mut() = Some(QUANTITY_NOT_VALID_ERR_MSG);
                     record.lock_mut().record.quantity = Decimal::ONE_HUNDRED;
                     let _ = element.focus();
@@ -431,15 +429,13 @@ impl Table {
                 .with_node!(element => {
                   .event(clone!(record => move |_: events::Change| {
                     let percentage_str = element.value().replace(DEFAULT_LOCALE.decimal(), ".");
-                    if valid_str_number_with_decimals(&percentage_str, DEFAULT_NUMBER_OF_DECIMALS, DEFAULT_LOCALE) {
-                      if let Ok(percentage) = percentage_str.parse::<Decimal>() {
-                        if percentage.gt(&Decimal::ZERO) && percentage.le(&Decimal::ONE_HUNDRED) {
+                    if valid_str_number_with_decimals(&percentage_str, DEFAULT_NUMBER_OF_DECIMALS, DEFAULT_LOCALE)
+                      && let Ok(percentage) = percentage_str.parse::<Decimal>()
+                        && percentage.gt(&Decimal::ZERO) && percentage.le(&Decimal::ONE_HUNDRED) {
                           *record.lock_mut().percent_err_msg.lock_mut() = None;
                           record.lock_mut().record.percentage = percentage;
                           return;
                         }
-                      }
-                    }
                     *record.lock_mut().percent_err_msg.lock_mut() = Some(PERCENT_NOT_VALID_ERR_MSG);
                     record.lock_mut().record.percentage = Decimal::ONE_HUNDRED;
                     let _ = element.focus();
