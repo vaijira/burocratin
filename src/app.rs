@@ -243,9 +243,16 @@ impl App {
                   .attr("target", "_blank")
                   .attr("rel", "noopener external nofollow")
                   .attr("href", "https://sede.agenciatributaria.gob.es/Sede/procedimientoini/GI34.shtml")
-                  .text("página correspondiente de la AEAT")
+                  .text("página correspondiente de la AEAT. ")
                 }))
-                .text(" y revise el código de domiciliación del país de las empresas, por defecto cogerá el del ISIN, pero esto no siempre es correcto.")
+            }))
+            .child(html!("span", {
+                .text("Pinche en el primer enlace donde dice")
+                .child(html!("b", {
+                  .text("\"Modelo 720. Ejercicio 2025. Presentación (hasta 40.000 registros)\"")
+                }))
+                .text(" presione importar y seleccione el fichero generado. ")
+                .text("Revise el código de domiciliación del país de las empresas, por defecto cogerá el del ISIN, pero esto no siempre es correcto.")
             }))
         })
     }
