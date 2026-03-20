@@ -29,6 +29,7 @@ export default {
                 { src: 'static/img/interactive_brokers.svg', dest: 'dist/img/' },
                 { src: 'static/img/favicon.ico', dest: 'dist/img/' },
                 { src: 'static/img/burocratin.svg', dest: 'dist/img/' },
+                { src: 'static/img/burocratin_og.png', dest: 'dist/img/' },
             ]
         }),
 
