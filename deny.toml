@@ -1,0 +1,5 @@
+[advisories]
+ignore = [
+    # ttf-parser is pulled in by pdf-extract -> lopdf; no maintained alternative upstream yet.
+    { id = "RUSTSEC-2026-0192", reason = "transitive via pdf-extract/lopdf, waiting on upstream" },
+]

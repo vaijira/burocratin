@@ -3,6 +3,7 @@ name = "burocratin"
 version = "0.2.0"
 authors = ["Jorge Perez Burgos <vaijira@gmail.com>"]
 edition = "2024"
+rust-version = "1.99"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
@@ -26,34 +27,33 @@ dominator = "0.5"
 encoding_rs = "0.8"
 futures = "0.3"
 futures-signals = "0.3"
-gloo-file = { version = "0.3", features = [ "futures" ] }
-gloo-utils = "0.2"
-html5ever = "0.29"
-infer = "0.19.0"
-instant = { version = "0.1", features =  [ "wasm-bindgen", "inaccurate" ] }
+gloo-file = { version = "0.4", features = [ "futures" ] }
+gloo-utils = "0.3"
+html5ever = "0.40"
+infer = "0.22"
 isin = "0.1.18"
 js-sys = "0.3"
 log = "0.4"
 nom = "8.0"
-num-format = "0.4.4"
-pdf-extract = "0.8"
-rust_decimal = "1.7"
-scraper = "0.23"
-selectors = "0.26"
+num-format = "0.4"
+pdf-extract = "0.12"
+rust_decimal = "1.43"
+scraper = "0.29"
+selectors = "0.41"
 serde = { version = "1.0", features = ["derive", "rc"] }
-xml-rs = "0.8"
+xml-rs = "1.0"
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"
 wasm-logger = "0.2"
-zip = { version = "2.2", default-features = false, features = ["deflate"]}
+zip = { version = "9.0", default-features = false, features = ["deflate"]}
 
 [dev-dependencies]
-ctor = "0.4"
+ctor = "1.0"
 env_logger = "0.11"
-reqwest = { version = "0.12", default-features = false, features = ["json"] }
-serde_json = "1.0.139"
-thirtyfour = "0.35"
-tokio = { version = "1.0", features = ["full"] }
+reqwest = { version = "0.13", default-features = false, features = ["json"] }
+serde_json = "1.0"
+thirtyfour = "0.38"
+tokio = { version = "1.54", features = ["full"] }
 
 [profile.dev.package."*"]
 opt-level = 3

@@ -65,7 +65,7 @@ impl App {
 
     fn generate_720_file(this: &Arc<Self>) -> Result<()> {
         let old_path = (*this.aeat720_form_path.lock_ref()).clone();
-        let old_path = old_path.map_or("".to_owned(), |x| x);
+        let old_path = old_path.unwrap_or("".to_owned());
         let path = web::generate_720(&Aeat720Information {
             records: this.table.get_records(),
             personal_info: this.personal_info.get_cloned(),
@@ -249,7 +249,7 @@ impl App {
             .child(html!("span", {
                 .text("Pinche en el primer enlace donde dice")
                 .child(html!("b", {
-                  .text("\"Modelo 720. Ejercicio 2025. Presentación (hasta 40.000 registros)\"")
+                  .text("\"Modelo 720. Ejercicio 2026. Presentación (hasta 40.000 registros)\"")
                 }))
                 .text(" presione importar y seleccione el fichero generado. ")
                 .text("Revise el código de domiciliación del país de las empresas, por defecto cogerá el del ISIN, pero esto no siempre es correcto.")
